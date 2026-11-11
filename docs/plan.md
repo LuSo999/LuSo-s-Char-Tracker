@@ -1,6 +1,6 @@
 # Plán projektu
 
-Zadání je v `dnd-tracker-spec.md`. Tady jsou odsouhlasená rozhodnutí a struktura.
+Platné zadání je v `dnd-tracker-spec2.md` (`dnd-tracker-spec.md` je původní verze, jen pro referenci). Tady jsou odsouhlasená rozhodnutí a struktura.
 
 ## Rozhodnutí
 
@@ -14,7 +14,7 @@ Zadání je v `dnd-tracker-spec.md`. Tady jsou odsouhlasená rozhodnutí a struk
 
 ## Testovací postava
 
-Valdric Greywing, Fighter 4 (5.5e). Obsah mimo SRD (subclass, manévry, některé featy) se do repa nedává. Bude v soukromém balíčku mimo git.
+Valdric Greywing, Fighter 4 (5.5e). Obsah mimo SRD (subclass, manévry, některé featy) se do repa nedává. Přijde přes sdílený oficiální obsah z balíčků v `private/packs/` (mimo git).
 
 ## Struktura
 
