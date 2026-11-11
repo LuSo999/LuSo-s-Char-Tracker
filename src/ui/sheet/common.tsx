@@ -7,20 +7,39 @@ export function Panel({ title, children, className = '' }: { title?: string; chi
   )
 }
 
-/** Uses shown as dots; filled dots are remaining. Large pools fall back to numbers. */
-export function Dots({ remaining, max, label }: { remaining: number; max: number; label?: string }) {
+/**
+ * Uses shown as dots; filled dots are remaining. With `onSet` the dots are
+ * clickable: a filled dot spends down to it, an empty one restores up to it.
+ * Large pools fall back to numbers.
+ */
+export function Dots({ remaining, max, label, onSet }: { remaining: number; max: number; label?: string; onSet?: (remaining: number) => void }) {
   if (max > 10) {
     return (
-      <span className="tabular-nums" aria-label={label}>
+      <span className="inline-flex items-center gap-1 tabular-nums" aria-label={label}>
+        {onSet && (
+          <button className="rounded border border-border px-1 leading-4" aria-label="−1" onClick={() => onSet(remaining - 1)}>
+            −
+          </button>
+        )}
         {remaining}/{max}
+        {onSet && (
+          <button className="rounded border border-border px-1 leading-4" aria-label="+1" onClick={() => onSet(remaining + 1)}>
+            +
+          </button>
+        )}
       </span>
     )
   }
   return (
     <span className="inline-flex gap-1" aria-label={label ?? `${remaining} / ${max}`}>
-      {Array.from({ length: max }, (_, i) => (
-        <span key={i} className={`h-3 w-3 rounded-full border border-accent ${i < remaining ? 'bg-accent' : 'bg-transparent'}`} />
-      ))}
+      {Array.from({ length: max }, (_, i) => {
+        const cls = `h-3 w-3 rounded-full border border-accent ${i < remaining ? 'bg-accent' : 'bg-transparent'}`
+        return onSet ? (
+          <button key={i} className={`${cls} hover:ring-2 hover:ring-accent/40`} aria-label={`${i + 1}`} onClick={() => onSet(i < remaining ? i : i + 1)} />
+        ) : (
+          <span key={i} className={cls} />
+        )
+      })}
     </span>
   )
 }

@@ -89,7 +89,17 @@
       "switch": "Characters"
     },
     "save": "Save",
-    "savingThrow": "Saving throw"
+    "savingThrow": "Saving throw",
+    "tempHp": "Temp",
+    "successes": "Successes",
+    "failures": "Failures",
+    "addCondition": "Condition",
+    "chooseCondition": "Choose…",
+    "removeCondition": "Remove {{name}}",
+    "situational": "Situational effects",
+    "actionsHint": "Click an action to use it: costs are paid and the turn tracker updates.",
+    "undoHint": "Undo: {{what}}",
+    "undone": "Undone: {{what}}"
   },
   "settings": {
     "title": "Settings",
@@ -112,5 +122,107 @@
     "invited": "Invited e-mails (one per line)",
     "save": "Save",
     "saved": "Saved."
+  },
+  "undo": "Undo",
+  "cancel": "Cancel",
+  "adjust": {
+    "clickToSet": "Click to type a new value",
+    "amount": "Amount for {{label}}",
+    "add": "Add to {{label}}",
+    "subtract": "Subtract from {{label}}"
+  },
+  "turn": {
+    "action": "Action",
+    "bonusAction": "Bonus",
+    "reaction": "Reaction",
+    "attacksLeft": "{{count}} attack(s) left",
+    "newTurn": "New turn",
+    "newTurnHint": "Reset the turn tracker"
+  },
+  "roll": {
+    "prompt": "Rolled {{dice}}:",
+    "heals": "heals {{total}} HP",
+    "apply": "Heal",
+    "withoutHealing": "Use without healing"
+  },
+  "errors": {
+    "positiveAmount": "Enter a positive number.",
+    "notEnough": "Not enough uses left: {{name}}",
+    "unknownResource": "Unknown resource.",
+    "noAmmo": "No ammunition left.",
+    "noChange": "Nothing changed.",
+    "notLatest": "Only the most recent change can be undone. Use the Undo button at the top."
+  },
+  "rest": {
+    "shortTitle": "Short rest",
+    "longTitle": "Long rest",
+    "hitDice": "Spend Hit Dice",
+    "hitDiceHint": "Roll the dice and enter each result; Constitution ({{con}}) is added per die.",
+    "available": "{{count}} of {{total}} left",
+    "removeDie": "remove",
+    "willChange": "What happens",
+    "nothing": "Nothing to restore.",
+    "confirmShort": "Take short rest",
+    "confirmLong": "Take long rest",
+    "foodAndDrink": "5e (2014): exhaustion goes down only if the character also ate and drank."
+  },
+  "history": {
+    "title": "History",
+    "game": "Game",
+    "sheet": "Sheet",
+    "type": "Event type",
+    "allTypes": "All events",
+    "search": "Search…",
+    "startSession": "Start session",
+    "notePlaceholder": "Your note…",
+    "addNote": "Add",
+    "empty": "Nothing here yet.",
+    "sessionStarted": "Session · {{time}}",
+    "undone": "undone",
+    "loadMore": "Load older",
+    "groups": {
+      "damage": "Damage",
+      "heal": "Healing",
+      "setHp": "HP set",
+      "tempHp": "Temporary HP",
+      "deathSaves": "Death saves",
+      "resource": "Resource",
+      "use": "Used",
+      "attack": "Attack",
+      "condition": "Condition",
+      "toggle": "Situational effect",
+      "shortRest": "Short rest",
+      "longRest": "Long rest",
+      "undo": "Undo",
+      "session": "Session",
+      "note": "Note"
+    },
+    "items": {
+      "damage": "Took {{amount}} damage: HP {{before}} → {{after}}",
+      "heal": "Healed {{amount}}: HP {{before}} → {{after}}",
+      "setHp": "HP {{before}} → {{after}}",
+      "tempHp": "Temporary HP {{before}} → {{after}}",
+      "massiveDamage": "Massive damage: instant death!",
+      "unconscious": "Dropped to 0 HP: Unconscious, death saves start",
+      "deathSaveFailure": "Damage at 0 HP: death save failures {{before}} → {{after}}",
+      "deathSavesReset": "Death saves reset",
+      "deathSaveSuccesses": "Death save successes {{before}} → {{after}}",
+      "deathSaveFailures": "Death save failures {{before}} → {{after}}",
+      "stable": "Stable",
+      "dead": "Dead",
+      "resource": "{{name}} {{before}} → {{after}}",
+      "use": "Used {{name}}",
+      "attack": "Attacked with {{name}}",
+      "quantity": "{{name}} {{before}} → {{after}}",
+      "conditionAdded": "Condition added: {{name}}",
+      "conditionRemoved": "Condition removed: {{name}}",
+      "exhaustion": "Exhaustion {{before}} → {{after}}",
+      "toggleOn": "On: {{name}}",
+      "toggleOff": "Off: {{name}}",
+      "hitDice": "Hit Dice d{{die}} {{before}} → {{after}}",
+      "undo": "Undid: {{what}}",
+      "session": "Session started",
+      "note": "{{text}}"
+    }
   }
 }

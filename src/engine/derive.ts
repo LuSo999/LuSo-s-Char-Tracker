@@ -73,7 +73,7 @@ export type AttackRow = {
   properties: string[]
   mastery?: string
   /** Remaining ammunition (undefined when not tracked or not needed). */
-  ammo?: { uid?: string; remaining: number }
+  ammo?: { uid?: string; remaining: number; name?: string }
   attacksPerAction: number
 }
 
@@ -84,6 +84,8 @@ export type ActivityRow = {
   actionType: ActionType
   /** Remaining uses of the first cost resource, if any. */
   uses?: { remaining: number; max: number; resourceKey: string }
+  /** Every cost, resolved to resource keys ("quantity:<uid>" spends the item itself). */
+  costs: { resourceKey: string; amount: number }[]
   available: boolean
   /** Resolved dice, e.g. "1d10" for a level 10 Battle Master's maneuver. */
   rollDice?: string
@@ -550,9 +552,9 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
           const it = content.item(e.itemId)
           return it?.kind === 'ammunition' && it.ammoKind === w.ammunition && e.quantity > 0
         })
-      ammo = { uid: ammoEntry?.uid, remaining: ammoEntry?.quantity ?? 0 }
+      ammo = { uid: ammoEntry?.uid, remaining: ammoEntry?.quantity ?? 0, name: ammoEntry && (ammoEntry.label ?? content.item(ammoEntry.itemId)?.name) }
     } else if (w?.properties.includes('thrown') && entry && char.settings.trackAmmunition) {
-      ammo = { uid: entry.uid, remaining: entry.quantity }
+      ammo = { uid: entry.uid, remaining: entry.quantity, name: entry.label ?? w.name }
     }
 
     return {
@@ -610,6 +612,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
         source: ae,
         actionType: activity.actionType,
         uses: activity.cost[0] ? pool(activity.cost[0].resource) : undefined,
+        costs: activity.cost.map((c) => ({ resourceKey: pool(c.resource)?.resourceKey ?? c.resource, amount: c.amount })),
         available,
         rollDice: resolveDice(activity.roll?.dice, v),
         rollBonus: activity.roll?.bonus === undefined ? undefined : resolveScaled(activity.roll.bonus, v),

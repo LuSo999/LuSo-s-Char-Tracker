@@ -89,7 +89,17 @@
       "switch": "Postavy"
     },
     "save": "Save",
-    "savingThrow": "Saving throw"
+    "savingThrow": "Saving throw",
+    "tempHp": "Temp",
+    "successes": "Úspěchy",
+    "failures": "Neúspěchy",
+    "addCondition": "Stav",
+    "chooseCondition": "Vyber…",
+    "removeCondition": "Odebrat {{name}}",
+    "situational": "Situační efekty",
+    "actionsHint": "Kliknutím akci použiješ: odečtou se zdroje a aktualizuje se přehled tahu.",
+    "undoHint": "Vrátit: {{what}}",
+    "undone": "Vráceno: {{what}}"
   },
   "settings": {
     "title": "Nastavení",
@@ -112,5 +122,107 @@
     "invited": "Pozvané e-maily (jeden na řádek)",
     "save": "Uložit",
     "saved": "Uloženo."
+  },
+  "undo": "Zpět",
+  "cancel": "Zrušit",
+  "adjust": {
+    "clickToSet": "Klikni a napiš novou hodnotu",
+    "amount": "Množství pro {{label}}",
+    "add": "Přičíst k {{label}}",
+    "subtract": "Odečíst od {{label}}"
+  },
+  "turn": {
+    "action": "Action",
+    "bonusAction": "Bonus",
+    "reaction": "Reaction",
+    "attacksLeft": "Zbývá útoků: {{count}}",
+    "newTurn": "Nový tah",
+    "newTurnHint": "Vynulovat přehled tahu"
+  },
+  "roll": {
+    "prompt": "Hod {{dice}}:",
+    "heals": "vyléčí {{total}} HP",
+    "apply": "Vyléčit",
+    "withoutHealing": "Použít bez léčení"
+  },
+  "errors": {
+    "positiveAmount": "Zadej kladné číslo.",
+    "notEnough": "Nezbývá dost použití: {{name}}",
+    "unknownResource": "Neznámý zdroj.",
+    "noAmmo": "Došla munice.",
+    "noChange": "Nic se nezměnilo.",
+    "notLatest": "Vrátit jde jen poslední změnu. Použij tlačítko Zpět nahoře."
+  },
+  "rest": {
+    "shortTitle": "Short rest",
+    "longTitle": "Long rest",
+    "hitDice": "Utratit Hit Dice",
+    "hitDiceHint": "Hoď kostkami a zadej každý výsledek; ke každé kostce se přičte Constitution ({{con}}).",
+    "available": "zbývá {{count}} z {{total}}",
+    "removeDie": "odebrat",
+    "willChange": "Co se stane",
+    "nothing": "Není co obnovit.",
+    "confirmShort": "Dát short rest",
+    "confirmLong": "Dát long rest",
+    "foodAndDrink": "5e (2014): exhaustion klesne jen tehdy, když postava také jedla a pila."
+  },
+  "history": {
+    "title": "Historie",
+    "game": "Hra",
+    "sheet": "List",
+    "type": "Typ události",
+    "allTypes": "Všechny události",
+    "search": "Hledat…",
+    "startSession": "Začít sezení",
+    "notePlaceholder": "Tvoje poznámka…",
+    "addNote": "Přidat",
+    "empty": "Zatím tu nic není.",
+    "sessionStarted": "Sezení · {{time}}",
+    "undone": "vráceno",
+    "loadMore": "Načíst starší",
+    "groups": {
+      "damage": "Zranění",
+      "heal": "Léčení",
+      "setHp": "Nastavení HP",
+      "tempHp": "Temporary HP",
+      "deathSaves": "Death saves",
+      "resource": "Zdroj",
+      "use": "Použití",
+      "attack": "Útok",
+      "condition": "Stav",
+      "toggle": "Situační efekt",
+      "shortRest": "Short rest",
+      "longRest": "Long rest",
+      "undo": "Vrácení",
+      "session": "Sezení",
+      "note": "Poznámka"
+    },
+    "items": {
+      "damage": "Zranění {{amount}}: HP {{before}} → {{after}}",
+      "heal": "Léčení {{amount}}: HP {{before}} → {{after}}",
+      "setHp": "HP {{before}} → {{after}}",
+      "tempHp": "Temporary HP {{before}} → {{after}}",
+      "massiveDamage": "Massive damage: okamžitá smrt!",
+      "unconscious": "Pokles na 0 HP: Unconscious, začínají death saves",
+      "deathSaveFailure": "Zranění na 0 HP: neúspěchy death saves {{before}} → {{after}}",
+      "deathSavesReset": "Death saves vynulovány",
+      "deathSaveSuccesses": "Úspěchy death saves {{before}} → {{after}}",
+      "deathSaveFailures": "Neúspěchy death saves {{before}} → {{after}}",
+      "stable": "Stable",
+      "dead": "Mrtvý",
+      "resource": "{{name}} {{before}} → {{after}}",
+      "use": "Použito: {{name}}",
+      "attack": "Útok: {{name}}",
+      "quantity": "{{name}} {{before}} → {{after}}",
+      "conditionAdded": "Přidán stav: {{name}}",
+      "conditionRemoved": "Odebrán stav: {{name}}",
+      "exhaustion": "Exhaustion {{before}} → {{after}}",
+      "toggleOn": "Zapnuto: {{name}}",
+      "toggleOff": "Vypnuto: {{name}}",
+      "hitDice": "Hit Dice d{{die}} {{before}} → {{after}}",
+      "undo": "Vráceno: {{what}}",
+      "session": "Začátek sezení",
+      "note": "{{text}}"
+    }
   }
 }

@@ -147,6 +147,8 @@ export const Activity = z.object({
   saveAbility: Ability.optional(),
   /** Character level from which the activity is available (e.g. Large Form at 5). */
   minLevel: z.number().optional(),
+  /** Turn economy: using it grants another action this turn (Action Surge). */
+  grants: z.enum(['action']).optional(),
 })
 export type Activity = z.infer<typeof Activity>
 

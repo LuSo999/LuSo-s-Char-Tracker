@@ -14,6 +14,7 @@ import { PinnedPreview, RulePreview } from './ui/rules/RulePreview'
 import { SettingsPage } from './ui/SettingsPage'
 import { SheetPage } from './ui/sheet/SheetPage'
 import { SignIn } from './ui/SignIn'
+import { Toasts } from './ui/Toasts'
 
 // Dev-only sheet preview without sign-in; compiled out of production builds.
 const DevPreview = import.meta.env.DEV ? lazy(() => import('./ui/DevPreview')) : null
@@ -27,6 +28,7 @@ export default function App() {
       </Layout>
       <RulePreview />
       <PinnedPreview />
+      <Toasts />
     </HashRouter>
   )
 }

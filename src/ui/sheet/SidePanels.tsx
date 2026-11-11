@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ContentIndex } from '../../content'
 import type { Entity, RechargeOn } from '../../content/schema'
-import type { Character } from '../../engine/character'
+import { setExhaustion, setResourceRemaining, toggleCondition, toggleEffect } from '../../engine/actions'
 import type { ActiveEntity, Sheet } from '../../engine/derive'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
+import { useRun, useSheet } from './context'
 
 const rechargeLabel: Record<RechargeOn, string> = {
   shortRest: 'Short',
@@ -13,8 +15,10 @@ const rechargeLabel: Record<RechargeOn, string> = {
   turnStart: 'Turn start',
 }
 
-export function ResourcesPanel({ sheet, content }: { sheet: Sheet; content: ContentIndex }) {
+export function ResourcesPanel() {
   const { t } = useTranslation()
+  const { character, sheet, content } = useSheet()
+  const run = useRun()
   return (
     <Panel title={t('sheet.resources')}>
       {sheet.resources.length === 0 && <p className="text-sm text-muted">{t('sheet.none')}</p>}
@@ -32,7 +36,7 @@ export function ResourcesPanel({ sheet, content }: { sheet: Sheet; content: Cont
                 </RuleRef>
                 {recharge && <span className="ml-1.5 text-xs text-muted">↻ {recharge}</span>}
               </span>
-              <Dots remaining={r.remaining} max={r.max} />
+              <Dots remaining={r.remaining} max={r.max} onSet={(n) => void run(setResourceRemaining(character, sheet, r.key, n))} />
             </li>
           )
         })}
@@ -41,28 +45,85 @@ export function ResourcesPanel({ sheet, content }: { sheet: Sheet; content: Cont
   )
 }
 
-export function ConditionsPanel({ character, sheet, content }: { character: Character; sheet: Sheet; content: ContentIndex }) {
+export function ConditionsPanel() {
   const { t } = useTranslation()
+  const { character, sheet, content } = useSheet()
+  const run = useRun()
+  const [adding, setAdding] = useState(false)
   const exhaustion = content.get('exhaustion')
+  const options = content.all('condition').filter((c) => c.id !== 'exhaustion' && !character.conditions.includes(c.id))
+
   return (
     <Panel title={t('sheet.conditions')}>
-      {character.conditions.length === 0 && character.exhaustion === 0 && <p className="text-sm text-muted">{t('sheet.none')}</p>}
-      <ul className="flex flex-wrap gap-1.5">
-        {character.conditions.map((c) => (
-          <li key={c}>
-            <RuleRef entity={content.get(c)} content={content} className="rounded-full border border-danger px-2 py-0.5 text-sm text-danger">
-              {content.get(c)?.name ?? c}
-            </RuleRef>
-          </li>
-        ))}
-        {character.exhaustion > 0 && (
-          <li>
-            <RuleRef entity={exhaustion} content={content} className="rounded-full border border-danger px-2 py-0.5 text-sm text-danger">
-              Exhaustion {character.exhaustion}
-            </RuleRef>
-          </li>
-        )}
+      <ul className="flex flex-wrap items-center gap-1.5">
+        {character.conditions.map((c) => {
+          const name = content.get(c)?.name ?? c
+          return (
+            <li key={c} className="flex items-center rounded-full border border-danger text-sm text-danger">
+              <RuleRef entity={content.get(c)} content={content} className="pl-2">
+                {name}
+              </RuleRef>
+              <button className="px-1.5" aria-label={t('sheet.removeCondition', { name })} onClick={() => void run(toggleCondition(character, c, name))}>
+                ×
+              </button>
+            </li>
+          )
+        })}
+        <li className="flex items-center gap-1 text-sm">
+          <RuleRef entity={exhaustion} content={content} className={character.exhaustion ? 'font-semibold text-danger' : 'text-muted'}>
+            Exhaustion {character.exhaustion}
+          </RuleRef>
+          <button className="rounded border border-border px-1.5 leading-5" aria-label="Exhaustion −1" onClick={() => void run(setExhaustion(character, character.exhaustion - 1))}>
+            −
+          </button>
+          <button className="rounded border border-border px-1.5 leading-5" aria-label="Exhaustion +1" onClick={() => void run(setExhaustion(character, character.exhaustion + 1))}>
+            +
+          </button>
+        </li>
+        <li>
+          {adding ? (
+            <select
+              autoFocus
+              className="rounded border border-border bg-card px-1 text-sm"
+              value=""
+              onBlur={() => setAdding(false)}
+              onChange={(e) => {
+                const c = content.get(e.target.value)
+                setAdding(false)
+                if (c) void run(toggleCondition(character, c.id, c.name))
+              }}
+            >
+              <option value="">{t('sheet.chooseCondition')}</option>
+              {options.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <button className="rounded-full border border-dashed border-border px-2 text-sm text-muted hover:bg-bg" onClick={() => setAdding(true)}>
+              + {t('sheet.addCondition')}
+            </button>
+          )}
+        </li>
       </ul>
+      {sheet.toggles.length > 0 && (
+        <div className="mt-2 border-t border-border pt-2">
+          <h3 className="text-xs font-semibold uppercase text-muted">{t('sheet.situational')}</h3>
+          <ul className="space-y-0.5 text-sm">
+            {sheet.toggles.map((tg) => (
+              <li key={tg.key}>
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input type="checkbox" checked={tg.on} onChange={() => void run(toggleEffect(character, tg.key, tg.label))} />
+                  <span>
+                    {tg.label} <span className="text-xs text-muted">({tg.source.entity.name})</span>
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {sheet.notes.length > 0 && (
         <ul className="mt-2 list-disc pl-5 text-sm text-danger">
           {sheet.notes.map((n) => (
@@ -105,8 +166,9 @@ function reminders(sheet: Sheet) {
   return sheet.active.flatMap((ae) => ae.entity.effects.filter((e) => e.note).map((e) => ({ note: e.note!, entity: ae.entity })))
 }
 
-export function FeaturesPanel({ sheet, content }: { sheet: Sheet; content: ContentIndex }) {
+export function FeaturesPanel() {
   const { t } = useTranslation()
+  const { sheet, content } = useSheet()
   // Subspecies are shown through their traits; the "choose a subclass" placeholder feature is skipped.
   const shown = sheet.active.filter(
     (ae) =>

@@ -173,7 +173,7 @@ describe('armor and attacks', () => {
     expect(bow.ability).toBe('dex')
     expect(bow.attack.value).toBe(5)
     expect(bow.range).toEqual({ normal: 150, long: 600 })
-    expect(bow.ammo).toEqual({ uid: 'arrows', remaining: 20 })
+    expect(bow.ammo).toEqual({ uid: 'arrows', remaining: 20, name: 'Arrows' })
     expect(sheet.attacks.find((a) => a.key === 'rapier')!.ability).toBe('dex')
   })
 })

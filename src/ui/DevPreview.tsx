@@ -6,6 +6,7 @@ import { OfficialContent, Pack } from '../content/schema'
 import { sampleChampion } from '../data/samples'
 import { loadSrd } from '../data/srd'
 import { Character } from '../engine/character'
+import { useMemoryStore } from '../state/history'
 import { SheetView } from './sheet/SheetPage'
 
 const privateFiles: Partial<Record<string, () => Promise<{ default: unknown }>>> = import.meta.glob<{ default: unknown }>('../../private/{official-content,valdric}.json')
@@ -25,5 +26,10 @@ export default function DevPreview() {
   }, [])
   const content = useMemo(() => state && new ContentIndex('2024', state.packs), [state])
   if (!state || !content) return <p className="p-4">Loading…</p>
-  return <SheetView character={state.character} content={content} />
+  return <MemorySheet initial={state.character} content={content} />
+}
+
+function MemorySheet({ initial, content }: { initial: Character; content: ContentIndex }) {
+  const store = useMemoryStore(initial)
+  return <SheetView character={store.character} content={content} store={store} />
 }

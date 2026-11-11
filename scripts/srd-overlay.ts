@@ -48,7 +48,7 @@ const overlay2014: Record<string, Patch> = {
     name: 'Action Surge',
     resources: [{ id: 'action-surge', name: 'Action Surge', max: { byLevel: { 2: 1, 17: 2 } }, recharge: shortAndLong() }],
     activities: [
-      { id: 'use', name: 'Action Surge', actionType: 'other', cost: [{ resource: 'action-surge' }], summary: 'Take one additional action this turn (once per turn).' },
+      { id: 'use', name: 'Action Surge', actionType: 'other', cost: [{ resource: 'action-surge' }], grants: 'action', summary: 'Take one additional action this turn (once per turn).' },
     ],
   },
   'action-surge-2-uses': { upgradeOf: 'action-surge-1-use' },
@@ -119,7 +119,7 @@ const overlay2024: Record<string, Patch> = {
   'fighter-action-surge': {
     resources: [{ id: 'action-surge', name: 'Action Surge', max: { byLevel: { 2: 1, 17: 2 } }, recharge: shortAndLong() }],
     activities: [
-      { id: 'use', name: 'Action Surge', actionType: 'other', cost: [{ resource: 'action-surge' }], summary: 'Take one additional action (not Magic) this turn; once per turn.' },
+      { id: 'use', name: 'Action Surge', actionType: 'other', cost: [{ resource: 'action-surge' }], grants: 'action', summary: 'Take one additional action (not Magic) this turn; once per turn.' },
     ],
   },
   'fighter-tactical-mind': {
