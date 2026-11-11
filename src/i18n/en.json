@@ -110,7 +110,34 @@
     "title": "Settings",
     "links": "Rule links",
     "linksHint": "Website opened by Ctrl+click on rules, per edition.",
-    "account": "Account"
+    "account": "Account",
+    "play": "Play",
+    "turnMode": "Turn tracking",
+    "turnModes": {
+      "strict": "Strict",
+      "track": "Warn only",
+      "off": "Off"
+    },
+    "turnModeHints": {
+      "strict": "You can use only what is left this turn; then click New turn. Attacks can still be taken as a Reaction or Bonus action, and anything can be allowed once.",
+      "track": "The tracker counts what you used and flashes when you go over, but never blocks.",
+      "off": "No turn tracker and no New turn button."
+    },
+    "effects": "Visual effects",
+    "effectLevels": {
+      "off": "Off",
+      "subtle": "Subtle",
+      "standard": "Standard",
+      "strong": "Strong"
+    },
+    "effectsHint": "Small flavor effects for attacks, damage, healing and rests. If your system asks to reduce motion, they only fade and never shake.",
+    "preview": {
+      "physical": "Weapon",
+      "magic": "Magic",
+      "damage": "Damage",
+      "heal": "Healing",
+      "temp": "Temporary HP"
+    }
   },
   "admin": {
     "title": "Content admin",
@@ -142,7 +169,12 @@
     "reaction": "Reaction",
     "attacksLeft": "{{count}} attack(s) left",
     "newTurn": "New turn",
-    "newTurnHint": "Reset the turn tracker"
+    "newTurnHint": "Reset the turn tracker",
+    "blocked": "No {{slot}} left this turn.",
+    "asReaction": "As Reaction (Opportunity Attack)",
+    "asBonus": "As Bonus action",
+    "ignoreOnce": "Allow once",
+    "ignoreHint": "For rules the app doesn't know (e.g. Haste)"
   },
   "roll": {
     "prompt": "Rolled {{dice}}:",

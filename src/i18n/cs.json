@@ -110,7 +110,34 @@
     "title": "Nastavení",
     "links": "Odkazy na pravidla",
     "linksHint": "Web, který otevře Ctrl+klik na pravidla, zvlášť pro každou edici.",
-    "account": "Účet"
+    "account": "Účet",
+    "play": "Hra",
+    "turnMode": "Hlídání tahu",
+    "turnModes": {
+      "strict": "Přísné",
+      "track": "Jen upozornit",
+      "off": "Vypnuto"
+    },
+    "turnModeHints": {
+      "strict": "Použít jde jen to, co v tahu zbývá; pak klikni na Nový tah. Útok jde i tak provést jako Reaction nebo Bonus action a cokoli jde jednou povolit.",
+      "track": "Přehled tahu počítá, co jsi použil, a při překročení blikne, ale nic neblokuje.",
+      "off": "Bez přehledu tahu a bez tlačítka Nový tah."
+    },
+    "effects": "Vizuální efekty",
+    "effectLevels": {
+      "off": "Vypnuto",
+      "subtle": "Jemné",
+      "standard": "Standardní",
+      "strong": "Výrazné"
+    },
+    "effectsHint": "Drobné efekty u útoků, zranění, léčení a odpočinku. Když systém žádá omezení pohybu, efekty se jen prolnou a nic se netřese.",
+    "preview": {
+      "physical": "Zbraň",
+      "magic": "Magie",
+      "damage": "Zranění",
+      "heal": "Léčení",
+      "temp": "Temporary HP"
+    }
   },
   "admin": {
     "title": "Správa obsahu",
@@ -142,7 +169,12 @@
     "reaction": "Reaction",
     "attacksLeft": "Zbývá útoků: {{count}}",
     "newTurn": "Nový tah",
-    "newTurnHint": "Vynulovat přehled tahu"
+    "newTurnHint": "Vynulovat přehled tahu",
+    "blocked": "Tento tah už nezbývá {{slot}}.",
+    "asReaction": "Jako Reaction (Opportunity Attack)",
+    "asBonus": "Jako Bonus action",
+    "ignoreOnce": "Jednou povolit",
+    "ignoreHint": "Pro pravidla, která appka nezná (např. Haste)"
   },
   "roll": {
     "prompt": "Hod {{dice}}:",

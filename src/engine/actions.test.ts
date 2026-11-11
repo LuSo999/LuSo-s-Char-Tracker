@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { heal, rollDeathSave, setDeathSaves, setResourceRemaining, setTempHp, spendAmmo, takeDamage, performActivity, type ActionResult } from './actions'
+import { heal, rollDeathSave, setDeathSaves, setResourceRemaining, setTempHp, makeAttack, takeDamage, performActivity, type ActionResult } from './actions'
 import type { Character } from './character'
 import { computeSheet } from './derive'
 import { srd, valdric } from './fixtures'
@@ -112,8 +112,16 @@ describe('using actions', () => {
   it('throwing a javelin takes one from the stack', () => {
     const c = valdric()
     const jav = sheetOf(c).attacks.find((a) => a.key === 'javelins')!
-    const r = okResult(spendAmmo(c, jav))
+    const r = okResult(makeAttack(c, jav))
     expect(r.character.inventory.find((e) => e.uid === 'javelins')!.quantity).toBe(7)
+  })
+
+  it('an attack without ammunition is still recorded', () => {
+    const c = valdric()
+    const flail = sheetOf(c).attacks.find((a) => a.key === 'flail')!
+    const r = okResult(makeAttack(c, flail))
+    expect(r.character).toBe(c)
+    expect(r.items[0]).toMatchObject({ type: 'attack', params: { name: 'Flail' } })
   })
 
   it('clicking resource dots sets the remaining uses within 0…max', () => {

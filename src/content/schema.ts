@@ -149,6 +149,8 @@ export const Activity = z.object({
   minLevel: z.number().optional(),
   /** Turn economy: using it grants another action this turn (Action Surge). */
   grants: z.enum(['action']).optional(),
+  /** Visual flavor when used: weapon-like, spell-like, or a burst of inner power. */
+  fx: z.enum(['physical', 'magic', 'power']).optional(),
 })
 export type Activity = z.infer<typeof Activity>
 

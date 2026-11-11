@@ -7,11 +7,16 @@ import { sampleChampion } from '../data/samples'
 import { loadSrd } from '../data/srd'
 import { Character } from '../engine/character'
 import { useMemoryStore } from '../state/history'
+import { useSettings } from '../state/settings'
 import { SheetView } from './sheet/SheetPage'
 
 const privateFiles: Partial<Record<string, () => Promise<{ default: unknown }>>> = import.meta.glob<{ default: unknown }>('../../private/{official-content,valdric}.json')
 
 export default function DevPreview() {
+  // #/dev?strict tries the strict turn mode without signing in.
+  useEffect(() => {
+    if (location.hash.includes('strict')) useSettings.setState({ turnMode: 'strict' })
+  }, [])
   const [state, setState] = useState<{ character: Character; packs: Pack[] }>()
   useEffect(() => {
     void (async () => {

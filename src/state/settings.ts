@@ -5,12 +5,24 @@ import type { LinkSite } from '../content/links'
 import type { Edition } from '../content/schema'
 import { db } from '../firebase'
 
+export const turnModes = ['strict', 'track', 'off'] as const
+export type TurnMode = (typeof turnModes)[number]
+
+export const effectLevels = ['off', 'subtle', 'standard', 'strong'] as const
+export type EffectLevel = (typeof effectLevels)[number]
+
 export type Settings = {
   linkSite: Record<Edition, LinkSite>
+  /** Turn economy: block what was already used, only warn, or don't track turns at all. */
+  turnMode: TurnMode
+  /** Size and visibility of visual effects. */
+  effects: EffectLevel
 }
 
 export const defaultSettings: Settings = {
   linkSite: { '2014': 'wikidot', '2024': 'wikidot' },
+  turnMode: 'track',
+  effects: 'standard',
 }
 
 export const useSettings = create<Settings>(() => defaultSettings)

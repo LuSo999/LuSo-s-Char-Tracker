@@ -194,19 +194,14 @@ export function performActivity(char: Character, sheet: Sheet, row: ActivityRow,
   return ok(next, 'use', items)
 }
 
-/** An attack that spends ammunition (or a thrown weapon from the stack). */
-export function spendAmmo(char: Character, attack: AttackRow): ActionResult {
-  if (!attack.ammo?.uid) return { ok: false, error: 'noAmmo' }
-  const entry = char.inventory.find((e) => e.uid === attack.ammo!.uid)
+/** A weapon attack: recorded in history; spends ammunition (or a thrown weapon from the stack) when tracked. */
+export function makeAttack(char: Character, attack: AttackRow): ActionResult {
+  const items: HistoryItem[] = [{ type: 'attack', params: { name: attack.name }, entity: attack.weapon?.id }]
+  if (!attack.ammo) return ok(char, 'attack', items)
+  const entry = attack.ammo.uid ? char.inventory.find((e) => e.uid === attack.ammo!.uid) : undefined
   if (!entry || entry.quantity <= 0) return { ok: false, error: 'noAmmo' }
-  return ok(
-    { ...char, inventory: char.inventory.map((e) => (e.uid === entry.uid ? { ...e, quantity: e.quantity - 1 } : e)) },
-    'attack',
-    [
-      { type: 'attack', params: { name: attack.name }, entity: attack.weapon?.id },
-      { type: 'quantity', params: { name: attack.ammo.name ?? entry.itemId }, before: entry.quantity, after: entry.quantity - 1 },
-    ],
-  )
+  items.push({ type: 'quantity', params: { name: attack.ammo.name ?? entry.itemId }, before: entry.quantity, after: entry.quantity - 1 })
+  return ok({ ...char, inventory: char.inventory.map((e) => (e.uid === entry.uid ? { ...e, quantity: e.quantity - 1 } : e)) }, 'attack', items)
 }
 
 // --- Conditions and toggles -----------------------------------------------------------

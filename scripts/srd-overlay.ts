@@ -48,7 +48,7 @@ const overlay2014: Record<string, Patch> = {
     name: 'Action Surge',
     resources: [{ id: 'action-surge', name: 'Action Surge', max: { byLevel: { 2: 1, 17: 2 } }, recharge: shortAndLong() }],
     activities: [
-      { id: 'use', name: 'Action Surge', actionType: 'other', cost: [{ resource: 'action-surge' }], grants: 'action', summary: 'Take one additional action this turn (once per turn).' },
+      { id: 'use', name: 'Action Surge', actionType: 'other', cost: [{ resource: 'action-surge' }], grants: 'action', fx: 'power', summary: 'Take one additional action this turn (once per turn).' },
     ],
   },
   'action-surge-2-uses': { upgradeOf: 'action-surge-1-use' },
@@ -119,7 +119,7 @@ const overlay2024: Record<string, Patch> = {
   'fighter-action-surge': {
     resources: [{ id: 'action-surge', name: 'Action Surge', max: { byLevel: { 2: 1, 17: 2 } }, recharge: shortAndLong() }],
     activities: [
-      { id: 'use', name: 'Action Surge', actionType: 'other', cost: [{ resource: 'action-surge' }], grants: 'action', summary: 'Take one additional action (not Magic) this turn; once per turn.' },
+      { id: 'use', name: 'Action Surge', actionType: 'other', cost: [{ resource: 'action-surge' }], grants: 'action', fx: 'power', summary: 'Take one additional action (not Magic) this turn; once per turn.' },
     ],
   },
   'fighter-tactical-mind': {
@@ -178,7 +178,7 @@ const overlay2024: Record<string, Patch> = {
   'large-form': {
     // Available from character level 5.
     resources: [{ id: 'large-form', name: 'Large Form', max: { byLevel: { 5: 1 }, per: 'characterLevel' }, recharge: longOnly }],
-    activities: [{ id: 'use', name: 'Large Form', actionType: 'bonusAction', cost: [{ resource: 'large-form' }], minLevel: 5, summary: 'Become Large for 10 minutes: Advantage on Strength checks, Speed +10 ft.' }],
+    activities: [{ id: 'use', name: 'Large Form', actionType: 'bonusAction', cost: [{ resource: 'large-form' }], minLevel: 5, fx: 'magic', summary: 'Become Large for 10 minutes: Advantage on Strength checks, Speed +10 ft.' }],
     effects: [{ target: 'speed', value: 10, when: { toggle: 'Large Form active' } }],
   },
   // Potions: drinking any potion is a Bonus Action (SRD 5.2.1 Magic Items → Potions).
@@ -252,7 +252,7 @@ export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[]
         continue
       }
       e.resources = [{ id: 'giant-ancestry', name: 'Giant Ancestry', max: 'pb', recharge: longOnly }]
-      e.activities = [{ id: 'use', name: e.name.replace(/^Giant Ancestry: /, ''), actionType: a.actionType, cost: [{ resource: 'giant-ancestry' }], roll: a.roll, summary: a.summary }]
+      e.activities = [{ id: 'use', name: e.name.replace(/^Giant Ancestry: /, ''), actionType: a.actionType, cost: [{ resource: 'giant-ancestry' }], roll: a.roll, summary: a.summary, fx: 'magic' }]
     }
     checkTable(byId, 'fighter', 'second_wind_uses', { 1: 2, 4: 3, 10: 4 }, problems)
     checkTable(byId, 'fighter', 'weapon_mastery', { 1: 3, 4: 4, 10: 5, 16: 6 }, problems)

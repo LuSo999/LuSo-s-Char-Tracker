@@ -14,7 +14,7 @@ import { RuleRef } from '../rules/RuleRef'
 import { toast } from '../toast'
 import { AbilitiesPanel } from './AbilitiesPanel'
 import { ActionList } from './ActionList'
-import { SheetContext, useSheet } from './context'
+import { SheetContext, undoGroup, useSheet } from './context'
 import { EquippedPanel } from './EquippedPanel'
 import { RestDialog } from './RestDialog'
 import { ConditionsPanel, FeaturesPanel, Reminders, ResourcesPanel } from './SidePanels'
@@ -137,7 +137,7 @@ function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => voi
           title={last ? t('sheet.undoHint', { what: groupSummary(t, last) }) : undefined}
           onClick={() => {
             if (!last) return
-            void store.undo(last)
+            undoGroup(store, last)
             toast(t('sheet.undone', { what: groupSummary(t, last) }))
           }}
         >

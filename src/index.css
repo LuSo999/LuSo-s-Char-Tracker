@@ -46,3 +46,100 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
 }
+
+/* ---- Visual effects (src/ui/fx). --fx scales size and strength: 0.55 subtle, 1 standard, 1.6 strong. ---- */
+.fx-edge {
+  position: absolute;
+  inset: 0;
+  mask-image: radial-gradient(ellipse at center, transparent calc(78% - 10% * var(--fx)), black 100%);
+}
+.fx-glow {
+  box-shadow: inset 0 0 calc(70px * var(--fx)) calc(10px * var(--fx)) rgb(var(--fx-color) / calc(0.55 * var(--fx)));
+  animation: fx-fade 1.1s ease-out forwards;
+}
+.fx-slow { animation-duration: 1.4s; }
+.fx-fast { animation-duration: 0.35s; }
+.fx-light {
+  box-shadow: inset 0 0 calc(90px * var(--fx)) calc(18px * var(--fx)) rgb(var(--fx-color) / calc(0.7 * var(--fx)));
+  animation: fx-fade 1.2s ease-out forwards;
+}
+.fx-rays {
+  position: absolute;
+  inset: -20%;
+  background: repeating-conic-gradient(from 0deg at 50% -5%, rgb(var(--fx-color) / 0) 0deg 6deg, rgb(var(--fx-color) / calc(0.4 * var(--fx))) 6deg 8.5deg);
+  animation: fx-rays 1.2s ease-out forwards;
+}
+.fx-damage {
+  opacity: 0;
+  animation: fx-veins 0.9s ease-out forwards;
+  box-shadow: inset 0 0 calc(60px * var(--fx)) calc(6px * var(--fx)) rgb(170 0 0 / calc(0.45 * var(--fx)));
+}
+.fx-slash {
+  position: absolute;
+  width: calc(180px * var(--fx));
+  height: 3px;
+  margin-left: calc(-90px * var(--fx));
+  border-radius: 9999px;
+  background: linear-gradient(90deg, transparent, #fff 40%, #c9d2dc 60%, transparent);
+  box-shadow: 0 0 10px 2px rgb(220 230 240 / 0.8);
+  transform: rotate(-28deg) scaleX(0.2);
+  animation: fx-slash 0.45s ease-out forwards;
+}
+.fx-magic {
+  position: absolute;
+  width: calc(120px * var(--fx));
+  height: calc(120px * var(--fx));
+  margin: calc(-60px * var(--fx)) 0 0 calc(-60px * var(--fx));
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgb(150 190 255 / 0.85), rgb(70 110 255 / 0.35) 45%, transparent 70%);
+  animation: fx-burst 0.75s ease-out forwards;
+}
+.fx-magic-ring {
+  position: absolute;
+  inset: 8%;
+  border-radius: 9999px;
+  border: 2px dashed rgb(170 200 255 / 0.9);
+  animation: fx-spin 0.75s linear forwards;
+}
+.fx-power {
+  position: absolute;
+  width: calc(140px * var(--fx));
+  height: calc(140px * var(--fx));
+  margin: calc(-70px * var(--fx)) 0 0 calc(-70px * var(--fx));
+  border-radius: 9999px;
+  border: 3px solid rgb(255 200 80 / 0.9);
+  box-shadow: 0 0 18px 4px rgb(255 190 60 / 0.6);
+  animation: fx-burst 0.7s ease-out forwards;
+}
+.fx-night {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgb(20 30 70 / calc(0.15 * var(--fx))), rgb(10 15 45 / calc(0.55 * var(--fx))));
+  animation: fx-fade-in-out 1.8s ease-in-out forwards;
+}
+.fx-death {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: grayscale(calc(0.9 * var(--fx)));
+  background: rgb(0 0 0 / calc(0.15 * var(--fx)));
+  animation: fx-fade-in-out 1.8s ease-in-out forwards;
+}
+.fx-shake { animation: fx-shake 0.3s ease-in-out; }
+
+@keyframes fx-fade { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fx-fade-in-out { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fx-veins { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fx-rays { from { opacity: 1; transform: rotate(-2deg); } to { opacity: 0; transform: rotate(2deg); } }
+@keyframes fx-slash { 0% { opacity: 0; transform: rotate(-28deg) scaleX(0.2); } 30% { opacity: 1; transform: rotate(-28deg) scaleX(1); } 100% { opacity: 0; transform: rotate(-28deg) scaleX(1.1) translateX(20px); } }
+@keyframes fx-burst { from { opacity: 1; transform: scale(0.3); } to { opacity: 0; transform: scale(1.3); } }
+@keyframes fx-spin { from { transform: rotate(0); } to { transform: rotate(140deg); } }
+@keyframes fx-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+@keyframes fx-flash { 0%, 100% { background-color: transparent; } 40% { background-color: rgb(220 40 40 / 0.35); } }
+.fx-flash { animation: fx-flash 0.45s ease-in-out 2; border-color: rgb(220 40 40) !important; color: rgb(220 40 40) !important; }
+
+/* Respect "reduce motion": no movement, effects only fade. */
+@media (prefers-reduced-motion: reduce) {
+  .fx-shake { animation: none; }
+  .fx-rays, .fx-magic-ring { animation: fx-fade 0.6s ease-out forwards; }
+  .fx-slash, .fx-magic, .fx-power { animation: fx-fade 0.5s ease-out forwards; transform: none; }
+}
