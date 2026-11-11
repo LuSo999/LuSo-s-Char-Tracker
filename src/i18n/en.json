@@ -48,7 +48,6 @@
     "abilities": "Abilities",
     "proficiencyBonus": "Proficiency",
     "passivePerception": "Passive Perception",
-    "savingThrows": "Saving throws",
     "skills": "Skills",
     "hitPoints": "Hit points",
     "initiative": "Initiative",
@@ -88,7 +87,9 @@
       "editMode": "Edit",
       "history": "History",
       "switch": "Characters"
-    }
+    },
+    "save": "Save",
+    "savingThrow": "Saving throw"
   },
   "settings": {
     "title": "Settings",

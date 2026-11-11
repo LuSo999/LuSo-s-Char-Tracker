@@ -20,12 +20,11 @@ export function EquippedPanel({ character, sheet, content }: { character: Charac
   const attuned = character.inventory.filter((e) => e.attuned).length
 
   return (
-    <Panel title={t('sheet.equipped')}>
-      <div className="mb-2 flex flex-wrap justify-between gap-2 text-xs text-muted">
-        <span>
-          {t('sheet.attunement')}: {attuned}/{ATTUNEMENT_SLOTS}
-        </span>
-        <span>
+    <Panel>
+      <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted">{t('sheet.equipped')}</h2>
+        <span className="text-xs text-muted">
+          {t('sheet.attunement')}: {attuned}/{ATTUNEMENT_SLOTS} ·{' '}
           {Object.entries(character.currency)
             .filter(([, v]) => v > 0)
             .map(([k, v]) => `${v} ${k.toUpperCase()}`)

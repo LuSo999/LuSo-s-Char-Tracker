@@ -7,8 +7,8 @@ import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
 
 const rechargeLabel: Record<RechargeOn, string> = {
-  shortRest: 'Short Rest',
-  longRest: 'Long Rest',
+  shortRest: 'Short',
+  longRest: 'Long',
   dawn: 'Dawn',
   turnStart: 'Turn start',
 }
@@ -18,21 +18,21 @@ export function ResourcesPanel({ sheet, content }: { sheet: Sheet; content: Cont
   return (
     <Panel title={t('sheet.resources')}>
       {sheet.resources.length === 0 && <p className="text-sm text-muted">{t('sheet.none')}</p>}
-      <ul className="space-y-2">
+      <ul className="space-y-1">
         {sheet.resources.map((r) => {
           const recharge = r.resource.recharge
             .map((x) => `${rechargeLabel[x.on]}${x.amount === 'all' ? '' : ` (+${typeof x.amount === 'number' ? x.amount : '…'})`}`)
-            .join(', ')
+            .join(' / ')
           return (
-            <li key={r.key}>
-              <div className="flex items-center justify-between gap-2">
+            <li key={r.key} className="flex items-center justify-between gap-2">
+              <span className="min-w-0">
                 <RuleRef entity={r.source.entity} content={content} className="text-sm font-semibold">
                   {r.resource.name}
                   {r.die ? <span className="ml-1 font-normal text-muted">d{r.die}</span> : null}
                 </RuleRef>
-                <Dots remaining={r.remaining} max={r.max} />
-              </div>
-              {recharge && <div className="text-xs text-muted">↻ {recharge}</div>}
+                {recharge && <span className="ml-1.5 text-xs text-muted">↻ {recharge}</span>}
+              </span>
+              <Dots remaining={r.remaining} max={r.max} />
             </li>
           )
         })}

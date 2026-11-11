@@ -48,7 +48,6 @@
     "abilities": "Vlastnosti",
     "proficiencyBonus": "Proficiency",
     "passivePerception": "Passive Perception",
-    "savingThrows": "Saving throws",
     "skills": "Skills",
     "hitPoints": "Životy (HP)",
     "initiative": "Initiative",
@@ -88,7 +87,9 @@
       "editMode": "Úpravy",
       "history": "Historie",
       "switch": "Postavy"
-    }
+    },
+    "save": "Save",
+    "savingThrow": "Saving throw"
   },
   "settings": {
     "title": "Nastavení",

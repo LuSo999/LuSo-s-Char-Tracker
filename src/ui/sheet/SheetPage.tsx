@@ -108,7 +108,7 @@ export function SheetView({ character, content }: { character: Character; conten
 
       {/* Desktop: three columns. Phone: vitals and actions first, then the rest. */}
       {/* On large screens the columns fill the viewport and scroll inside, so nothing important needs page scrolling. */}
-      <div className="grid grid-cols-1 gap-3 xl:h-[calc(100vh-17rem)] xl:min-h-[34rem] xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)_minmax(260px,340px)]">
+      <div className="grid grid-cols-1 gap-3 xl:h-[calc(100vh-15.5rem)] xl:min-h-[34rem] xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)_minmax(260px,340px)]">
         <div className="order-3 xl:order-1 xl:min-h-0 xl:overflow-y-auto">
           <AbilitiesPanel sheet={sheet} content={content} />
         </div>
