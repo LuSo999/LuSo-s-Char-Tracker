@@ -14,9 +14,11 @@ Platné zadání je v `dnd-tracker-spec2.md` (`dnd-tracker-spec.md` je původní
 - **Obrázky vzhledů:** soubory v `theme-images/magic/` byly prohozené, opraví se přejmenováním.
 - **Technologie:** React, TypeScript, Vite, Tailwind, Firebase Auth (popup) + Firestore (Spark), npm, Zustand, zod, react-router (HashRouter), i18next, Vitest.
 
+- **Historie:** přidat tlačítko pro začátek herního sezení a filtr podle typu události.
+
 ## Testovací postava
 
-Valdric Greywing, Fighter 4 (5.5e). Obsah mimo SRD (subclass, manévry, některé featy) se do repa nedává. Přijde přes sdílený oficiální obsah z balíčků v `private/packs/` (mimo git).
+Valdric Greywing, Fighter 4 (5.5e), cantripy Mage Hand a Prestidigitation. Heavy Armor Master podle znění z 2024: snížení B/P/S poškození z útoků v heavy armor, bez slova „nonmagical“. Obsah mimo SRD (subclass, manévry, některé featy) se do repa nedává. Přijde přes sdílený oficiální obsah z balíčků v `private/packs/` (mimo git).
 
 ## Struktura
 
