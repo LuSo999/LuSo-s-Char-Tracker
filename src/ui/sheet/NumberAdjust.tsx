@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 /**
  * Value editor used for HP, money and counts: click the value to type a new
  * one, or type an amount in the small field and press + or − (or type "-3" /
- * "+3" and Enter). The field empties after use.
+ * "+3" and Enter). With the field empty, + and − change the value by 1. The
+ * field empties after use.
  */
 export function NumberAdjust({
   value,
@@ -33,8 +34,9 @@ export function NumberAdjust({
     setAmount('')
     return true
   }
+  // An empty field means "by one", so + and − work as quick steppers.
   const applyButton = (sign: 1 | -1) => {
-    const n = Number.parseInt(amount.replace(/[+-]/g, ''), 10)
+    const n = amount.replace(/[+-]/g, '') === '' ? 1 : Number.parseInt(amount.replace(/[+-]/g, ''), 10)
     if (!Number.isFinite(n) || n <= 0) return
     onDelta(sign * n)
     setAmount('')
