@@ -99,7 +99,12 @@
     "situational": "Situational effects",
     "actionsHint": "Click an action to use it: costs are paid and the turn tracker updates.",
     "undoHint": "Undo: {{what}}",
-    "undone": "Undone: {{what}}"
+    "undone": "Undone: {{what}}",
+    "dead": "Dead",
+    "stable": "Stable",
+    "dying": "Dying",
+    "deathSaveRoll": "Death save roll (d20)",
+    "roll": "Roll"
   },
   "settings": {
     "title": "Settings",
@@ -151,7 +156,9 @@
     "unknownResource": "Unknown resource.",
     "noAmmo": "No ammunition left.",
     "noChange": "Nothing changed.",
-    "notLatest": "Only the most recent change can be undone. Use the Undo button at the top."
+    "notLatest": "Only the most recent change can be undone. Use the Undo button at the top.",
+    "d20Range": "Enter the d20 result (1–20).",
+    "notDying": "Death saves are rolled only at 0 HP while not stable or dead."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -222,7 +229,8 @@
       "hitDice": "Hit Dice d{{die}} {{before}} → {{after}}",
       "undo": "Undid: {{what}}",
       "session": "Session started",
-      "note": "{{text}}"
+      "note": "{{text}}",
+      "deathSaveRoll": "Death save roll: {{roll}}"
     }
   }
 }

@@ -16,7 +16,7 @@ const skillName = (s: Skill) =>
 export function AbilitiesPanel({ sheet }: { sheet: Sheet; content: ContentIndex }) {
   const { t } = useTranslation()
   return (
-    <Panel title={t('sheet.abilities')}>
+    <Panel title={t('sheet.abilities')} icon="💪">
       {/* Each box: modifier, score and saving throw, like the paper sheet. */}
       <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6 xl:grid-cols-3">
         {abilities.map((a) => {

@@ -110,6 +110,29 @@ export function setDeathSaves(char: Character, successes: number, failures: numb
   return ok({ ...char, deathSaves: { successes: s, failures: f } }, 'deathSaves', items)
 }
 
+/**
+ * A rolled death saving throw (d20, entered by the player): 10+ succeeds,
+ * a 1 counts as two failures, a 20 restores 1 HP. Three successes make the
+ * character Stable, three failures mean death.
+ */
+export function rollDeathSave(char: Character, roll: number): ActionResult {
+  if (!(roll >= 1 && roll <= 20) || !Number.isInteger(roll)) return { ok: false, error: 'd20Range' }
+  if (char.hp.current > 0) return { ok: false, error: 'notDying' }
+  const { successes, failures } = char.deathSaves
+  if (successes >= 3 || failures >= 3) return { ok: false, error: 'notDying' }
+  const items: HistoryItem[] = [{ type: 'deathSaveRoll', params: { roll } }]
+  if (roll === 20) {
+    items.push({ type: 'setHp', before: 0, after: 1 }, { type: 'deathSavesReset' })
+    return ok({ ...char, hp: { ...char.hp, current: 1 }, deathSaves: { successes: 0, failures: 0 } }, 'deathSaves', items)
+  }
+  const next = roll >= 10 ? { successes: successes + 1, failures } : { successes, failures: Math.min(3, failures + (roll === 1 ? 2 : 1)) }
+  if (next.successes !== successes) items.push({ type: 'deathSaveSuccesses', before: successes, after: next.successes })
+  if (next.failures !== failures) items.push({ type: 'deathSaveFailures', before: failures, after: next.failures })
+  if (next.successes === 3) items.push({ type: 'stable' })
+  if (next.failures === 3) items.push({ type: 'dead' })
+  return ok({ ...char, deathSaves: next }, 'deathSaves', items)
+}
+
 // --- Resources ------------------------------------------------------------------
 
 /** Remaining amount for a resource key as the sheet sees it. */

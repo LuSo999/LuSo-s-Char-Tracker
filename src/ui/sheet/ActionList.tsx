@@ -8,7 +8,7 @@ import { RuleRef } from '../rules/RuleRef'
 import { toast } from '../toast'
 import { Dots, Panel } from './common'
 import { useRun, useSheet } from './context'
-import { actionTypeClass, actionTypeShort, signed } from './format'
+import { actionTypeClass, actionTypeIcon, actionTypeShort, signed } from './format'
 import { useTurn } from './turn'
 
 type Filter = 'all' | ActionType
@@ -105,19 +105,23 @@ function activityRow(a: ActivityRow): Row {
 function TurnBar() {
   const { t } = useTranslation()
   const turn = useTurn()
-  const chip = (label: string, used: number, max: number) => (
+  const chip = (icon: string, label: string, used: number, max: number) => (
     <span className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${used >= max ? 'border-border bg-border/60 text-muted line-through' : 'border-accent text-accent'}`}>
-      {label} {Math.max(0, max - used)}/{max}
+      <span aria-hidden>{icon}</span> {label} {Math.max(0, max - used)}/{max}
     </span>
   )
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {chip(t('turn.action'), turn.action, 1 + turn.extraActions)}
-      {chip(t('turn.bonusAction'), turn.bonusAction, 1)}
-      {chip(t('turn.reaction'), turn.reaction, 1)}
-      {turn.attacksLeft > 0 && <span className="text-xs font-semibold text-accent">{t('turn.attacksLeft', { count: turn.attacksLeft })}</span>}
-      <button className="ml-auto rounded border border-border px-2 py-0.5 text-xs hover:bg-bg" onClick={turn.newTurn} title={t('turn.newTurnHint')}>
-        {t('turn.newTurn')}
+      {chip(actionTypeIcon.action, t('turn.action'), turn.action, 1 + turn.extraActions)}
+      {chip(actionTypeIcon.bonusAction, t('turn.bonusAction'), turn.bonusAction, 1)}
+      {chip(actionTypeIcon.reaction, t('turn.reaction'), turn.reaction, 1)}
+      {turn.attacksLeft > 0 && <span className="text-xs font-semibold text-accent">🗡️ {t('turn.attacksLeft', { count: turn.attacksLeft })}</span>}
+      <button
+        className="ml-auto rounded-card border-2 border-accent bg-accent/10 px-4 py-1.5 text-sm font-semibold text-accent hover:bg-accent hover:text-accent-text"
+        onClick={turn.newTurn}
+        title={t('turn.newTurnHint')}
+      >
+        🔄 {t('turn.newTurn')}
       </button>
     </div>
   )
@@ -189,7 +193,7 @@ export function ActionList() {
   }
 
   return (
-    <Panel title={t('sheet.actions')} className="flex min-h-0 flex-1 flex-col">
+    <Panel title={t('sheet.actions')} icon="⚔️" className="flex min-h-0 flex-1 flex-col">
       <TurnBar />
       <div className="my-2 flex flex-wrap gap-1" role="tablist">
         {filters.map((f) => (
@@ -218,8 +222,8 @@ export function ActionList() {
                 void activate(r)
               }}
             >
-              <span className={`mt-0.5 w-16 shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-semibold ${actionTypeClass[r.actionType]}`}>
-                {actionTypeShort[r.actionType]}
+              <span className={`mt-0.5 w-20 shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-semibold ${actionTypeClass[r.actionType]}`}>
+                <span aria-hidden>{actionTypeIcon[r.actionType]}</span> {actionTypeShort[r.actionType]}
               </span>
               <div className="min-w-0 flex-1">
                 <RuleRef entity={r.entity} content={content} className="font-semibold">

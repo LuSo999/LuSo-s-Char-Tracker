@@ -17,7 +17,7 @@ import { ActionList } from './ActionList'
 import { SheetContext, useSheet } from './context'
 import { EquippedPanel } from './EquippedPanel'
 import { RestDialog } from './RestDialog'
-import { ConditionsPanel, FeaturesPanel, ResourcesPanel } from './SidePanels'
+import { ConditionsPanel, FeaturesPanel, Reminders, ResourcesPanel } from './SidePanels'
 import { useTurn } from './turn'
 import { Vitals } from './Vitals'
 
@@ -120,15 +120,15 @@ function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => voi
       </span>
       <div className="ml-auto flex flex-wrap gap-1.5">
         <button className={button} onClick={() => onRest('short')}>
-          {t('sheet.buttons.shortRest')}
+          ☕ {t('sheet.buttons.shortRest')}
         </button>
         <button className={button} onClick={() => onRest('long')}>
-          {t('sheet.buttons.longRest')}
+          🌙 {t('sheet.buttons.longRest')}
         </button>
         {/* Wired up in later milestones; visible now so the layout is final. */}
-        {(['levelUp', 'editMode'] as const).map((k) => (
+        {([['levelUp', '⬆️'], ['editMode', '✏️']] as const).map(([k, icon]) => (
           <button key={k} disabled className={button} title={t('sheet.comingSoon')}>
-            {t(`sheet.buttons.${k}`)}
+            {icon} {t(`sheet.buttons.${k}`)}
           </button>
         ))}
         <button
@@ -144,10 +144,10 @@ function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => voi
           ↶ {t('undo')}
         </button>
         <button className={button} onClick={onHistory}>
-          {t('sheet.buttons.history')}
+          📜 {t('sheet.buttons.history')}
         </button>
         <Link to="/" className={button}>
-          {t('sheet.buttons.switch')}
+          👥 {t('sheet.buttons.switch')}
         </Link>
       </div>
     </div>
@@ -171,6 +171,7 @@ function SheetLayout() {
         </div>
         <div className="order-1 flex min-w-0 flex-col gap-3 xl:order-2 xl:min-h-0">
           <Vitals />
+          <Reminders />
           <ActionList />
         </div>
         <div className="order-2 flex flex-col gap-3 xl:order-3 xl:min-h-0 xl:overflow-y-auto">

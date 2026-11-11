@@ -22,7 +22,12 @@ export function EquippedPanel({ character, sheet, content }: { character: Charac
   return (
     <Panel>
       <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted">{t('sheet.equipped')}</h2>
+        <h2 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted">
+          <span className="mr-1.5" aria-hidden>
+            🎒
+          </span>
+          {t('sheet.equipped')}
+        </h2>
         <span className="text-xs text-muted">
           {t('sheet.attunement')}: {attuned}/{ATTUNEMENT_SLOTS} ·{' '}
           {Object.entries(character.currency)

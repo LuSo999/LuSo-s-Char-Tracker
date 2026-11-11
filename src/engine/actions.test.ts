@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { heal, setDeathSaves, setResourceRemaining, setTempHp, spendAmmo, takeDamage, performActivity, type ActionResult } from './actions'
+import { heal, rollDeathSave, setDeathSaves, setResourceRemaining, setTempHp, spendAmmo, takeDamage, performActivity, type ActionResult } from './actions'
 import type { Character } from './character'
 import { computeSheet } from './derive'
 import { srd, valdric } from './fixtures'
@@ -57,6 +57,29 @@ describe('hit points', () => {
     const c = valdric({ hp: { current: 0 } })
     expect(okResult(setDeathSaves(c, 0, 3)).items.some((i) => i.type === 'dead')).toBe(true)
     expect(okResult(setDeathSaves(c, 3, 0)).items.some((i) => i.type === 'stable')).toBe(true)
+  })
+})
+
+describe('death saving throws', () => {
+  const dying = (s = 0, f = 0) => valdric({ hp: { current: 0 }, deathSaves: { successes: s, failures: f } })
+
+  it('10 or higher succeeds, lower fails, a 1 is two failures', () => {
+    expect(okResult(rollDeathSave(dying(), 10)).character.deathSaves).toEqual({ successes: 1, failures: 0 })
+    expect(okResult(rollDeathSave(dying(), 9)).character.deathSaves).toEqual({ successes: 0, failures: 1 })
+    expect(okResult(rollDeathSave(dying(), 1)).character.deathSaves).toEqual({ successes: 0, failures: 2 })
+  })
+
+  it('a 20 brings the character back with 1 HP', () => {
+    const r = okResult(rollDeathSave(dying(1, 2), 20))
+    expect(r.character.hp.current).toBe(1)
+    expect(r.character.deathSaves).toEqual({ successes: 0, failures: 0 })
+  })
+
+  it('third success is Stable, third failure is death; then no more rolls', () => {
+    expect(okResult(rollDeathSave(dying(2, 0), 15)).items.some((i) => i.type === 'stable')).toBe(true)
+    expect(okResult(rollDeathSave(dying(0, 2), 3)).items.some((i) => i.type === 'dead')).toBe(true)
+    expect(rollDeathSave(dying(3, 0), 15).ok).toBe(false)
+    expect(rollDeathSave(valdric(), 15).ok).toBe(false)
   })
 })
 

@@ -1,7 +1,16 @@
-export function Panel({ title, children, className = '' }: { title?: string; children: React.ReactNode; className?: string }) {
+export function Panel({ title, icon, children, className = '' }: { title?: string; icon?: string; children: React.ReactNode; className?: string }) {
   return (
     <section className={`rounded-card border border-border bg-card p-3 shadow-sm ${className}`}>
-      {title && <h2 className="mb-2 font-heading text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>}
+      {title && (
+        <h2 className="mb-2 font-heading text-sm font-semibold uppercase tracking-wide text-muted">
+          {icon && (
+            <span className="mr-1.5 not-italic" aria-hidden>
+              {icon}
+            </span>
+          )}
+          {title}
+        </h2>
+      )}
       {children}
     </section>
   )

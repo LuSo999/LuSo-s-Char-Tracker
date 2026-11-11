@@ -10,6 +10,13 @@ export function breakdown(v: Value) {
   return lines.join('\n')
 }
 
+export const actionTypeIcon: Record<ActionType, string> = {
+  action: '⚔️',
+  bonusAction: '✨',
+  reaction: '↩️',
+  other: '◆',
+}
+
 export const actionTypeShort: Record<ActionType, string> = {
   action: 'Action',
   bonusAction: 'Bonus',

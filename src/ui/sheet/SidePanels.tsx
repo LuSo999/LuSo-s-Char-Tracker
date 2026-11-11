@@ -20,7 +20,7 @@ export function ResourcesPanel() {
   const { character, sheet, content } = useSheet()
   const run = useRun()
   return (
-    <Panel title={t('sheet.resources')}>
+    <Panel title={t('sheet.resources')} icon="🔋">
       {sheet.resources.length === 0 && <p className="text-sm text-muted">{t('sheet.none')}</p>}
       <ul className="space-y-1">
         {sheet.resources.map((r) => {
@@ -54,7 +54,7 @@ export function ConditionsPanel() {
   const options = content.all('condition').filter((c) => c.id !== 'exhaustion' && !character.conditions.includes(c.id))
 
   return (
-    <Panel title={t('sheet.conditions')}>
+    <Panel title={t('sheet.conditions')} icon="🩹">
       <ul className="flex flex-wrap items-center gap-1.5">
         {character.conditions.map((c) => {
           const name = content.get(c)?.name ?? c
@@ -124,13 +124,6 @@ export function ConditionsPanel() {
           </ul>
         </div>
       )}
-      {sheet.notes.length > 0 && (
-        <ul className="mt-2 list-disc pl-5 text-sm text-danger">
-          {sheet.notes.map((n) => (
-            <li key={n}>{n}</li>
-          ))}
-        </ul>
-      )}
     </Panel>
   )
 }
@@ -161,11 +154,6 @@ function groupFor(ae: ActiveEntity, content: ContentIndex): string {
   }
 }
 
-/** Effects that are rules reminders rather than numbers (advantages, damage reduction). */
-function reminders(sheet: Sheet) {
-  return sheet.active.flatMap((ae) => ae.entity.effects.filter((e) => e.note).map((e) => ({ note: e.note!, entity: ae.entity })))
-}
-
 export function FeaturesPanel() {
   const { t } = useTranslation()
   const { sheet, content } = useSheet()
@@ -180,10 +168,9 @@ export function FeaturesPanel() {
   const groups: Group[] = order
     .map((key) => ({ key, title: t(`sheet.featureGroups.${key}`), items: shown.filter((ae) => groupFor(ae, content) === key) }))
     .filter((g) => g.items.length)
-  const notes = reminders(sheet)
 
   return (
-    <Panel title={t('sheet.features')}>
+    <Panel title={t('sheet.features')} icon="📜">
       {groups.map((g) => (
         <div key={g.key} className="mb-2">
           <h3 className="text-xs font-semibold uppercase text-muted">{g.title}</h3>
@@ -196,20 +183,6 @@ export function FeaturesPanel() {
           </ul>
         </div>
       ))}
-      {notes.length > 0 && (
-        <div className="mt-2 border-t border-border pt-2">
-          <h3 className="text-xs font-semibold uppercase text-muted">{t('sheet.reminders')}</h3>
-          <ul className="space-y-0.5 text-sm">
-            {notes.map((n, i) => (
-              <li key={i}>
-                <RuleRef entity={n.entity} content={content}>
-                  {n.note}
-                </RuleRef>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </Panel>
   )
 }
@@ -221,5 +194,38 @@ function FeatureName({ entity, content }: { entity: Entity; content: ContentInde
       {entity.isNew && <sup className="ml-0.5 text-[9px] font-semibold uppercase text-accent">new</sup>}
       {!entity.verified && <sup className="ml-0.5 text-danger">?</sup>}
     </RuleRef>
+  )
+}
+
+/** Effects that are rules reminders rather than numbers (advantages, damage reduction). */
+function reminders(sheet: Sheet) {
+  return sheet.active.flatMap((ae) => ae.entity.effects.filter((e) => e.note).map((e) => ({ note: e.note!, entity: ae.entity })))
+}
+
+/** Rules to keep in mind, shown right under the vitals so they are always in sight. */
+export function Reminders() {
+  const { t } = useTranslation()
+  const { sheet, content } = useSheet()
+  const notes = reminders(sheet)
+  if (!notes.length && !sheet.notes.length) return null
+  return (
+    <section aria-label={t('sheet.reminders')} className="rounded-card border border-amber-500/60 bg-amber-500/10 px-3 py-1.5 shadow-sm">
+      <ul className="flex flex-wrap gap-x-5 gap-y-0.5 text-sm">
+        {sheet.notes.map((n) => (
+          <li key={n} className="font-semibold text-danger">
+            <span aria-hidden>⚠️ </span>
+            {n}
+          </li>
+        ))}
+        {notes.map((n, i) => (
+          <li key={i}>
+            <span aria-hidden>❗ </span>
+            <RuleRef entity={n.entity} content={content}>
+              {n.note}
+            </RuleRef>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
