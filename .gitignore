@@ -1,0 +1,9 @@
+# Osobní podklady, obsah mimo SRD – nikdy necommitovat
+*.pdf
+private/
+
+node_modules/
+dist/
+.env*
+.firebase/
+*.log
