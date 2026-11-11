@@ -9,6 +9,8 @@ Platné zadání je v `dnd-tracker-spec2.md` (`dnd-tracker-spec.md` je původní
 - **Ctrl (Cmd) + najetí myší:** u kurzoru se zobrazí náhled pravidla z dat appky. Ctrl+klik otevře externí odkaz. Web pro odkazy jde zvolit v nastavení: výchozí návrh (ověří se v milníku 2), dále dnd2024.wikidot.com, dnd5e.wikidot.com, dandwiki.com, roll20.net. Odkaz u položky jde přepsat.
 - **Git:** po každém milníku commit a push přímo do `main`, nasazení proběhne automaticky.
 - **Firebase:** projekt na osobním Google účtu uživatele.
+- **Přístup ke sdílenému oficiálnímu obsahu:** ve výchozím stavu jen pro pozvané e-maily (appka je pro kamarády). Bude uvedeno i v README.
+- **Obsah z knih z roku 2025:** položky dostanou v datech příznak neověřeno. V UI je u nich malý štítek „new“. Ve shrnutí balíčku je i tak vypíšu ke kontrole.
 - **Obrázky vzhledů:** soubory v `theme-images/magic/` byly prohozené, opraví se přejmenováním.
 - **Technologie:** React, TypeScript, Vite, Tailwind, Firebase Auth (popup) + Firestore (Spark), npm, Zustand, zod, react-router (HashRouter), i18next, Vitest.
 
