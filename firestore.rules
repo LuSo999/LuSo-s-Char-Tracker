@@ -1,0 +1,14 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each user may read and write only their own data:
+    // characters, history, homebrew packs and settings.
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Shared official content and the admin/invite configuration
+    // are added in milestone 3. Everything else is denied.
+  }
+}

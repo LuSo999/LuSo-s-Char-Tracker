@@ -1,0 +1,23 @@
+{
+  "appName": "LuSo's Char Tracker",
+  "signIn": "Sign in with Google",
+  "signOut": "Sign out",
+  "signInIntro": "Your characters are saved to your Google account.",
+  "signInFailed": "Sign-in failed: {{message}}",
+  "loading": "Loading…",
+  "notConfigured": {
+    "title": "Firebase is not configured yet",
+    "body": "Fill in src/firebase/config.ts following the setup steps in README.md."
+  },
+  "characters": {
+    "title": "Your characters",
+    "empty": "No characters yet.",
+    "newName": "Character name",
+    "create": "Create",
+    "delete": "Delete",
+    "confirmDelete": "Delete {{name}}? This cannot be undone.",
+    "loadFailed": "Could not load characters: {{message}}"
+  },
+  "language": "Language",
+  "attribution": "This work includes material from the System Reference Document 5.1 and 5.2 by Wizards of the Coast LLC, licensed under CC-BY-4.0."
+}

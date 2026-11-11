@@ -1,0 +1,23 @@
+{
+  "appName": "LuSo's Char Tracker",
+  "signIn": "Přihlásit přes Google",
+  "signOut": "Odhlásit",
+  "signInIntro": "Postavy se ukládají k tvému Google účtu.",
+  "signInFailed": "Přihlášení selhalo: {{message}}",
+  "loading": "Načítám…",
+  "notConfigured": {
+    "title": "Firebase ještě není nastavený",
+    "body": "Vyplň src/firebase/config.ts podle postupu v README.md."
+  },
+  "characters": {
+    "title": "Tvoje postavy",
+    "empty": "Zatím žádné postavy.",
+    "newName": "Jméno postavy",
+    "create": "Vytvořit",
+    "delete": "Smazat",
+    "confirmDelete": "Smazat {{name}}? Nejde to vrátit.",
+    "loadFailed": "Postavy se nepodařilo načíst: {{message}}"
+  },
+  "language": "Jazyk",
+  "attribution": "Toto dílo obsahuje materiál ze System Reference Document 5.1 a 5.2 od Wizards of the Coast LLC, licencovaný pod CC-BY-4.0."
+}
