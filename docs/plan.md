@@ -6,7 +6,7 @@ Platné zadání je v `dnd-tracker-spec2.md` (`dnd-tracker-spec.md` je původní
 
 - **SRD data:** [5e-bits/5e-srd-api](https://github.com/5e-bits/5e-srd-api) (`packages/5e-database/src/2014|2024/en`). Kód MIT, obsah CC-BY-4.0. Převezmou se texty; mechanika (vzorce použití, obnova, efekty) se dopíše ručně a ověří proti textu SRD. Neověřené položky se označí.
 - **Efekty:** stálé efekty se počítají automaticky, podmíněné mají u akce přepínač „podmínka platí“.
-- **Ctrl (Cmd) + najetí myší:** u kurzoru se zobrazí náhled pravidla z dat appky. Ctrl+klik otevře externí odkaz. Web pro odkazy jde zvolit v nastavení: výchozí návrh (ověří se v milníku 2), dále dnd2024.wikidot.com, dnd5e.wikidot.com, dandwiki.com, roll20.net. Odkaz u položky jde přepsat.
+- **Ctrl (Cmd) + najetí myší:** u kurzoru se zobrazí náhled pravidla z dat appky. Ctrl+klik otevře externí odkaz. Výchozí web: dnd2024.wikidot.com pro 5.5e a dnd5e.wikidot.com pro 5e. Alternativy v nastavení: Open5e, dandwiki.com, roll20.net. Odkaz u položky jde přepsat.
 - **Git:** po každém milníku commit a push přímo do `main`, nasazení proběhne automaticky.
 - **Firebase:** projekt na osobním Google účtu uživatele.
 - **Přístup ke sdílenému oficiálnímu obsahu:** ve výchozím stavu jen pro pozvané e-maily (appka je pro kamarády). Bude uvedeno i v README.
