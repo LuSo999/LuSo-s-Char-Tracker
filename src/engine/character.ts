@@ -1,0 +1,107 @@
+// Character state as stored in Firestore (users/{uid}/characters/{id}).
+// Only what the player decided or what changes during play is stored;
+// everything derived (AC, attack bonuses, maxima) is computed by the engine.
+import { z } from 'zod'
+import { Ability, Edition } from '../content/schema'
+
+export const AbilityScores = z.object({
+  str: z.number().int(),
+  dex: z.number().int(),
+  con: z.number().int(),
+  int: z.number().int(),
+  wis: z.number().int(),
+  cha: z.number().int(),
+})
+export type AbilityScores = z.infer<typeof AbilityScores>
+
+export const ClassEntry = z.object({
+  classId: z.string(),
+  level: z.number().int().min(1).max(20),
+  subclassId: z.string().optional(),
+  /** HP gained at each level after the first character level in this class;
+   *  null means the fixed average. Index 0 is this class's 2nd level (or its
+   *  1st level when it is not the starting class). */
+  hpRolls: z.array(z.number().int().nullable()).default([]),
+})
+export type ClassEntry = z.infer<typeof ClassEntry>
+
+export const InventoryEntry = z.object({
+  /** Unique per character, so two longswords can differ (one attuned, one not). */
+  uid: z.string(),
+  itemId: z.string(),
+  quantity: z.number().int().min(0).default(1),
+  equipped: z.boolean().default(false),
+  attuned: z.boolean().default(false),
+  /** Held in two hands (versatile weapons). */
+  twoHanded: z.boolean().default(false),
+  /** Charges used (items with charges) and rounds loaded (reload weapons). */
+  chargesUsed: z.number().int().min(0).default(0),
+  loaded: z.number().int().min(0).optional(),
+  /** Selected ammunition inventory entry for this weapon. */
+  ammoUid: z.string().optional(),
+  /** Player's own name / note for this entry. */
+  label: z.string().optional(),
+})
+export type InventoryEntry = z.infer<typeof InventoryEntry>
+
+export const Currency = z.object({
+  cp: z.number().int().min(0).default(0),
+  sp: z.number().int().min(0).default(0),
+  ep: z.number().int().min(0).default(0),
+  gp: z.number().int().min(0).default(0),
+  pp: z.number().int().min(0).default(0),
+})
+
+export const Character = z.object({
+  id: z.string(),
+  name: z.string(),
+  edition: Edition,
+  /** Books whose content this character may use (SRD is always available). */
+  books: z.array(z.string()).default([]),
+  /** Classes in the order they were taken; the first is the starting class. */
+  classes: z.array(ClassEntry).min(1),
+  speciesId: z.string(),
+  subspeciesId: z.string().optional(),
+  backgroundId: z.string(),
+  /** Scores before any bonus: rolled, point buy or standard array. */
+  baseScores: AbilityScores,
+  /**
+   * Player selections keyed by "<entity id>/<choice id>" — or
+   * "<entity id>@<class id>:<level>/<choice id>" when the entity is granted at
+   * several levels (e.g. 2024 Ability Score Improvement). Values are the
+   * selected ids; ability point choices use "str+2" style entries.
+   */
+  choices: z.record(z.string(), z.array(z.string())).default({}),
+  /** 2024 background ability increases, e.g. { con: 2, wis: 1 }. 2014 races use fixed data. */
+  backgroundBonuses: z.partialRecord(Ability, z.number()).default({}),
+  /** Expended uses per resource id. */
+  resourcesUsed: z.record(z.string(), z.number().int().min(0)).default({}),
+  hp: z.object({
+    current: z.number().int().min(0),
+    temp: z.number().int().min(0).default(0),
+  }),
+  /** Spent hit dice per die size, e.g. { "10": 2 }. */
+  hitDiceUsed: z.record(z.string(), z.number().int().min(0)).default({}),
+  deathSaves: z.object({ successes: z.number().int().min(0).max(3), failures: z.number().int().min(0).max(3) }).default({
+    successes: 0,
+    failures: 0,
+  }),
+  conditions: z.array(z.string()).default([]),
+  exhaustion: z.number().int().min(0).max(6).default(0),
+  /** Effect toggles the player switched on ("condition applies"). */
+  toggles: z.array(z.string()).default([]),
+  inventory: z.array(InventoryEntry).default([]),
+  currency: Currency.default({ cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 }),
+  xp: z.number().int().min(0).default(0),
+  /** Manual overrides from edit mode, keyed by derived value path (e.g. "ac", "skill:stealth"). */
+  overrides: z.record(z.string(), z.union([z.number(), z.string()])).default({}),
+  settings: z
+    .object({
+      multiclass: z.boolean().default(true),
+      trackAmmunition: z.boolean().default(true),
+    })
+    .default({ multiclass: true, trackAmmunition: true }),
+  notes: z.string().default(''),
+})
+export type Character = z.infer<typeof Character>
+export type CharacterInput = z.input<typeof Character>

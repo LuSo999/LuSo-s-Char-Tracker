@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:srd": "node scripts/build-srd.ts"
   },
   "dependencies": {
     "firebase": "^13.2.0",
