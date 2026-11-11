@@ -53,7 +53,7 @@ Obsah z placených knih mimo SRD se do repa nedává. Leží jen u správce ve s
 2. V appce otevři **Nastavení → Správa obsahu** a soubor nahraj.
 3. Ve stejném místě nastav, kdo obsah uvidí. Výchozí je jen pro pozvané e-maily.
 
-Správce je určený svým UID v `firestore.rules` a v `src/config.ts`. Po změně `firestore.rules` je potřeba pravidla znovu publikovat (krok 3.4).
+Správci jsou určení svými UID v `firestore.rules` a v `src/config.ts`. Po změně `firestore.rules` je potřeba pravidla znovu publikovat (krok 3.4).
 
 ## Lokální vývoj
 

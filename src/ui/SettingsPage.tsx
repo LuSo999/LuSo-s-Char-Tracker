@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { ADMIN_UID } from '../config'
+import { ADMIN_UIDS } from '../config'
 import { linkSiteLabels, linkSites, type LinkSite } from '../content/links'
 import { editions } from '../content/schema'
 import { useAuth } from '../state/auth'
@@ -42,7 +42,7 @@ export function SettingsPage({ uid }: { uid: string }) {
         <p className="mt-1 text-sm">
           UID: <code className="select-all rounded bg-bg px-1">{uid}</code>
         </p>
-        {uid === ADMIN_UID && (
+        {ADMIN_UIDS.includes(uid) && (
           <Link className="mt-3 inline-block text-accent underline" to="/admin">
             {t('admin.title')}
           </Link>
