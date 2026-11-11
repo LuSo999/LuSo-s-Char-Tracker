@@ -19,6 +19,7 @@ import {
 import type { AbilityScores, Character, InventoryEntry } from './character'
 import { editionRules } from './editions'
 import { resolveScaled, type FormulaVars } from './formula'
+import { carryingCapacity, offhandEligible, resolveEntry, totalWeight, type ResolvedEntry } from './items'
 
 /** One contribution to a number, for the breakdown shown in previews. */
 export type Part = { label: string; value: number }
@@ -75,6 +76,12 @@ export type AttackRow = {
   /** Remaining ammunition (undefined when not tracked or not needed). */
   ammo?: { uid?: string; remaining: number; name?: string }
   attacksPerAction: number
+  /** Rounds in the magazine for weapons with the reload property. */
+  loaded?: { rounds: number; size: number }
+  /** Light-property extra attack: damage bonus without the ability modifier (unless negative or a feature adds it). */
+  offhand?: { damageBonus: number }
+  /** Rules reminders the app can't apply itself (codes, translated in the UI). */
+  notes: string[]
 }
 
 export type ActivityRow = {
@@ -115,6 +122,10 @@ export type Sheet = {
   weaponProficiencies: string[]
   weaponMasteries: string[]
   notes: string[]
+  /** Carried weight and capacity in pounds. */
+  weight: { total: number; capacity: number }
+  /** Inventory entries resolved to what they are in play. */
+  items: ResolvedEntry[]
 }
 
 // ---------------------------------------------------------------------------
@@ -230,6 +241,8 @@ function effectApplies(effect: Effect, ae: ActiveEntity, ctx: EffectContext, tog
       return ctx.armor === undefined
     case 'noShield':
       return !ctx.shield
+    case 'noArmorNoShield':
+      return ctx.armor === undefined && !ctx.shield
     case 'wieldingShield':
       return ctx.shield
     case 'rangedWeapon':
@@ -253,10 +266,12 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const toggleSet = new Set(char.toggles)
   const notes: string[] = []
 
-  const equipped = char.inventory.filter((e) => e.equipped)
-  const equippedItems = equipped.map((e) => ({ entry: e, item: content.item(e.itemId) }))
-  const bodyArmor = equippedItems.find((x) => x.item?.kind === 'armor' && x.item.category !== 'shield')?.item as Armor | undefined
-  const shield = equippedItems.find((x) => x.item?.kind === 'armor' && x.item.category === 'shield')?.item as Armor | undefined
+  const items = char.inventory.map((e) => resolveEntry(e, content)).filter((r): r is ResolvedEntry => r !== undefined)
+  const equippedItems = items.filter((r) => r.entry.equipped && (!r.item.attunement || r.entry.attuned || r.weapon || r.armor))
+  // Magic armor protects like its base armor; its own bonus comes through its effects.
+  const bodyArmorEntry = equippedItems.find((r) => r.armor && r.armor.category !== 'shield')
+  const bodyArmor = bodyArmorEntry?.armor
+  const shield = equippedItems.find((r) => r.armor?.category === 'shield')?.armor
   const baseCtx: EffectContext = { armor: bodyArmor, shield: shield !== undefined, bloodied: false }
 
   // Effects keyed by the entity they come from, so formulas use the right level.
@@ -413,7 +428,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const ctx = { ...baseCtx, proficient: proficiency > 0 }
     const r = applyEffects(`skill:${s}`, base, proficiency ? 'Modifier + proficiency' : 'Modifier', vars, ctx)
     const check = applyEffects(`check:${a}`, 0, '', vars, ctx)
-    const v = withExhaustion({ value: r.value + check.value, parts: [...r.parts, ...check.parts.slice(1)] })
+    const checkAll = applyEffects('check:all', 0, '', vars, ctx)
+    const v = withExhaustion({ value: r.value + check.value + checkAll.value, parts: [...r.parts, ...check.parts.slice(1), ...checkAll.parts.slice(1)] })
     skillValues[s] = { ...override(`skill:${s}`, v.value, v.parts), proficiency }
   }
 
@@ -424,7 +440,11 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const initCtx = { ...baseCtx, proficient: false }
   const init = applyEffects('initiative', mods.dex, 'Dexterity', vars, initCtx)
   const initCheck = applyEffects('check:dex', 0, '', vars, initCtx)
-  const initV = withExhaustion({ value: init.value + initCheck.value, parts: [...init.parts, ...initCheck.parts.slice(1)] })
+  const initAll = applyEffects('check:all', 0, '', vars, initCtx)
+  const initV = withExhaustion({
+    value: init.value + initCheck.value + initAll.value,
+    parts: [...init.parts, ...initCheck.parts.slice(1), ...initAll.parts.slice(1)],
+  })
   const initiative = override('initiative', initV.value, initV.parts)
 
   // --- Armor Class --------------------------------------------------------
@@ -433,7 +453,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   if (bodyArmor) {
     const dex = bodyArmor.ac.dex ? Math.min(mods.dex, bodyArmor.ac.maxDex ?? Infinity) : 0
     acBase = bodyArmor.ac.base + dex
-    acLabel = bodyArmor.name
+    acLabel = bodyArmorEntry!.name
   } else {
     acBase = 10 + mods.dex
     acLabel = 'Unarmored (10 + Dex)'
@@ -460,7 +480,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   let speedR = applyEffects('speed', species.speed, species.name, vars)
   if (bodyArmor?.category === 'heavy' && bodyArmor.strMin > scores.str.value) {
     // Both editions: heavy armor without the Strength requirement costs 10 ft.
-    speedR = { value: speedR.value - 10, parts: [...speedR.parts, { label: `${bodyArmor.name} (Str ${bodyArmor.strMin})`, value: -10 }] }
+    speedR = { value: speedR.value - 10, parts: [...speedR.parts, { label: `${bodyArmorEntry!.name} (Str ${bodyArmor.strMin})`, value: -10 }] }
   }
   const exhaustedSpeed = rules.exhaustedSpeed(speedR.value, char.exhaustion)
   if (exhaustedSpeed !== speedR.value) speedR.parts.push({ label: 'Exhaustion', value: exhaustedSpeed - speedR.value })
@@ -531,33 +551,55 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const attacksPerAction = Math.max(1, applyEffects('attacksPerAction', 1, '', vars).value)
   const isProficient = (w: Weapon) => weaponProf.has(w.category) || weaponProf.has(w.id) || (w.baseItem !== undefined && weaponProf.has(w.baseItem))
 
+  const offhandMod = applyEffects('offhandAbilityMod', 0, '', vars).value > 0
+  const sizeName = content.require(char.speciesId, 'species').size
+
   function attackRow(key: string, name: string, w: Weapon | undefined, entry: InventoryEntry | undefined): AttackRow {
     const props = w?.properties ?? []
     const ranged = w?.range === 'ranged'
     const ability: Ability = ranged ? 'dex' : props.includes('finesse') && mods.dex > mods.str ? 'dex' : 'str'
     const proficient = w ? isProficient(w) : true
     const ctx: EffectContext = { ...baseCtx, weapon: w ?? ({ range: 'melee' } as Weapon) }
-    // Bonuses on the weapon itself apply only to that weapon; others to all matching attacks.
-    const notOtherWeapon = (ae: ActiveEntity) => !(ae.item && ae.entity.type === 'item' && ae.entity.kind === 'weapon' && ae.item.uid !== entry?.uid)
+
+    // Ammunition in use: the chosen entry, or the first one of the right kind.
+    const needsAmmo = !!w?.properties.includes('ammunition')
+    const ammoEntry = needsAmmo
+      ? (items.find((r) => r.entry.uid === entry?.ammoUid && r.ammoKind === w!.ammunition) ??
+        items.find((r) => r.ammoKind === w!.ammunition && r.entry.quantity > 0) ??
+        items.find((r) => r.ammoKind === w!.ammunition))
+      : undefined
+
+    // Item bonuses to attack and damage apply only to attacks made with that item (or its ammunition).
+    const ownItem = (ae: ActiveEntity) => !(ae.item && ae.entity.type === 'item' && ae.item.uid !== entry?.uid)
+    const ammoEffects = (target: string) =>
+      (ammoEntry?.item.effects ?? []).filter((e) => e.target === target).map((e) => ({ label: ammoEntry!.name, value: resolveScaled(e.value, levelVars(active[0])) }))
+    const withAmmo = (r: { value: number; parts: Part[] }, target: string) => {
+      const extra = ammoEffects(target)
+      return { value: r.value + extra.reduce((s2, p) => s2 + p.value, 0), parts: [...r.parts, ...extra] }
+    }
+
     const atk = withExhaustion(
-      applyEffects('attack', mods[ability] + (proficient ? pb : 0), proficient ? `${ability.toUpperCase()} + proficiency` : ability.toUpperCase(), vars, ctx, notOtherWeapon),
+      withAmmo(applyEffects('attack', mods[ability] + (proficient ? pb : 0), proficient ? `${ability.toUpperCase()} + proficiency` : ability.toUpperCase(), vars, ctx, ownItem), 'attack'),
     )
-    const dmg = applyEffects('damage', mods[ability], ability.toUpperCase(), vars, ctx, notOtherWeapon)
-    const crit = applyEffects('critRange', 20, '', vars, ctx, notOtherWeapon)
+    const dmg = withAmmo(applyEffects('damage', mods[ability], ability.toUpperCase(), vars, ctx, ownItem), 'damage')
+    const crit = applyEffects('critRange', 20, '', vars, ctx, ownItem)
     const twoHanded = entry?.twoHanded && w?.versatileDamage
     const mastery = w && char.edition === '2024' && w.mastery && (weaponMasteries.includes(w.id) || (w.baseItem && weaponMasteries.includes(w.baseItem))) ? w.mastery : undefined
 
     let ammo: AttackRow['ammo']
-    if (w?.properties.includes('ammunition') && char.settings.trackAmmunition) {
-      const ammoEntry =
-        char.inventory.find((e) => e.uid === entry?.ammoUid) ??
-        char.inventory.find((e) => {
-          const it = content.item(e.itemId)
-          return it?.kind === 'ammunition' && it.ammoKind === w.ammunition && e.quantity > 0
-        })
-      ammo = { uid: ammoEntry?.uid, remaining: ammoEntry?.quantity ?? 0, name: ammoEntry && (ammoEntry.label ?? content.item(ammoEntry.itemId)?.name) }
-    } else if (w?.properties.includes('thrown') && entry && char.settings.trackAmmunition) {
-      ammo = { uid: entry.uid, remaining: entry.quantity, name: entry.label ?? w.name }
+    if (needsAmmo && char.settings.trackAmmunition) {
+      ammo = { uid: ammoEntry?.entry.uid, remaining: ammoEntry?.entry.quantity ?? 0, name: ammoEntry?.name }
+    } else if (props.includes('thrown') && entry && char.settings.trackAmmunition) {
+      ammo = { uid: entry.uid, remaining: entry.quantity, name }
+    }
+
+    // Reminders the app can't decide (range, adjacent enemies, loading, heavy weapons).
+    const notes: string[] = []
+    if (ranged || props.includes('thrown')) notes.push('longRange', 'adjacent')
+    if (props.includes('loading')) notes.push('loading')
+    if (props.includes('heavy')) {
+      if (char.edition === '2014' && sizeName === 'Small') notes.push('heavySmall')
+      if (char.edition === '2024' && (ranged ? scores.dex.value : scores.str.value) < 13) notes.push('heavyWeak')
     }
 
     return {
@@ -579,13 +621,18 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       mastery,
       ammo,
       attacksPerAction,
+      loaded: w?.reload ? { rounds: Math.min(w.reload, entry?.loaded ?? 0), size: w.reload } : undefined,
+      offhand: offhandEligible(w, char.edition)
+        ? { damageBonus: dmg.value - mods[ability] + (mods[ability] < 0 || offhandMod ? mods[ability] : 0) }
+        : undefined,
+      notes,
     }
   }
 
   const attacks: AttackRow[] = []
-  for (const { entry, item } of equippedItems) {
-    if (item?.kind !== 'weapon') continue
-    attacks.push(attackRow(entry.uid, entry.label ?? item.name, item, entry))
+  for (const r of equippedItems) {
+    if (!r.weapon) continue
+    attacks.push(attackRow(r.entry.uid, r.name, r.weapon, r.entry))
   }
   // Unarmed Strike: 1 + Strength modifier bludgeoning in both editions.
   const unarmed = attackRow('unarmed', 'Unarmed Strike', undefined, undefined)
@@ -633,8 +680,13 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     if (!toggles.some((t) => t.key === key)) toggles.push({ key, label: effect.when.toggle, source: ae, on: toggleSet.has(key) })
   }
 
+  // Carrying capacity: Strength × 15 (size-adjusted); Powerful Build counts as one size larger.
+  const carrySize = applyEffects('carrySize', 0, '', vars).value
+  const weight = { total: totalWeight(char, content), capacity: carryingCapacity(scores.str.value, sizeName, carrySize) }
+  if (weight.total > weight.capacity) notes.push('Over carrying capacity')
+
   notes.push(...rules.exhaustionNotes(char.exhaustion))
-  if (bodyArmor && !armorProf.has(bodyArmor.category) && !armorProf.has('all')) notes.push(`Not proficient with ${bodyArmor.name}`)
+  if (bodyArmor && !armorProf.has(bodyArmor.category) && !armorProf.has('all')) notes.push(`Not proficient with ${bodyArmorEntry!.name}`)
 
   return {
     characterLevel,
@@ -658,5 +710,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     weaponProficiencies: [...weaponProf],
     weaponMasteries,
     notes,
+    weight,
+    items,
   }
 }

@@ -6,6 +6,7 @@ import { editions } from '../content/schema'
 import { useAuth } from '../state/auth'
 import { effectLevels, saveSettings, turnModes, useSettings } from '../state/settings'
 import { fx } from './fx/fx'
+import { BackToSheet } from './BackToSheet'
 import { Card } from './Card'
 
 export function SettingsPage({ uid }: { uid: string }) {
@@ -15,6 +16,7 @@ export function SettingsPage({ uid }: { uid: string }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 px-4 py-8">
+      <BackToSheet />
       <Card>
         <h2 className="font-heading text-xl">{t('settings.links')}</h2>
         <p className="mt-1 text-sm text-muted">{t('settings.linksHint')}</p>

@@ -6,6 +6,7 @@
 // Points", "Massive Damage", "Death Saving Throws").
 import type { Character } from './character'
 import type { ActivityRow, AttackRow, Sheet } from './derive'
+import { trackShot } from './inventory'
 import type { RestChange } from './rest'
 
 export type HistoryKind = 'game' | 'sheet'
@@ -194,14 +195,24 @@ export function performActivity(char: Character, sheet: Sheet, row: ActivityRow,
   return ok(next, 'use', items)
 }
 
-/** A weapon attack: recorded in history; spends ammunition (or a thrown weapon from the stack) when tracked. */
-export function makeAttack(char: Character, attack: AttackRow): ActionResult {
-  const items: HistoryItem[] = [{ type: 'attack', params: { name: attack.name }, entity: attack.weapon?.id }]
+/**
+ * A weapon attack: recorded in history; spends ammunition (or a thrown weapon
+ * from the stack) when tracked, or a round from the magazine of a reload
+ * weapon. `label` names special attacks (off-hand, Cleave).
+ */
+export function makeAttack(char: Character, attack: AttackRow, label?: string): ActionResult {
+  const items: HistoryItem[] = [{ type: 'attack', params: { name: label ?? attack.name }, entity: attack.weapon?.id }]
+  if (attack.loaded) {
+    if (attack.loaded.rounds <= 0) return { ok: false, error: 'magazineEmpty', params: { name: attack.name } }
+    items.push({ type: 'loaded', params: { name: attack.name }, before: attack.loaded.rounds, after: attack.loaded.rounds - 1 })
+    return ok(trackShot(char, attack), 'attack', items)
+  }
   if (!attack.ammo) return ok(char, 'attack', items)
   const entry = attack.ammo.uid ? char.inventory.find((e) => e.uid === attack.ammo!.uid) : undefined
   if (!entry || entry.quantity <= 0) return { ok: false, error: 'noAmmo' }
   items.push({ type: 'quantity', params: { name: attack.ammo.name ?? entry.itemId }, before: entry.quantity, after: entry.quantity - 1 })
-  return ok({ ...char, inventory: char.inventory.map((e) => (e.uid === entry.uid ? { ...e, quantity: e.quantity - 1 } : e)) }, 'attack', items)
+  const spent = { ...char, inventory: char.inventory.map((e) => (e.uid === entry.uid ? { ...e, quantity: e.quantity - 1 } : e)) }
+  return ok(trackShot(spent, attack), 'attack', items)
 }
 
 // --- Conditions and toggles -----------------------------------------------------------

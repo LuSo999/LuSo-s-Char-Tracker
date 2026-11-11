@@ -84,6 +84,8 @@ export const EffectWhen = z.union([
     'meleeWeapon',
     'weaponAttack',
     'bloodied',
+    /** No armor and no shield (Bracers of Defense). */
+    'noArmorNoShield',
     /** Checks / skills that don't already add the proficiency bonus. */
     'notProficient',
   ]),
@@ -127,7 +129,8 @@ export const Resource = z.object({
   /** For dice pools: the die size, e.g. 8 for d8 (may scale with level). */
   die: Scaled.optional(),
   /** What each rest restores. "all", or a (scaled) number of uses. */
-  recharge: z.array(z.object({ on: RechargeOn, amount: z.union([z.literal('all'), Scaled]) })).default([]),
+  /** What each rest restores: "all", a (scaled) number, or dice the player rolls (e.g. a wand's "1d6+1" at dawn). */
+  recharge: z.array(z.object({ on: RechargeOn, amount: z.union([z.literal('all'), Scaled]), dice: z.string().optional() })).default([]),
 })
 export type Resource = z.infer<typeof Resource>
 
@@ -386,6 +389,10 @@ export const Gear = z.object({
   recoverable: z.boolean().optional(),
   /** Ammunition kind id this item provides (e.g. "arrows"). */
   ammoKind: z.string().optional(),
+  /** Magic weapons/armor/ammunition built on a mundane item ("Weapon +1" → a longsword):
+   *  the kind of base item and which ones are allowed. */
+  baseKind: z.enum(['weapon', 'armor', 'shield', 'ammunition']).optional(),
+  baseOptions: z.array(z.string()).optional(),
 })
 export type Gear = z.infer<typeof Gear>
 

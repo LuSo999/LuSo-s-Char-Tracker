@@ -112,6 +112,111 @@ const ammo2014: Record<string, string> = {
   'crossbow-hand': 'crossbow-bolt', sling: 'sling-bullet', blowgun: 'blowgun-needle',
 }
 
+// --- Magic items -----------------------------------------------------------------
+
+const abilityWord: Record<string, Ability> = {
+  strength: 'str', dexterity: 'dex', constitution: 'con', intelligence: 'int', wisdom: 'wis', charisma: 'cha',
+}
+
+/** Mundane items a magic weapon/armor may be built on, from its "Weapon (any sword)" header line. */
+function baseFor(header: string, kind: 'weapon' | 'armor', mundane: Raw[]): { baseKind: string; baseOptions: string[]; unknown: string[] } {
+  const h = header.toLowerCase().replace(/^any /, 'any ')
+  const weapons = mundane.filter((e) => e.kind === 'weapon')
+  const armor = mundane.filter((e) => e.kind === 'armor' && e.category !== 'shield')
+  // Names compare without hyphens and a trailing " armor" ("Half-Plate Armor" = "half plate").
+  const norm = (n: string) => n.toLowerCase().replace(/-/g, ' ').replace(/ armor$/, '')
+  const byName = (pool: Raw[], name: string) => pool.find((e) => norm(e.name) === norm(name))
+  const isSword = (e: Raw) => /sword|rapier|scimitar/i.test(e.name)
+  const isAxe = (e: Raw) => /axe/i.test(e.name) && !/pickaxe/i.test(e.name)
+  if (kind === 'weapon') {
+    if (h === 'any ammunition') return { baseKind: 'ammunition', baseOptions: mundane.filter((e) => e.kind === 'ammunition').map((e) => e.id), unknown: [] }
+    let pool: Raw[] | undefined
+    if (h === 'any' || h === 'any simple or martial') pool = weapons
+    else if (h === 'any melee weapon') pool = weapons.filter((e) => e.range === 'melee')
+    else if (h === 'any sword') pool = weapons.filter(isSword)
+    else if (h === 'any sword that deals slashing damage') pool = weapons.filter((e) => isSword(e) && e.damage?.type === 'slashing')
+    else if (h === 'any axe') pool = weapons.filter(isAxe)
+    else if (h === 'any axe or sword') pool = weapons.filter((e) => isAxe(e) || isSword(e))
+    if (pool) return { baseKind: 'weapon', baseOptions: pool.map((e) => e.id), unknown: [] }
+    const names = h.split(/,\s*|\s+or\s+/).map((n) => n.replace(/^or\s+/, '').trim()).filter(Boolean)
+    // "Weapon (arrow)": a single piece of magic ammunition.
+    const ammo = mundane.filter((e) => e.kind === 'ammunition')
+    const asAmmo = names.map((n) => byName(ammo, n))
+    if (asAmmo.every(Boolean)) return { baseKind: 'ammunition', baseOptions: asAmmo.map((e) => e!.id), unknown: [] }
+    const found = names.map((n) => byName(weapons, n))
+    return { baseKind: 'weapon', baseOptions: found.filter(Boolean).map((e) => e!.id), unknown: names.filter((_, i) => !found[i]) }
+  }
+  if (h === 'shield') return { baseKind: 'shield', baseOptions: mundane.filter((e) => e.kind === 'armor' && e.category === 'shield').map((e) => e.id), unknown: [] }
+  if (/light, medium, or heavy/.test(h)) return { baseKind: 'armor', baseOptions: armor.map((e) => e.id), unknown: [] }
+  if (/medium or heavy/.test(h)) {
+    const noHide = /not hide|except hide/.test(h)
+    return { baseKind: 'armor', baseOptions: armor.filter((e) => ['medium', 'heavy'].includes(e.category) && !(noHide && /^hide/i.test(e.name))).map((e) => e.id), unknown: [] }
+  }
+  const names = h.split(/,\s*|\s+or\s+/).map((n) => n.trim()).filter(Boolean)
+  const found = names.map((n) => byName(armor, n) ?? byName(armor, `${n} armor`))
+  return { baseKind: 'armor', baseOptions: found.filter(Boolean).map((e) => e!.id), unknown: names.filter((_, i) => !found[i]) }
+}
+
+/**
+ * Numeric effects, base items and charges of magic items, read from the SRD
+ * text with fixed patterns. Conditional bonuses ("against ranged attacks",
+ * Defender's transferable bonus) are deliberately left as text.
+ */
+function magicItemMechanics(entities: Raw[], problems: string[]) {
+  const mundane = entities.filter((e) => e.type === 'item' && !e.magic)
+  const skip = new Set(['defender', 'rod-of-alertness', 'ioun-stone', 'arrow-catching-shield'])
+  for (const e of entities) {
+    if (e.type !== 'item' || !e.magic) continue
+    const text: string = e.text ?? ''
+    const effects: Raw[] = []
+
+    // Base item from the header line, e.g. "Weapon (any sword), rare" / "Armor (Plate Armor)".
+    const head = /^\s*(Weapon|Armor)\s*\(([^)]*)\)/i.exec(text)
+    if (head && !e.tags.includes('variant-group')) {
+      const kind = head[1].toLowerCase() as 'weapon' | 'armor'
+      // 2024 magic ammunition variants name only their rarity in the header.
+      const header = /^ammunition/.test(e.id) ? 'any ammunition' : head[2]
+      const b = baseFor(header, kind, mundane)
+      e.baseKind = b.baseKind
+      e.baseOptions = b.baseOptions
+      if (b.unknown.length) problems.push(`${e.id}: unknown base item(s) ${b.unknown.join(', ')}`)
+    }
+
+    if (!skip.has(e.id) && !e.consumable) {
+      const atk = /\+(\d) bonus to attack (?:rolls )?and damage rolls/.exec(text)
+      if (atk) effects.push({ target: 'attack', value: Number(atk[1]) }, { target: 'damage', value: Number(atk[1]) })
+      const ac = /\+(\d) bonus to (?:AC|Armor Class)(?! against)/.exec(text)
+      if (ac && e.id !== 'bracers-of-defense') effects.push({ target: 'ac', value: Number(ac[1]) })
+      const save = /\+(\d) bonus to (?:[^.]*?(?:AC|Armor Class),? and |ability checks and |[^.]*?, )?saving throws(?! against)/.exec(text)
+      if (save) effects.push({ target: 'save:all', value: Number(save[1]) })
+      const checks = /\+(\d) bonus to ability checks/.exec(text)
+      if (checks) effects.push({ target: 'check:all', value: Number(checks[1]) })
+      const score = /(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)(?: score)? (?:is|changes to(?: a)?) (\d+)/.exec(text)
+      if (score) effects.push({ target: `score:${abilityWord[score[1].toLowerCase()]}`, op: 'set', value: Number(score[2]) })
+      const inc = /(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) score increases by (\d), to a maximum of (\d+)/.exec(text)
+      if (inc) effects.push({ target: `score:${abilityWord[inc[1].toLowerCase()]}`, value: Number(inc[2]), max: Number(inc[3]) })
+      if (/proficiency bonus increases by 1/i.test(text)) effects.push({ target: 'pb', value: 1 })
+      const robe = /base (?:AC|Armor Class) is (\d+) (?:\+|plus) your Dexterity modifier/.exec(text)
+      if (robe) effects.push({ target: 'unarmoredAc', op: 'set', value: `${robe[1]} + dex` })
+    }
+    if (e.id === 'bracers-of-defense') effects.push({ target: 'ac', value: 2, when: 'noArmorNoShield' })
+    // 2024 magic ammunition: the bonus follows the rarity (+1 uncommon, +2 rare, +3 very rare).
+    const ammo = /^ammunition-(\d)$/.exec(e.id)
+    if (ammo && !effects.length) effects.push({ target: 'attack', value: Number(ammo[1]) }, { target: 'damage', value: Number(ammo[1]) })
+    if (effects.length) e.effects = [...(e.effects ?? []), ...effects]
+
+    // Charges: "has 7 charges" … "regains 1d6 + 1 expended charges daily at dawn".
+    const charges = /has (\d+) charges/.exec(text)
+    if (charges && !e.tags.includes('variant-group')) {
+      const regain = /regains (all|\d+d\d+(?:\s*\+\s*\d+)?) (?:of its )?expended charges(?: daily)? at dawn/i.exec(text)
+      const recharge = regain
+        ? [regain[1].toLowerCase() === 'all' ? { on: 'dawn', amount: 'all' } : { on: 'dawn', amount: 0, dice: regain[1].replace(/\s+/g, '') }]
+        : []
+      e.charges = { id: 'charges', name: 'Charges', max: Number(charges[1]), recharge }
+    }
+  }
+}
+
 // --- Conversion ----------------------------------------------------------------
 
 async function build(edition: Edition) {
@@ -120,6 +225,7 @@ async function build(edition: Edition) {
   const files: Record<string, Raw[]> = {}
   for (const f of EDITION_FILES[edition]) files[f] = await load(edition, f)
   const entities: Raw[] = []
+  const problems: string[] = []
   const base = (x: Raw) => {
     const text = textOf(x)
     return { id: x.index, edition, name: x.name, description: summarize(text), text: text || undefined, source }
@@ -382,6 +488,8 @@ async function build(edition: Edition) {
     })
   }
 
+  magicItemMechanics(entities, problems)
+
   for (const s of files.Spells) {
     entities.push({
       ...base(s),
@@ -434,7 +542,7 @@ async function build(edition: Edition) {
   }
 
   const byId = new Map<string, Raw>(entities.map((e) => [e.id, e]))
-  const problems = applyOverlay(edition, byId)
+  problems.push(...applyOverlay(edition, byId))
 
   const pack = Pack.parse({
     id: `srd-${edition}`,

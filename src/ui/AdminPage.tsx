@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { OfficialContent } from '../content/schema'
 import { getAccess, getOfficialMeta, setAccess, uploadOfficial, type Access } from '../state/official'
+import { BackToSheet } from './BackToSheet'
 import { Card } from './Card'
 
 type Parsed = { ok: true; value: OfficialContent } | { ok: false; errors: string[] }
@@ -58,6 +59,7 @@ export function AdminPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 px-4 py-8">
+      <BackToSheet />
       <Card>
         <h2 className="font-heading text-xl">{t('admin.title')}</h2>
         <p className="mt-1 text-sm text-muted">{t('admin.intro')}</p>

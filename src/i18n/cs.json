@@ -275,5 +275,6 @@
       "deathSaveRoll": "Hod death save: {{roll}}"
     },
     "attackAction": "Attack action"
-  }
+  },
+  "backTo": "Zpět na {{name}}"
 }

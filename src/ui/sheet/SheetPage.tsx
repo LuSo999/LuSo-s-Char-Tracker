@@ -7,6 +7,7 @@ import { computeSheet } from '../../engine/derive'
 import { useCharacter } from '../../state/characters'
 import { useContent } from '../../state/content'
 import { undoable, useFirestoreStore, type CharacterStore } from '../../state/history'
+import { rememberCharacter } from '../../state/lastCharacter'
 import { useOfficial } from '../../state/official'
 import { HistoryDrawer } from '../history/HistoryDrawer'
 import { groupSummary } from '../history/text'
@@ -36,6 +37,7 @@ export function SheetPage({ uid }: { uid: string }) {
 
 function FirestoreSheet({ uid, character, content }: { uid: string; character: Character; content: ContentIndex }) {
   const store = useFirestoreStore(uid, character)
+  useEffect(() => rememberCharacter(character.id, character.name), [character.id, character.name])
   return <SheetView character={character} content={content} store={store} />
 }
 

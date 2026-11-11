@@ -41,6 +41,8 @@ export const InventoryEntry = z.object({
   ammoUid: z.string().optional(),
   /** Player's own name / note for this entry. */
   label: z.string().optional(),
+  /** For magic weapons/armor/ammunition built on a mundane item: that item's id. */
+  baseItemId: z.string().optional(),
 })
 export type InventoryEntry = z.infer<typeof InventoryEntry>
 
@@ -93,6 +95,10 @@ export const Character = z.object({
   inventory: z.array(InventoryEntry).default([]),
   currency: Currency.default({ cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 }),
   xp: z.number().int().min(0).default(0),
+  /** Ammunition fired since the last "Recover ammunition", per ammunition entry. */
+  ammoSpent: z.record(z.string(), z.number().int().min(0)).default({}),
+  /** Thrown weapons lying on the battlefield, per weapon entry. */
+  thrownOut: z.record(z.string(), z.number().int().min(0)).default({}),
   /** Manual overrides from edit mode, keyed by derived value path (e.g. "ac", "skill:stealth"). */
   overrides: z.record(z.string(), z.union([z.number(), z.string()])).default({}),
   settings: z

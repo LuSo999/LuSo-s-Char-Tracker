@@ -275,5 +275,6 @@
       "deathSaveRoll": "Death save roll: {{roll}}"
     },
     "attackAction": "Attack action"
-  }
+  },
+  "backTo": "Back to {{name}}"
 }

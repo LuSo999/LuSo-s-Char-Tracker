@@ -17,13 +17,14 @@ export type RestChange =
 
 export type RestResult = { character: Character; changes: RestChange[] }
 
-/** Remaining uses a resource gets back on the given rest. */
-function regained(r: ResourceState, on: RechargeOn, sheet: Sheet): number {
+/** Remaining uses a resource gets back on the given rest. Dice recharges use the player's roll. */
+function regained(r: ResourceState, on: RechargeOn, sheet: Sheet, rolls: Record<string, number> = {}): number {
   let best = 0
   for (const rule of r.resource.recharge) {
     if (rule.on !== on) continue
-    const amount =
-      rule.amount === 'all'
+    const amount = rule.dice
+      ? (rolls[r.key] ?? 0)
+      : rule.amount === 'all'
         ? r.used
         : resolveScaled(rule.amount, {
             pb: sheet.pb.value,
@@ -37,11 +38,11 @@ function regained(r: ResourceState, on: RechargeOn, sheet: Sheet): number {
   return best
 }
 
-function rechargeResources(char: Character, sheet: Sheet, on: RechargeOn, changes: RestChange[]): Character {
+function rechargeResources(char: Character, sheet: Sheet, on: RechargeOn, changes: RestChange[], rolls?: Record<string, number>): Character {
   const resourcesUsed = { ...char.resourcesUsed }
   const inventory = char.inventory.map((e) => ({ ...e }))
   for (const r of sheet.resources) {
-    const back = regained(r, on, sheet)
+    const back = regained(r, on, sheet, rolls)
     if (back <= 0) continue
     const after = r.used - back
     if (r.source.item && r.source.entity.type === 'item' && r.resource === r.source.entity.charges) {
@@ -85,8 +86,19 @@ export function shortRest(char: Character, content: ContentIndex, hitDiceRolls: 
   return { character: next, changes }
 }
 
-/** Long rest: full HP, hit dice and exhaustion per edition, long-rest resources. */
-export function longRest(char: Character, content: ContentIndex): RestResult {
+/** Resources that come back at dawn by a dice roll (wands, staffs), for the rest dialog. */
+export function dawnDice(sheet: Sheet) {
+  return sheet.resources
+    .filter((r) => r.used > 0)
+    .flatMap((r) => r.resource.recharge.filter((x) => x.on === 'dawn' && x.dice).map((x) => ({ key: r.key, name: r.source.item ? `${r.source.entity.name}` : r.resource.name, dice: x.dice!, used: r.used })))
+}
+
+/**
+ * Long rest: full HP, hit dice and exhaustion per edition, long-rest
+ * resources. With `dawn`, item charges that return at dawn come back too
+ * (a long rest usually spans a dawn); dice recharges take the rolled values.
+ */
+export function longRest(char: Character, content: ContentIndex, opts: { dawn?: boolean; dawnRolls?: Record<string, number> } = {}): RestResult {
   const sheet = computeSheet(char, content)
   const rules = editionRules(char.edition)
   const changes: RestChange[] = []
@@ -116,5 +128,6 @@ export function longRest(char: Character, content: ContentIndex): RestResult {
     deathSaves: { successes: 0, failures: 0 },
   }
   next = rechargeResources(next, sheet, 'longRest', changes)
+  if (opts.dawn) next = rechargeResources(next, computeSheet(next, content), 'dawn', changes, opts.dawnRolls)
   return { character: next, changes }
 }

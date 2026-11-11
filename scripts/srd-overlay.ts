@@ -29,7 +29,7 @@ const fightingStyles2014: Record<string, Patch> = {
       { id: 'protect', name: 'Protection', actionType: 'reaction', summary: 'Impose Disadvantage on an attack against an ally within 5 ft (needs a shield).' },
     ],
   },
-  'fighter-fighting-style-two-weapon-fighting': {},
+  'fighter-fighting-style-two-weapon-fighting': { effects: [{ target: 'offhandAbilityMod', value: 1 }] },
 }
 
 const overlay2014: Record<string, Patch> = {
@@ -169,6 +169,8 @@ const overlay2024: Record<string, Patch> = {
     choices: [{ id: 'asi', label: 'Ability Score Increase', kind: 'abilityPoints', points: 1, perOption: 1, scoreCap: 20, options: ['str', 'dex'] }],
   },
   alert: { effects: [{ target: 'initiative', value: 'pb' }] },
+  'two-weapon-fighting': { effects: [{ target: 'offhandAbilityMod', value: 1 }] },
+  'powerful-build': { effects: [{ target: 'carrySize', value: 1 }] },
   archery: { effects: [{ target: 'attack', value: 2, when: 'rangedWeapon' }] },
   defense: { effects: [{ target: 'ac', value: 1, when: 'wearingArmor' }] },
   skilled: {
