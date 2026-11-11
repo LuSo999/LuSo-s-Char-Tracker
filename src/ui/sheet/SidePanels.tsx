@@ -162,6 +162,7 @@ export function FeaturesPanel() {
     (ae) =>
       !ae.hidden &&
       ['feature', 'feat', 'trait'].includes(ae.entity.type) &&
+      !ae.entity.tags.includes('core') &&
       !(ae.entity.type === 'feature' && ae.entity.id.endsWith('-subclass')),
   )
   const order = ['class', 'subclass', 'species', 'background', 'feats', 'other']

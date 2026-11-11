@@ -184,7 +184,14 @@
     "endAttack": "End attacking",
     "blockedPerTurn": "Already used this turn.",
     "blockedPerAttack": "Only one maneuver per attack.",
-    "cleaveHint": "Cleave: after a melee hit, attack a second creature within 5 ft (once per turn)."
+    "cleaveHint": "Cleave: after a melee hit, attack a second creature within 5 ft (once per turn).",
+    "offhand": "Off-hand",
+    "offhandHint": "Extra attack with a second Light weapon ({{damage}}, no ability modifier unless negative or a feature adds it). Bonus Action; with Nick part of the Attack action.",
+    "reload": "Reload",
+    "recoverAmmo": "Recover ammunition ({{count}} fired)",
+    "pickUp": "Pick up thrown weapons ({{count}})",
+    "throw": "Throw",
+    "throwHint": "Throw it (uses one from the stack; pick it up after the fight). Clicking the row is a melee attack."
   },
   "roll": {
     "prompt": "Rolled {{dice}}:",
@@ -200,7 +207,15 @@
     "noChange": "Nothing changed.",
     "notLatest": "Only the most recent change can be undone. Use the Undo button at the top.",
     "d20Range": "Enter the d20 result (1–20).",
-    "notDying": "Death saves are rolled only at 0 HP while not stable or dead."
+    "notDying": "Death saves are rolled only at 0 HP while not stable or dead.",
+    "unknownItem": "Unknown item.",
+    "chooseBase": "Choose which weapon or armor it is.",
+    "notEnoughItems": "Not enough {{name}}.",
+    "attunementFull": "All three attunement slots are used. End an attunement first.",
+    "notEnoughMoney": "Not enough {{coin}}.",
+    "nothingToRecover": "Nothing to recover.",
+    "noReload": "This weapon has no magazine.",
+    "magazineEmpty": "{{name}} is empty: reload first."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -213,7 +228,9 @@
     "nothing": "Nothing to restore.",
     "confirmShort": "Take short rest",
     "confirmLong": "Take long rest",
-    "foodAndDrink": "5e (2014): exhaustion goes down only if the character also ate and drank."
+    "foodAndDrink": "5e (2014): exhaustion goes down only if the character also ate and drank.",
+    "dawn": "Dawn passes during the rest (items recharge)",
+    "dawnRoll": "roll {{dice}}"
   },
   "history": {
     "title": "History",
@@ -244,7 +261,13 @@
       "longRest": "Long rest",
       "undo": "Undo",
       "session": "Session",
-      "note": "Note"
+      "note": "Note",
+      "inventory": "Inventory",
+      "equip": "Equipment",
+      "money": "Money",
+      "recover": "After the fight",
+      "reload": "Reload",
+      "settings": "Settings"
     },
     "items": {
       "damage": "Took {{amount}} damage: HP {{before}} → {{after}}",
@@ -272,9 +295,60 @@
       "undo": "Undid: {{what}}",
       "session": "Session started",
       "note": "{{text}}",
-      "deathSaveRoll": "Death save roll: {{roll}}"
+      "deathSaveRoll": "Death save roll: {{roll}}",
+      "itemAdded": "Added {{name}} ×{{count}}",
+      "itemRemoved": "Removed {{name}} ×{{count}}",
+      "equipped": "Equipped {{name}}",
+      "unequipped": "Took off {{name}}",
+      "attuned": "Attuned to {{name}}",
+      "unattuned": "Ended attunement to {{name}}",
+      "twoHanded": "{{name}}: two hands",
+      "oneHanded": "{{name}}: one hand",
+      "ammoSelected": "{{name}} uses {{ammo}}",
+      "coin": "{{coin}} {{before}} → {{after}}",
+      "ammoTrackingOn": "Ammunition tracking on",
+      "ammoTrackingOff": "Ammunition tracking off",
+      "recovered": "Recovered {{count}} of {{spent}} {{name}}",
+      "recoveredNone": "Nothing recovered",
+      "pickedUp": "Picked up {{count}} {{name}}",
+      "reloaded": "Reloaded {{name}}",
+      "loaded": "{{name}} rounds {{before}} → {{after}}",
+      "thrownAttack": "Threw {{name}}"
     },
     "attackAction": "Attack action"
   },
-  "backTo": "Back to {{name}}"
+  "backTo": "Back to {{name}}",
+  "inventory": {
+    "title": "Inventory",
+    "open": "Open inventory",
+    "weight": "Weight",
+    "capacityHint": "Carrying capacity: Strength × 15 lb, adjusted for size (Powerful Build counts one size larger).",
+    "trackAmmo": "Track ammunition and thrown weapons",
+    "add": "Add item",
+    "backpack": "Backpack",
+    "equip": "Equip",
+    "equipped": "Equipped",
+    "attune": "Attune",
+    "attuned": "Attuned",
+    "oneHand": "One hand",
+    "twoHands": "Two hands",
+    "versatileHint": "Versatile: {{dice}} when used with two hands",
+    "remove": "Remove",
+    "confirmRemove": "Remove {{name}} from the inventory?",
+    "quantity": "Quantity of {{name}}",
+    "searchItems": "Search items…",
+    "noResults": "Nothing found.",
+    "chooseBase": "Which item is it?",
+    "howMany": "How many",
+    "back": "Back",
+    "addConfirm": "Add",
+    "characterLabel": "Adding to {{name}}."
+  },
+  "attackNotes": {
+    "longRange": "Long range: Disadvantage",
+    "adjacent": "Enemy within 5 ft: Disadvantage",
+    "loading": "Loading: one shot per action",
+    "heavySmall": "Heavy: Disadvantage for Small creatures",
+    "heavyWeak": "Heavy: Disadvantage (score under 13)"
+  }
 }

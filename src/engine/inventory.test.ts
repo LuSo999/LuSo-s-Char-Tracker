@@ -113,7 +113,7 @@ describe('ammunition', () => {
 
   it('thrown weapons are picked up again', () => {
     let c = valdric()
-    for (let i = 0; i < 3; i++) c = okR(makeAttack(c, sheet(c).attacks.find((x) => x.key === 'javelins')!))
+    for (let i = 0; i < 3; i++) c = okR(makeAttack(c, sheet(c).attacks.find((x) => x.key === 'javelins')!, undefined, { thrown: true }))
     expect(c.inventory.find((e) => e.uid === 'javelins')!.quantity).toBe(5)
     expect(okR(pickUpThrown(c, c24)).inventory.find((e) => e.uid === 'javelins')!.quantity).toBe(8)
   })

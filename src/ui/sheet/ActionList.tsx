@@ -4,6 +4,8 @@ import i18n from '../../i18n'
 import type { ContentIndex } from '../../content'
 import type { ActionType, Entity } from '../../content/schema'
 import { makeAttack, performActivity } from '../../engine/actions'
+import { pickUpThrown, recoverAmmo, reload } from '../../engine/inventory'
+import { offhandEligible } from '../../engine/items'
 import type { ActivityRow, AttackRow } from '../../engine/derive'
 import { RuleRef } from '../rules/RuleRef'
 import { useSettings } from '../../state/settings'
@@ -52,6 +54,14 @@ function attackRow(a: AttackRow, content: ContentIndex): Row {
     )
   }
   if (a.attacksPerAction > 1) details.push(<span key="x">×{a.attacksPerAction}</span>)
+  if (a.loaded) details.push(<span key="loaded">🔫 {a.loaded.rounds}/{a.loaded.size}</span>)
+  if (a.notes.length) {
+    details.push(
+      <span key="notes" className="min-w-0 flex-1 truncate text-xs text-muted" title={a.notes.map((n) => i18n.t(`attackNotes.${n}`)).join('\n')}>
+        ⓘ {a.notes.map((n) => i18n.t(`attackNotes.${n}`)).join(' · ')}
+      </span>,
+    )
+  }
   return {
     key: `attack:${a.key}`,
     name: a.name,
@@ -59,7 +69,8 @@ function attackRow(a: AttackRow, content: ContentIndex): Row {
     actionType: 'action',
     details,
     uses: a.ammo ? { remaining: a.ammo.remaining, max: a.ammo.remaining } : undefined,
-    available: !a.ammo || a.ammo.remaining > 0,
+    // A melee weapon with Thrown can still strike in melee when none are left to throw.
+    available: (!a.ammo || a.ammo.remaining > 0 || !!a.loaded || a.weapon?.range === 'melee') && (!a.loaded || a.loaded.rounds > 0),
     order: sectionOrder.attack,
     attack: a,
   }
@@ -258,6 +269,9 @@ export function ActionList() {
   const count = (f: Filter) => rows.filter((r) => f === 'all' || r.actionType === f).length
   const perAction = sheet.attacks[0]?.attacksPerAction ?? 1
 
+  /** Melee weapons with the Thrown property: clicking the row is a melee attack; throwing has its own button. */
+  const meleeThrown = (r: Row) => !!r.attack?.properties.includes('thrown') && r.attack.weapon?.range === 'melee'
+
   /** Attacks and things that replace an attack belong to the Attack action. */
   const attackLike = (r: Row) => !!r.attack || !!r.activity?.activity.costsAttack
   /** Turn slots a row spends right now: an attack within a running Attack action spends none. */
@@ -278,8 +292,8 @@ export function ActionList() {
   }
 
   /** Pay, record and animate. `as` spends a different slot (Opportunity Attack…) or none ("ignore"). */
-  async function perform(r: Row, as?: Slot | 'ignore', at?: { x: number; y: number }, roll?: number) {
-    const result = r.attack ? makeAttack(character, r.attack) : performActivity(character, sheet, r.activity!, roll)
+  async function perform(r: Row, as?: Slot | 'ignore', at?: { x: number; y: number }, roll?: number, thrown = false) {
+    const result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll)
     if (!result.ok) return void run(result)
     const before = snapshotTurn()
     let actionId: string | undefined
@@ -290,6 +304,7 @@ export function ActionList() {
         turn.use(as)
       } else if (attackLike(r)) {
         actionId = turn.attack(r.name, perAction, pay)
+        if (r.attack?.item && offhandEligible(r.attack.weapon, character.edition)) turn.setLightAttack(r.attack.item.uid)
         if (pay) for (const s of slotsOf(r).filter((x) => x !== 'action')) turn.use(s)
       } else if (pay) {
         for (const s of slotsOf(r)) turn.use(s)
@@ -307,9 +322,9 @@ export function ActionList() {
     if (kind) fx(kind, at)
   }
 
-  async function activate(r: Row, el: Element) {
+  async function activate(r: Row, el: Element, thrown = false) {
     const at = centerOf(el)
-    if (!r.available) {
+    if (!r.available && (thrown || !meleeThrown(r))) {
       // Nothing left of the resource itself: always refused, whatever the turn mode.
       setDenied({ key: r.key, at: Date.now() })
       fx('deny')
@@ -324,7 +339,7 @@ export function ActionList() {
       }
     }
     if (r.activity?.activity.roll?.kind === 'heal') return setPrompt(r.key)
-    await perform(r, undefined, at)
+    await perform(r, undefined, at, undefined, thrown)
   }
 
   async function chooseBlocked(r: Row, choice: Choice) {
@@ -364,6 +379,44 @@ export function ActionList() {
     if (group) rememberTurn(group.id, before)
     fx('physical', at)
   }
+
+  /**
+   * Light property extra attack with a different Light weapon: a Bonus Action,
+   * no ability modifier to damage. 2024 Nick mastery: part of the Attack action
+   * instead, once per turn.
+   */
+  const lightRow = rows.find((x) => x.attack?.item?.uid === turn.lightAttack)
+  const offhandAllowed = (r: Row) =>
+    !!r.attack?.offhand && !!turn.lightAttack && (turn.lightAttack !== r.attack.item?.uid || (r.attack.item?.quantity ?? 0) >= 2)
+  const nickAvailable = (r: Row) =>
+    character.edition === '2024' && (r.attack?.mastery === 'nick' || lightRow?.attack?.mastery === 'nick') && !(turn.perTurn['mastery:nick'] ?? 0)
+
+  async function offhand(r: Row, el: Element) {
+    const at = centerOf(el)
+    const nick = nickAvailable(r)
+    if (mode !== 'off' && !nick && !slotFree(turn, 'bonusAction')) {
+      turn.flashSlot('bonusAction')
+      if (mode === 'strict') {
+        fx('deny')
+        return toast(t('turn.blocked', { slot: t('turn.bonusAction') }), { tone: 'error' })
+      }
+    }
+    const label = `${t('turn.offhand')}: ${r.attack!.name}`
+    const result = makeAttack(character, { ...r.attack!, damageBonus: r.attack!.offhand!.damageBonus }, label)
+    if (!result.ok) return void run(result)
+    const before = snapshotTurn()
+    if (mode !== 'off') {
+      if (nick) turn.countPerTurn('mastery:nick')
+      else turn.use('bonusAction')
+      turn.setLightAttack('')
+    }
+    const group = await run(result, { actionId: nick ? useTurn.getState().attackAction?.id : undefined })
+    if (group) rememberTurn(group.id, before)
+    fx('physical', at)
+  }
+
+  const fired = Object.values(character.ammoSpent).reduce((a, b) => a + b, 0)
+  const thrown = Object.values(character.thrownOut).reduce((a, b) => a + b, 0)
 
   return (
     <Panel title={t('sheet.actions')} icon="⚔️" className="flex min-h-0 flex-1 flex-col">
@@ -405,6 +458,42 @@ export function ActionList() {
                 </RuleRef>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">{r.details}</div>
               </div>
+              {meleeThrown(r) && (
+                <button
+                  className="shrink-0 rounded border border-border px-2 py-0.5 text-xs font-semibold hover:bg-bg disabled:opacity-40"
+                  disabled={!r.available}
+                  title={t('turn.throwHint')}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    void activate(r, e.currentTarget, true)
+                  }}
+                >
+                  🎯 {t('turn.throw')}
+                </button>
+              )}
+              {offhandAllowed(r) && (
+                <button
+                  className="shrink-0 rounded border border-amber-500 px-2 py-0.5 text-xs font-semibold text-amber-700 hover:bg-amber-500 hover:text-white dark:text-amber-300"
+                  title={t('turn.offhandHint', { damage: `${r.attack!.damageDice}${r.attack!.offhand!.damageBonus ? signed(r.attack!.offhand!.damageBonus) : ''}` })}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    void offhand(r, e.currentTarget)
+                  }}
+                >
+                  {nickAvailable(r) ? `🗡️ Nick` : `✨ ${t('turn.offhand')}`}
+                </button>
+              )}
+              {r.attack?.loaded && (
+                <button
+                  className="shrink-0 rounded border border-border px-2 py-0.5 text-xs font-semibold hover:bg-bg"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    void run(reload(character, r.attack!))
+                  }}
+                >
+                  🔄 {t('turn.reload')}
+                </button>
+              )}
               {r.attack?.mastery === 'cleave' && (
                 <button
                   className="shrink-0 rounded border border-accent px-2 py-0.5 text-xs font-semibold text-accent hover:bg-accent hover:text-accent-text"
@@ -428,6 +517,20 @@ export function ActionList() {
           </li>
         ))}
       </ul>
+      {(fired > 0 || thrown > 0) && (
+        <div className="mt-1 flex flex-wrap gap-2">
+          {fired > 0 && (
+            <button className="rounded border border-accent px-3 py-1 text-sm font-semibold text-accent hover:bg-accent/10" onClick={() => void run(recoverAmmo(character, content))}>
+              🏹 {t('turn.recoverAmmo', { count: fired })}
+            </button>
+          )}
+          {thrown > 0 && (
+            <button className="rounded border border-accent px-3 py-1 text-sm font-semibold text-accent hover:bg-accent/10" onClick={() => void run(pickUpThrown(character, content))}>
+              🫴 {t('turn.pickUp', { count: thrown })}
+            </button>
+          )}
+        </div>
+      )}
       <p className="mt-1 text-xs text-muted">{t('sheet.actionsHint')}</p>
     </Panel>
   )

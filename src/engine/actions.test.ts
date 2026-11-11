@@ -112,8 +112,14 @@ describe('using actions', () => {
   it('throwing a javelin takes one from the stack', () => {
     const c = valdric()
     const jav = sheetOf(c).attacks.find((a) => a.key === 'javelins')!
-    const r = okResult(makeAttack(c, jav))
+    const r = okResult(makeAttack(c, jav, undefined, { thrown: true }))
     expect(r.character.inventory.find((e) => e.uid === 'javelins')!.quantity).toBe(7)
+  })
+
+  it('a javelin used in melee is not used up', () => {
+    const c = valdric()
+    const jav = sheetOf(c).attacks.find((a) => a.key === 'javelins')!
+    expect(okResult(makeAttack(c, jav)).character.inventory.find((e) => e.uid === 'javelins')!.quantity).toBe(8)
   })
 
   it('an attack without ammunition is still recorded', () => {

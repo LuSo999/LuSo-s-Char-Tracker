@@ -10,6 +10,7 @@ import { undoable, useFirestoreStore, type CharacterStore } from '../../state/hi
 import { rememberCharacter } from '../../state/lastCharacter'
 import { useOfficial } from '../../state/official'
 import { HistoryDrawer } from '../history/HistoryDrawer'
+import { InventoryDrawer } from '../inventory/InventoryDrawer'
 import { groupSummary } from '../history/text'
 import { RuleRef } from '../rules/RuleRef'
 import { toast } from '../toast'
@@ -79,7 +80,7 @@ export function SheetView({ character, content, store }: { character: Character;
   )
 }
 
-function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => void; onHistory: () => void }) {
+function TopBar({ onRest, onHistory, onInventory }: { onRest: (kind: 'short' | 'long') => void; onHistory: () => void; onInventory: () => void }) {
   const { t } = useTranslation()
   const { character, content, store } = useSheet()
   const last = undoable(store.history)
@@ -145,7 +146,10 @@ function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => voi
         >
           ↶ {t('undo')}
         </button>
-        <button className={button} onClick={onHistory}>
+        <button className={`${button} hidden sm:inline-block`} onClick={onInventory}>
+          🎒 {t('inventory.title')}
+        </button>
+        <button className={`${button} hidden sm:inline-block`} onClick={onHistory}>
           📜 {t('sheet.buttons.history')}
         </button>
         <Link to="/" className={button}>
@@ -161,10 +165,11 @@ function SheetLayout() {
   const { sheet, content } = useSheet()
   const [rest, setRest] = useState<'short' | 'long'>()
   const [history, setHistory] = useState(false)
+  const [inventory, setInventory] = useState(false)
 
   return (
     <div className="mx-auto w-full max-w-[1920px] px-3 py-3">
-      <TopBar onRest={setRest} onHistory={() => setHistory(true)} />
+      <TopBar onRest={setRest} onHistory={() => setHistory(true)} onInventory={() => setInventory(true)} />
 
       {/* On large screens the columns fill the viewport and scroll inside, so nothing important needs page scrolling. */}
       <div className="grid grid-cols-1 gap-3 xl:h-[calc(100vh-15.5rem)] xl:min-h-[34rem] xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)_minmax(260px,340px)]">
@@ -183,17 +188,24 @@ function SheetLayout() {
         </div>
       </div>
       <div className="mt-3">
-        <EquippedPanelFromContext />
+        <EquippedPanel onOpen={() => setInventory(true)} />
       </div>
       <p className="mt-3 text-center text-xs text-muted">{t('rules.ctrlHint')}</p>
 
       {rest && <RestDialog kind={rest} onClose={() => setRest(undefined)} />}
       {history && <HistoryDrawer onClose={() => setHistory(false)} />}
+      {inventory && <InventoryDrawer onClose={() => setInventory(false)} />}
+
+      {/* Phone: panels open full screen from a bottom bar. */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-card sm:hidden">
+        <button className="flex-1 py-2.5 text-sm font-semibold" onClick={() => setInventory(true)}>
+          🎒 {t('inventory.title')}
+        </button>
+        <button className="flex-1 border-l border-border py-2.5 text-sm font-semibold" onClick={() => setHistory(true)}>
+          📜 {t('sheet.buttons.history')}
+        </button>
+      </nav>
+      <div className="h-12 sm:hidden" />
     </div>
   )
-}
-
-function EquippedPanelFromContext() {
-  const { character, sheet, content } = useSheet()
-  return <EquippedPanel character={character} sheet={sheet} content={content} />
 }

@@ -184,7 +184,14 @@
     "endAttack": "Ukončit útočení",
     "blockedPerTurn": "Tento tah už použito.",
     "blockedPerAttack": "Jen jeden manévr na útok.",
-    "cleaveHint": "Cleave: po zásahu na blízko zaútoč na druhého tvora do 5 ft (jednou za tah)."
+    "cleaveHint": "Cleave: po zásahu na blízko zaútoč na druhého tvora do 5 ft (jednou za tah).",
+    "offhand": "Druhá ruka",
+    "offhandHint": "Útok navíc druhou zbraní Light ({{damage}}, bez modifikátoru vlastnosti, pokud není záporný nebo ho nepřidá schopnost). Bonus Action; s Nick součást Attack action.",
+    "reload": "Přebít",
+    "recoverAmmo": "Sebrat munici (vystřeleno: {{count}})",
+    "pickUp": "Zvednout vrhací zbraně ({{count}})",
+    "throw": "Hodit",
+    "throwHint": "Hodit (ubere jeden kus; po boji ho zvedneš). Kliknutí na řádek je útok na blízko."
   },
   "roll": {
     "prompt": "Hod {{dice}}:",
@@ -200,7 +207,15 @@
     "noChange": "Nic se nezměnilo.",
     "notLatest": "Vrátit jde jen poslední změnu. Použij tlačítko Zpět nahoře.",
     "d20Range": "Zadej výsledek d20 (1–20).",
-    "notDying": "Death saves se házejí jen na 0 HP, dokud postava není Stable nebo mrtvá."
+    "notDying": "Death saves se házejí jen na 0 HP, dokud postava není Stable nebo mrtvá.",
+    "unknownItem": "Neznámý předmět.",
+    "chooseBase": "Vyber, o jakou zbraň nebo zbroj jde.",
+    "notEnoughItems": "Nedostatek: {{name}}.",
+    "attunementFull": "Všechna tři místa pro attunement jsou obsazená. Nejdřív nějaké uvolni.",
+    "notEnoughMoney": "Nemáš dost {{coin}}.",
+    "nothingToRecover": "Není co sebrat.",
+    "noReload": "Tahle zbraň nemá zásobník.",
+    "magazineEmpty": "{{name}} je prázdná: nejdřív přebij."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -213,7 +228,9 @@
     "nothing": "Není co obnovit.",
     "confirmShort": "Dát short rest",
     "confirmLong": "Dát long rest",
-    "foodAndDrink": "5e (2014): exhaustion klesne jen tehdy, když postava také jedla a pila."
+    "foodAndDrink": "5e (2014): exhaustion klesne jen tehdy, když postava také jedla a pila.",
+    "dawn": "Během odpočinku proběhne úsvit (předměty se dobijí)",
+    "dawnRoll": "hoď {{dice}}"
   },
   "history": {
     "title": "Historie",
@@ -244,7 +261,13 @@
       "longRest": "Long rest",
       "undo": "Vrácení",
       "session": "Sezení",
-      "note": "Poznámka"
+      "note": "Poznámka",
+      "inventory": "Inventář",
+      "equip": "Vybavení",
+      "money": "Peníze",
+      "recover": "Po boji",
+      "reload": "Přebití",
+      "settings": "Nastavení"
     },
     "items": {
       "damage": "Zranění {{amount}}: HP {{before}} → {{after}}",
@@ -272,9 +295,60 @@
       "undo": "Vráceno: {{what}}",
       "session": "Začátek sezení",
       "note": "{{text}}",
-      "deathSaveRoll": "Hod death save: {{roll}}"
+      "deathSaveRoll": "Hod death save: {{roll}}",
+      "itemAdded": "Přidáno: {{name}} ×{{count}}",
+      "itemRemoved": "Odebráno: {{name}} ×{{count}}",
+      "equipped": "Nasazeno: {{name}}",
+      "unequipped": "Sundáno: {{name}}",
+      "attuned": "Attunement: {{name}}",
+      "unattuned": "Konec attunementu: {{name}}",
+      "twoHanded": "{{name}}: obouruč",
+      "oneHanded": "{{name}}: jednoruč",
+      "ammoSelected": "{{name}} střílí {{ammo}}",
+      "coin": "{{coin}} {{before}} → {{after}}",
+      "ammoTrackingOn": "Hlídání munice zapnuto",
+      "ammoTrackingOff": "Hlídání munice vypnuto",
+      "recovered": "Sebráno {{count}} z {{spent}}: {{name}}",
+      "recoveredNone": "Nic nesebráno",
+      "pickedUp": "Zvednuto {{count}}: {{name}}",
+      "reloaded": "Přebito: {{name}}",
+      "loaded": "{{name}} náboje {{before}} → {{after}}",
+      "thrownAttack": "Hod: {{name}}"
     },
     "attackAction": "Attack action"
   },
-  "backTo": "Zpět na {{name}}"
+  "backTo": "Zpět na {{name}}",
+  "inventory": {
+    "title": "Inventář",
+    "open": "Otevřít inventář",
+    "weight": "Váha",
+    "capacityHint": "Nosnost: Strength × 15 lb podle velikosti (Powerful Build počítá o velikost víc).",
+    "trackAmmo": "Hlídat munici a vrhací zbraně",
+    "add": "Přidat předmět",
+    "backpack": "Batoh",
+    "equip": "Nasadit",
+    "equipped": "Nasazeno",
+    "attune": "Attune",
+    "attuned": "Attuned",
+    "oneHand": "Jednoruč",
+    "twoHands": "Obouruč",
+    "versatileHint": "Versatile: {{dice}} při držení obouruč",
+    "remove": "Odebrat",
+    "confirmRemove": "Odebrat {{name}} z inventáře?",
+    "quantity": "Počet: {{name}}",
+    "searchItems": "Hledat předměty…",
+    "noResults": "Nic nenalezeno.",
+    "chooseBase": "O jaký předmět jde?",
+    "howMany": "Kolik",
+    "back": "Zpět",
+    "addConfirm": "Přidat",
+    "characterLabel": "Přidává se postavě {{name}}."
+  },
+  "attackNotes": {
+    "longRange": "Dlouhý dostřel: Disadvantage",
+    "adjacent": "Nepřítel do 5 ft: Disadvantage",
+    "loading": "Loading: jeden výstřel za akci",
+    "heavySmall": "Heavy: Disadvantage pro Small",
+    "heavyWeak": "Heavy: Disadvantage (vlastnost pod 13)"
+  }
 }

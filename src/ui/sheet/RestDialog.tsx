@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { restItems } from '../../engine/actions'
-import { longRest, shortRest } from '../../engine/rest'
+import { dawnDice, longRest, shortRest } from '../../engine/rest'
 import { itemText } from '../history/text'
 import { useRun, useSheet } from './context'
 
@@ -27,11 +27,15 @@ export function RestDialog({ kind, onClose }: { kind: 'short' | 'long'; onClose:
   const { character, sheet, content } = useSheet()
   const run = useRun()
   const [rolls, setRolls] = useState<Record<number, string[]>>({})
+  const [dawn, setDawn] = useState(true)
+  const [dawnRolls, setDawnRolls] = useState<Record<string, string>>({})
+  const dawnItems = kind === 'long' ? dawnDice(sheet) : []
 
   const parsedRolls = Object.fromEntries(
     Object.entries(rolls).map(([die, list]) => [die, list.map((v) => Number.parseInt(v, 10)).filter((n) => Number.isFinite(n) && n >= 1 && n <= Number(die))]),
   )
-  const result = kind === 'short' ? shortRest(character, content, parsedRolls) : longRest(character, content)
+  const parsedDawn = Object.fromEntries(Object.entries(dawnRolls).map(([k, v]) => [k, Number.parseInt(v, 10)]).filter(([, n]) => Number.isFinite(n as number)))
+  const result = kind === 'short' ? shortRest(character, content, parsedRolls) : longRest(character, content, { dawn, dawnRolls: parsedDawn })
   const items = restItems(result.changes)
   const invalid = Object.entries(rolls).some(([die, list]) => list.some((v) => v !== '' && !(Number(v) >= 1 && Number(v) <= Number(die))))
 
@@ -78,6 +82,32 @@ export function RestDialog({ kind, onClose }: { kind: 'short' | 'long'; onClose:
               </div>
             )
           })}
+        </section>
+      )}
+      {kind === 'long' && (
+        <section className="mb-4">
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={dawn} onChange={(e) => setDawn(e.target.checked)} />
+            🌅 {t('rest.dawn')}
+          </label>
+          {dawn && dawnItems.length > 0 && (
+            <ul className="mt-1 space-y-1 pl-6 text-sm">
+              {dawnItems.map((d) => (
+                <li key={d.key} className="flex items-center gap-2">
+                  <span className="flex-1">
+                    {d.name}: {t('rest.dawnRoll', { dice: d.dice })}
+                  </span>
+                  <input
+                    inputMode="numeric"
+                    aria-label={`${d.name} ${d.dice}`}
+                    className="w-14 rounded border border-border bg-card px-1 text-center"
+                    value={dawnRolls[d.key] ?? ''}
+                    onChange={(e) => setDawnRolls({ ...dawnRolls, [d.key]: e.target.value.replace(/\D/g, '') })}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
       <section>

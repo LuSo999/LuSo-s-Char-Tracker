@@ -17,9 +17,11 @@ export type Counts = {
   perTurn: Record<string, number>
   /** Groups already used on the current attack (one maneuver per attack). */
   perAttack: string[]
+  /** Inventory entry of the Light weapon attacked with this turn (enables the off-hand attack). */
+  lightAttack?: string
 }
 
-const fresh = (): Counts => ({ action: 0, bonusAction: 0, reaction: 0, extraActions: 0, attackAction: undefined, perTurn: {}, perAttack: [] })
+const fresh = (): Counts => ({ action: 0, bonusAction: 0, reaction: 0, extraActions: 0, attackAction: undefined, perTurn: {}, perAttack: [], lightAttack: undefined })
 
 type TurnState = Counts & {
   /** Last slot that was refused or over-used, to flash its chip. */
@@ -33,6 +35,7 @@ type TurnState = Counts & {
   surge(): void
   countPerTurn(key: string): void
   markPerAttack(group: string): void
+  setLightAttack(uid: string): void
   flashSlot(slot: Slot | 'attack'): void
 }
 
@@ -63,6 +66,7 @@ export const useTurn = create<TurnState>((set, get) => ({
   endAttack: () => set({ attackAction: undefined }),
   countPerTurn: (key) => set((s) => ({ perTurn: { ...s.perTurn, [key]: (s.perTurn[key] ?? 0) + 1 } })),
   markPerAttack: (group) => set((s) => ({ perAttack: [...s.perAttack, group] })),
+  setLightAttack: (uid) => set({ lightAttack: uid }),
 }))
 
 export const slotMax = (s: Counts, slot: Slot) => (slot === 'action' ? 1 + s.extraActions : 1)
@@ -72,7 +76,7 @@ export const attacksLeft = (s: Counts) => (s.attackAction ? s.attackAction.total
 const snapshots = new Map<string, Counts>()
 
 export function snapshotTurn(): Counts {
-  const { action, bonusAction, reaction, extraActions, attackAction, perTurn, perAttack } = useTurn.getState()
+  const { action, bonusAction, reaction, extraActions, attackAction, perTurn, perAttack, lightAttack } = useTurn.getState()
   return {
     action,
     bonusAction,
@@ -81,6 +85,7 @@ export function snapshotTurn(): Counts {
     attackAction: attackAction && { ...attackAction, names: [...attackAction.names] },
     perTurn: { ...perTurn },
     perAttack: [...perAttack],
+    lightAttack,
   }
 }
 

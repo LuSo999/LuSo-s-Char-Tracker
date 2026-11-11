@@ -200,8 +200,11 @@ export function performActivity(char: Character, sheet: Sheet, row: ActivityRow,
  * from the stack) when tracked, or a round from the magazine of a reload
  * weapon. `label` names special attacks (off-hand, Cleave).
  */
-export function makeAttack(char: Character, attack: AttackRow, label?: string): ActionResult {
+export function makeAttack(char: Character, attack: AttackRow, label?: string, opts: { thrown?: boolean } = {}): ActionResult {
   const items: HistoryItem[] = [{ type: 'attack', params: { name: label ?? attack.name }, entity: attack.weapon?.id }]
+  // A melee weapon with the Thrown property is only used up when actually thrown.
+  if (attack.properties.includes('thrown') && attack.weapon?.range === 'melee' && !opts.thrown) return ok(char, 'attack', items)
+  if (opts.thrown) items[0] = { type: 'thrownAttack', params: { name: label ?? attack.name }, entity: attack.weapon?.id }
   if (attack.loaded) {
     if (attack.loaded.rounds <= 0) return { ok: false, error: 'magazineEmpty', params: { name: attack.name } }
     items.push({ type: 'loaded', params: { name: attack.name }, before: attack.loaded.rounds, after: attack.loaded.rounds - 1 })
