@@ -13,6 +13,8 @@ export type HistoryGroup = {
   revert?: Record<string, unknown>
   /** For undo groups: the group that was undone. */
   undoes?: string
+  /** Attacks made within one Attack action share this id (shown together in history). */
+  actionId?: string
 }
 
 /** Firestore can't store `undefined`; JSON round-trip drops it. */

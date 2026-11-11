@@ -178,6 +178,21 @@ describe('armor and attacks', () => {
   })
 })
 
+describe('core combat options', () => {
+  it('2024 Grapple and Shove: DC 8 + Str + PB, replacing one attack', () => {
+    const grapple = computeSheet(valdric(), content2024).activities.find((a) => a.activity.id === 'grapple')!
+    expect(grapple.saveDc).toBe(13)
+    expect(grapple.activity.costsAttack).toBe(true)
+  })
+
+  it('2014 Grapple is an Athletics check', () => {
+    const c = makeCharacter({ edition: '2014', baseScores: { str: 16, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, choices: { 'fighter/skills': ['athletics', 'perception'] } })
+    const grapple = computeSheet(c, content2014).activities.find((a) => a.activity.id === 'grapple')!
+    expect(grapple.rollBonus).toBe(3 + 2) // human 2014: Str 17 (+3), proficient
+    expect(grapple.saveDc).toBeUndefined()
+  })
+})
+
 describe('manual overrides', () => {
   it('replace the computed value but keep it for "reset"', () => {
     const sheet = computeSheet(valdric({ overrides: { ac: 21 } }), content2024)

@@ -174,7 +174,17 @@
     "asReaction": "As Reaction (Opportunity Attack)",
     "asBonus": "As Bonus action",
     "ignoreOnce": "Allow once",
-    "ignoreHint": "For rules the app doesn't know (e.g. Haste)"
+    "ignoreHint": "For rules the app doesn't know (e.g. Haste)",
+    "replacesAttack": "instead of an attack",
+    "perTurn": "{{count}}× per turn",
+    "perAttack": "1 per attack",
+    "attackAction": "Attack action: attack {{used}} of {{total}}",
+    "switch2024": "Each attack: you may draw or stow one weapon.",
+    "switch2014": "One free object interaction per turn (draw or stow a weapon).",
+    "endAttack": "End attacking",
+    "blockedPerTurn": "Already used this turn.",
+    "blockedPerAttack": "Only one maneuver per attack.",
+    "cleaveHint": "Cleave: after a melee hit, attack a second creature within 5 ft (once per turn)."
   },
   "roll": {
     "prompt": "Rolled {{dice}}:",
@@ -263,6 +273,7 @@
       "session": "Session started",
       "note": "{{text}}",
       "deathSaveRoll": "Death save roll: {{roll}}"
-    }
+    },
+    "attackAction": "Attack action"
   }
 }

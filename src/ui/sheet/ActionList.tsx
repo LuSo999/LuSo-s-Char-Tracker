@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import i18n from '../../i18n'
 import type { ContentIndex } from '../../content'
 import type { ActionType, Entity } from '../../content/schema'
 import { makeAttack, performActivity } from '../../engine/actions'
@@ -11,7 +12,7 @@ import { toast } from '../toast'
 import { Dots, Panel } from './common'
 import { useRun, useSheet } from './context'
 import { actionTypeClass, actionTypeIcon, actionTypeShort, signed } from './format'
-import { rememberTurn, slotFree, slotMax, snapshotTurn, useTurn, type Slot } from './turn'
+import { attacksLeft, rememberTurn, slotFree, slotMax, snapshotTurn, useTurn, type Slot } from './turn'
 
 type Filter = 'all' | ActionType
 
@@ -83,6 +84,9 @@ function activityRow(a: ActivityRow): Row {
       </strong>,
     )
   }
+  if (a.activity.costsAttack) details.push(<span key="replaces" className="rounded bg-emerald-600/15 px-1.5 text-xs font-semibold">⚔️ {i18n.t('turn.replacesAttack')}</span>)
+  if (a.activity.perTurn) details.push(<span key="perTurn" className="text-xs text-muted">{i18n.t('turn.perTurn', { count: a.activity.perTurn })}</span>)
+  if (a.activity.perAttack) details.push(<span key="perAttack" className="text-xs text-muted">{i18n.t('turn.perAttack')}</span>)
   if (a.activity.summary) {
     details.push(
       <span key="sum" className="min-w-0 flex-1 truncate text-muted" title={a.activity.summary}>
@@ -126,7 +130,6 @@ function TurnBar() {
       {chip('action', t('turn.action'))}
       {chip('bonusAction', t('turn.bonusAction'))}
       {chip('reaction', t('turn.reaction'))}
-      {turn.attacksLeft > 0 && <span className="text-xs font-semibold text-accent">🗡️ {t('turn.attacksLeft', { count: turn.attacksLeft })}</span>}
       <button
         className="ml-auto rounded-card border-2 border-accent bg-accent/10 px-4 py-1.5 text-sm font-semibold text-accent hover:bg-accent hover:text-accent-text"
         onClick={turn.newTurn}
@@ -138,24 +141,56 @@ function TurnBar() {
   )
 }
 
+/** The Attack action in progress: attacks made and left, with the weapon-switching reminder. */
+function AttackBanner() {
+  const { t } = useTranslation()
+  const { character } = useSheet()
+  const turn = useTurn()
+  const aa = turn.attackAction
+  if (!aa) return null
+  const left = aa.total - aa.used
+  return (
+    <div
+      key={turn.flash?.slot === 'attack' ? turn.flash.at : 'banner'}
+      className={`mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded border border-emerald-600/50 bg-emerald-600/10 px-2 py-1 text-sm ${turn.flash?.slot === 'attack' ? 'fx-flash' : ''}`}
+    >
+      <span className="font-semibold">
+        ⚔️ {t('turn.attackAction', { used: aa.used, total: aa.total })}
+        {left > 0 && <span className="ml-1 text-emerald-700 dark:text-emerald-300">· {t('turn.attacksLeft', { count: left })}</span>}
+      </span>
+      <span className="text-muted">{aa.names.join(', ')}</span>
+      <span className="text-xs text-muted">🔁 {t(character.edition === '2024' ? 'turn.switch2024' : 'turn.switch2014')}</span>
+      <button className="ml-auto rounded border border-border px-2 py-0.5 text-xs hover:bg-bg" onClick={turn.endAttack}>
+        {t('turn.endAttack')}
+      </button>
+    </div>
+  )
+}
+
+type Problem = { kind: 'slot'; slot: Slot } | { kind: 'perTurn' } | { kind: 'perAttack' }
+type Choice = Slot | 'ignore' | 'newTurn' | 'cancel'
+
 /**
- * Strict mode: the needed action is used up. Weapon attacks can still be an
+ * Strict mode: something isn't available. Weapon attacks can still be an
  * Opportunity Attack (Reaction) or an off-hand attack (Bonus action); anything
  * the app doesn't know about can be allowed once.
  */
-function BlockedPrompt({ row, need, onChoose }: { row: Row; need: Slot; onChoose: (slot: Slot | 'ignore' | 'newTurn' | 'cancel') => void }) {
+function BlockedPrompt({ row, problem, onChoose }: { row: Row; problem: Problem; onChoose: (c: Choice) => void }) {
   const { t } = useTranslation()
   const turn = useTurn()
   const btn = 'rounded border border-border px-2.5 py-0.5 hover:bg-bg'
+  const message =
+    problem.kind === 'slot' ? t('turn.blocked', { slot: t(`turn.${problem.slot}`) }) : problem.kind === 'perTurn' ? t('turn.blockedPerTurn') : t('turn.blockedPerAttack')
+  const weaponAttack = row.attack && problem.kind === 'slot' && problem.slot === 'action'
   return (
     <div className="mt-1 flex flex-wrap items-center gap-2 rounded border border-danger bg-danger/5 p-2 text-sm">
-      <span className="font-semibold text-danger">⛔ {t('turn.blocked', { slot: t(`turn.${need}`) })}</span>
-      {row.attack && need === 'action' && slotFree(turn, 'reaction') && (
+      <span className="font-semibold text-danger">⛔ {message}</span>
+      {weaponAttack && slotFree(turn, 'reaction') && (
         <button className={btn} onClick={() => onChoose('reaction')}>
           {actionTypeIcon.reaction} {t('turn.asReaction')}
         </button>
       )}
-      {row.attack && need === 'action' && slotFree(turn, 'bonusAction') && (
+      {weaponAttack && slotFree(turn, 'bonusAction') && (
         <button className={btn} onClick={() => onChoose('bonusAction')}>
           {actionTypeIcon.bonusAction} {t('turn.asBonus')}
         </button>
@@ -163,9 +198,11 @@ function BlockedPrompt({ row, need, onChoose }: { row: Row; need: Slot; onChoose
       <button className={btn} onClick={() => onChoose('ignore')} title={t('turn.ignoreHint')}>
         {t('turn.ignoreOnce')}
       </button>
-      <button className={`${btn} font-semibold`} onClick={() => onChoose('newTurn')}>
-        🔄 {t('turn.newTurn')}
-      </button>
+      {problem.kind === 'slot' && (
+        <button className={`${btn} font-semibold`} onClick={() => onChoose('newTurn')}>
+          🔄 {t('turn.newTurn')}
+        </button>
+      )}
       <button className="text-muted underline" onClick={() => onChoose('cancel')}>
         {t('cancel')}
       </button>
@@ -213,30 +250,59 @@ export function ActionList() {
   const mode = useSettings((s) => s.turnMode)
   const [filter, setFilter] = useState<Filter>('all')
   const [prompt, setPrompt] = useState<string>()
-  const [blocked, setBlocked] = useState<{ key: string; need: Slot; at?: { x: number; y: number } }>()
+  const [blocked, setBlocked] = useState<{ key: string; problem: Problem; at?: { x: number; y: number } }>()
   const [denied, setDenied] = useState<{ key: string; at: number }>()
   const rows = [...sheet.attacks.map((a) => attackRow(a, content)), ...sheet.activities.map(activityRow)].sort((a, b) => a.order - b.order)
   const visible = rows.filter((r) => filter === 'all' || r.actionType === filter)
   const filters: Filter[] = ['all', 'action', 'bonusAction', 'reaction', 'other']
   const count = (f: Filter) => rows.filter((r) => f === 'all' || r.actionType === f).length
+  const perAction = sheet.attacks[0]?.attacksPerAction ?? 1
 
-  /** Which turn slot a row needs right now ('none' for free things and Extra Attack follow-ups). */
-  const needOf = (r: Row): Slot | 'none' => {
-    if (r.attack) return turn.attacksLeft > 0 ? 'none' : 'action'
-    return r.actionType === 'other' ? 'none' : r.actionType
+  /** Attacks and things that replace an attack belong to the Attack action. */
+  const attackLike = (r: Row) => !!r.attack || !!r.activity?.activity.costsAttack
+  /** Turn slots a row spends right now: an attack within a running Attack action spends none. */
+  const slotsOf = (r: Row): Slot[] => {
+    const slots: Slot[] = []
+    if (attackLike(r) && attacksLeft(turn) === 0) slots.push('action')
+    const type = r.actionType
+    if (r.activity && type !== 'other' && !(attackLike(r) && type === 'action')) slots.push(type)
+    return slots
+  }
+  const limitKey = (r: Row) => `activity:${r.key}`
+  const problemOf = (r: Row): Problem | undefined => {
+    const slot = slotsOf(r).find((x) => !slotFree(turn, x))
+    if (slot) return { kind: 'slot', slot }
+    const a = r.activity?.activity
+    if (a?.perTurn && (turn.perTurn[limitKey(r)] ?? 0) >= a.perTurn) return { kind: 'perTurn' }
+    if (a?.perAttack && turn.perAttack.includes(a.perAttack)) return { kind: 'perAttack' }
   }
 
-  /** Pay, record and animate. `slot` is the turn slot actually spent ('none' when ignored). */
-  async function perform(r: Row, slot: Slot | 'none', at?: { x: number; y: number }, roll?: number) {
-    const before = snapshotTurn()
+  /** Pay, record and animate. `as` spends a different slot (Opportunity Attack…) or none ("ignore"). */
+  async function perform(r: Row, as?: Slot | 'ignore', at?: { x: number; y: number }, roll?: number) {
     const result = r.attack ? makeAttack(character, r.attack) : performActivity(character, sheet, r.activity!, roll)
-    const group = await run(result)
-    if (!group) return
+    if (!result.ok) return void run(result)
+    const before = snapshotTurn()
+    let actionId: string | undefined
     if (mode !== 'off') {
-      turn.use(slot, r.attack && slot === 'action' ? { perAction: r.attack.attacksPerAction } : undefined)
-      if (r.activity?.activity.grants === 'action') turn.surge()
-      rememberTurn(group.id, before)
+      const pay = as !== 'ignore'
+      if (as === 'reaction' || as === 'bonusAction') {
+        // A single attack outside the Attack action (Opportunity Attack, off-hand attack).
+        turn.use(as)
+      } else if (attackLike(r)) {
+        actionId = turn.attack(r.name, perAction, pay)
+        if (pay) for (const s of slotsOf(r).filter((x) => x !== 'action')) turn.use(s)
+      } else if (pay) {
+        for (const s of slotsOf(r)) turn.use(s)
+      }
+      const a = r.activity?.activity
+      if (a?.grants === 'action') turn.surge()
+      if (a?.perTurn) turn.countPerTurn(limitKey(r))
+      if (a?.perAttack) turn.markPerAttack(a.perAttack)
+      // A maneuver used on an attack belongs to that Attack action in history.
+      if (!actionId && a?.perAttack) actionId = useTurn.getState().attackAction?.id
     }
+    const group = await run(result, { actionId })
+    if (group) rememberTurn(group.id, before)
     const kind = r.attack ? (r.attack.weapon?.magic ? 'magic' : 'physical') : r.activity?.activity.fx
     if (kind) fx(kind, at)
   }
@@ -249,19 +315,19 @@ export function ActionList() {
       fx('deny')
       return toast(t(r.attack ? 'errors.noAmmo' : 'errors.notEnough', { name: r.name }), { tone: 'error' })
     }
-    const need = needOf(r)
-    if (mode !== 'off' && need !== 'none' && !slotFree(turn, need)) {
-      turn.flashSlot(need)
+    const problem = mode === 'off' ? undefined : problemOf(r)
+    if (problem) {
+      turn.flashSlot(problem.kind === 'slot' ? problem.slot : 'attack')
       if (mode === 'strict') {
         fx('deny')
-        return setBlocked({ key: r.key, need, at })
+        return setBlocked({ key: r.key, problem, at })
       }
     }
     if (r.activity?.activity.roll?.kind === 'heal') return setPrompt(r.key)
-    await perform(r, need, at)
+    await perform(r, undefined, at)
   }
 
-  async function chooseBlocked(r: Row, choice: Slot | 'ignore' | 'newTurn' | 'cancel') {
+  async function chooseBlocked(r: Row, choice: Choice) {
     const at = blocked?.at
     setBlocked(undefined)
     if (choice === 'cancel') return
@@ -270,19 +336,39 @@ export function ActionList() {
       return void activate(r, document.body)
     }
     if (r.activity?.activity.roll?.kind === 'heal') return setPrompt(r.key)
-    await perform(r, choice === 'ignore' ? 'none' : choice, at)
+    await perform(r, choice, at)
   }
 
   async function finishRoll(r: Row, roll?: number) {
     setPrompt(undefined)
     if (roll === -1) return
-    const need = needOf(r)
-    await perform(r, mode === 'strict' && need !== 'none' && !slotFree(turn, need) ? 'none' : need, undefined, roll)
+    await perform(r, mode === 'strict' && problemOf(r) ? 'ignore' : undefined, undefined, roll)
+  }
+
+  /** Cleave (2024 mastery): one extra attack per turn against a second creature. */
+  async function cleave(r: Row, el: Element) {
+    const at = centerOf(el)
+    const key = 'mastery:cleave'
+    if (mode !== 'off' && (turn.perTurn[key] ?? 0) >= 1) {
+      turn.flashSlot('attack')
+      if (mode === 'strict') {
+        fx('deny')
+        return toast(t('turn.blockedPerTurn'), { tone: 'error' })
+      }
+    }
+    const result = makeAttack(character, { ...r.attack!, name: `Cleave: ${r.attack!.name}`, ammo: undefined })
+    if (!result.ok) return void run(result)
+    const before = snapshotTurn()
+    if (mode !== 'off') turn.countPerTurn(key)
+    const group = await run(result)
+    if (group) rememberTurn(group.id, before)
+    fx('physical', at)
   }
 
   return (
     <Panel title={t('sheet.actions')} icon="⚔️" className="flex min-h-0 flex-1 flex-col">
       {mode !== 'off' && <TurnBar />}
+      {mode !== 'off' && <AttackBanner />}
       <div className="my-2 flex flex-wrap gap-1" role="tablist">
         {filters.map((f) => (
           <button
@@ -319,13 +405,25 @@ export function ActionList() {
                 </RuleRef>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">{r.details}</div>
               </div>
+              {r.attack?.mastery === 'cleave' && (
+                <button
+                  className="shrink-0 rounded border border-accent px-2 py-0.5 text-xs font-semibold text-accent hover:bg-accent hover:text-accent-text"
+                  title={t('turn.cleaveHint')}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    void cleave(r, e.currentTarget)
+                  }}
+                >
+                  ↯ Cleave
+                </button>
+              )}
               {r.uses && (
                 <span className="shrink-0 pt-1 text-sm" title={t('sheet.usesLeft')}>
                   {r.uses.max === r.uses.remaining && r.uses.max > 10 ? `${r.uses.remaining}` : <Dots remaining={r.uses.remaining} max={r.uses.max} />}
                 </span>
               )}
             </div>
-            {blocked?.key === r.key && <BlockedPrompt row={r} need={blocked.need} onChoose={(c) => void chooseBlocked(r, c)} />}
+            {blocked?.key === r.key && <BlockedPrompt row={r} problem={blocked.problem} onChoose={(c) => void chooseBlocked(r, c)} />}
             {prompt === r.key && r.activity && <RollPrompt row={r.activity} onDone={(roll) => void finishRoll(r, roll)} />}
           </li>
         ))}

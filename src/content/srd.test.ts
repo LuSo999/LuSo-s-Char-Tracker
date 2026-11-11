@@ -5,6 +5,7 @@ import { evalFormula } from '../engine/formula'
 import { editions, type Entity, type Scaled } from './schema'
 
 const formulaVars = {
+  athletics: 0,
   pb: 2, level: 1, classLevel: 1, characterLevel: 1,
   str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0,
   strScore: 10, dexScore: 10, conScore: 10, intScore: 10, wisScore: 10, chaScore: 10,

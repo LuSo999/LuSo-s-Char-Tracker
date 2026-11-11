@@ -5,6 +5,19 @@ import { RuleRef } from '../rules/RuleRef'
 import { useSheet } from '../sheet/context'
 import { groupTitle, itemText } from './text'
 
+/** Consecutive attacks of one Attack action are shown together. */
+function blocks(list: HistoryGroup[]): (HistoryGroup | { groups: HistoryGroup[] })[] {
+  const out: (HistoryGroup | { groups: HistoryGroup[] })[] = []
+  for (const g of list) {
+    const last = out[out.length - 1]
+    if (g.actionId && last && 'groups' in last && last.groups[0].actionId === g.actionId) last.groups.push(g)
+    else if (g.actionId) out.push({ groups: [g] })
+    else out.push(g)
+  }
+  // A single attack needs no wrapper.
+  return out.map((b) => ('groups' in b && b.groups.length === 1 ? b.groups[0] : b))
+}
+
 /**
  * Character history: game events and sheet changes, newest first, grouped by
  * action, split into play sessions. Searchable and filterable.
@@ -30,6 +43,60 @@ export function HistoryDrawer({ onClose }: { onClose: () => void }) {
     if (type && g.groupType !== type) return false
     return !search || texts(g).includes(search.toLowerCase())
   })
+
+  const renderGroup = (g: HistoryGroup, nested = false) => {
+    if (g.groupType === 'session') {
+      return (
+        <li key={g.id} className="my-3 flex items-center gap-2 text-xs font-semibold uppercase text-accent">
+          <span className="h-px flex-1 bg-accent" />
+          {t('history.sessionStarted', { time: time.format(g.at) })}
+          <span className="h-px flex-1 bg-accent" />
+        </li>
+      )
+    }
+    const isSheet = g.kind === 'sheet'
+    const wasUndone = undone.has(g.id)
+    // The first item names the action (used X, attacked with Y, undid Z); it becomes the title.
+    const headItem = ['use', 'attack', 'note', 'undo'].includes(g.items[0]?.type) ? g.items[0] : undefined
+    const lines = g.items.filter((i) => i !== headItem)
+    const head = (
+      <span className="flex flex-wrap items-baseline justify-between gap-2">
+        <span className={`${isSheet ? 'font-semibold text-accent' : 'font-medium'} ${wasUndone ? 'line-through opacity-60' : ''}`}>
+          {headItem ? itemText(t, headItem) : groupTitle(t, g)}
+        </span>
+        <span className="text-xs text-muted">
+          {wasUndone && <span className="mr-1 rounded bg-border px-1">{t('history.undone')}</span>}
+          {time.format(g.at)}
+        </span>
+      </span>
+    )
+    const body = (
+      <ul className="mt-0.5 space-y-0.5 pl-3 text-sm text-muted">
+        {lines.map((i, n) => (
+          <li key={n}>
+            <RuleRef entity={i.entity ? content.get(i.entity) : undefined} content={content}>
+              {itemText(t, i)}
+            </RuleRef>
+          </li>
+        ))}
+      </ul>
+    )
+    return (
+      <li key={g.id} className={nested ? 'py-0.5' : `mb-2 rounded border p-2 ${isSheet ? 'border-l-4 border-accent bg-accent/5' : 'border-border'}`}>
+        {lines.length > 2 ? (
+          <details>
+            <summary className="cursor-pointer list-none">{head}</summary>
+            {body}
+          </details>
+        ) : (
+          <>
+            {head}
+            {lines.length > 0 && body}
+          </>
+        )}
+      </li>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end bg-black/40" onClick={onClose}>
@@ -93,59 +160,19 @@ export function HistoryDrawer({ onClose }: { onClose: () => void }) {
 
         <ol className="flex-1 overflow-y-auto p-3">
           {visible.length === 0 && <li className="text-sm text-muted">{t('history.empty')}</li>}
-          {visible.map((g) => {
-            if (g.groupType === 'session') {
-              return (
-                <li key={g.id} className="my-3 flex items-center gap-2 text-xs font-semibold uppercase text-accent">
-                  <span className="h-px flex-1 bg-accent" />
-                  {t('history.sessionStarted', { time: time.format(g.at) })}
-                  <span className="h-px flex-1 bg-accent" />
-                </li>
-              )
-            }
-            const isSheet = g.kind === 'sheet'
-            const wasUndone = undone.has(g.id)
-            // The first item names the action (used X, attacked with Y, undid Z); it becomes the title.
-            const headItem = ['use', 'attack', 'note', 'undo'].includes(g.items[0]?.type) ? g.items[0] : undefined
-            const lines = g.items.filter((i) => i !== headItem)
-            const head = (
-              <span className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className={`${isSheet ? 'font-semibold text-accent' : 'font-medium'} ${wasUndone ? 'line-through opacity-60' : ''}`}>
-                  {headItem ? itemText(t, headItem) : groupTitle(t, g)}
+          {blocks(visible).map((b) =>
+            'groups' in b ? (
+              <li key={b.groups[0].id} className="mb-2 rounded border border-emerald-600/40 bg-emerald-600/5 p-2">
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="font-medium">⚔️ {t('history.attackAction')}</span>
+                  <span className="text-xs text-muted">{time.format(b.groups[0].at)}</span>
                 </span>
-                <span className="text-xs text-muted">
-                  {wasUndone && <span className="mr-1 rounded bg-border px-1">{t('history.undone')}</span>}
-                  {time.format(g.at)}
-                </span>
-              </span>
-            )
-            const body = (
-              <ul className="mt-0.5 space-y-0.5 pl-3 text-sm text-muted">
-                {lines.map((i, n) => (
-                  <li key={n}>
-                    <RuleRef entity={i.entity ? content.get(i.entity) : undefined} content={content}>
-                      {itemText(t, i)}
-                    </RuleRef>
-                  </li>
-                ))}
-              </ul>
-            )
-            return (
-              <li key={g.id} className={`mb-2 rounded border p-2 ${isSheet ? 'border-l-4 border-accent bg-accent/5' : 'border-border'}`}>
-                {lines.length > 2 ? (
-                  <details>
-                    <summary className="cursor-pointer list-none">{head}</summary>
-                    {body}
-                  </details>
-                ) : (
-                  <>
-                    {head}
-                    {lines.length > 0 && body}
-                  </>
-                )}
+                <ol className="pl-3">{b.groups.map((g) => renderGroup(g, true))}</ol>
               </li>
-            )
-          })}
+            ) : (
+              renderGroup(b)
+            ),
+          )}
           {store.hasMore && (
             <li>
               <button className="w-full rounded border border-border py-1 text-sm hover:bg-bg" onClick={store.loadMore}>

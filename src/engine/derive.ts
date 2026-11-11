@@ -170,6 +170,9 @@ export function collectActive(char: Character, content: ContentIndex): ActiveEnt
     }
   }
 
+  // Rules every character has (Grapple, Shove).
+  for (const core of content.all('feature').filter((f) => f.tags.includes('core'))) push(core, core.id, characterLevel)
+
   const species = content.require(char.speciesId, 'species')
   push(species, species.id, characterLevel)
   for (const t of species.traits) push(content.get(t), t, characterLevel)
@@ -595,7 +598,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     if (ae.hidden) continue
     for (const activity of ae.entity.activities) {
       if (activity.minLevel !== undefined && characterLevel < activity.minLevel) continue
-      const v = vars(ae)
+      // Activity formulas may also use skill totals (e.g. "athletics" for a 2014 grapple check).
+      const v = { ...vars(ae), ...Object.fromEntries(Object.entries(skillValues).map(([k, sv]) => [k.replace(/-/g, '_'), sv.value])) }
       // "@quantity" spends the item itself (potions); other costs name a resource id.
       const pool = (resource: string): ActivityRow['uses'] => {
         if (resource === '@quantity') {

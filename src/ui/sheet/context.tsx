@@ -58,7 +58,7 @@ export function useRun() {
   useEffect(() => {
     latest.current = store
   })
-  return async (result: ActionResult, opts: { quiet?: boolean } = {}): Promise<HistoryGroup | undefined> => {
+  return async (result: ActionResult, opts: { quiet?: boolean; actionId?: string } = {}): Promise<HistoryGroup | undefined> => {
     if (!result.ok) {
       if (result.error !== 'noChange') {
         toast(t(`errors.${result.error}`, result.params ?? {}), { tone: 'error' })
@@ -66,7 +66,7 @@ export function useRun() {
       }
       return undefined
     }
-    const group = await store.commit(result)
+    const group = await store.commit(result, { actionId: opts.actionId })
     effectFor(result.groupType, result.items)
     if (!opts.quiet) {
       toast(groupSummary(t, group), {

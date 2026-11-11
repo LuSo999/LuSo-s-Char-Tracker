@@ -151,6 +151,12 @@ export const Activity = z.object({
   grants: z.enum(['action']).optional(),
   /** Visual flavor when used: weapon-like, spell-like, or a burst of inner power. */
   fx: z.enum(['physical', 'magic', 'power']).optional(),
+  /** Takes the place of one attack of the Attack action (Grapple, Shove, Commander's Strike). */
+  costsAttack: z.boolean().default(false),
+  /** How many times per turn it can be used (e.g. 1 for Cleave). */
+  perTurn: z.number().int().min(1).optional(),
+  /** At most one activity of this group per attack (e.g. "maneuver"). */
+  perAttack: z.string().optional(),
 })
 export type Activity = z.infer<typeof Activity>
 

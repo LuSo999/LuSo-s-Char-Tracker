@@ -174,7 +174,17 @@
     "asReaction": "Jako Reaction (Opportunity Attack)",
     "asBonus": "Jako Bonus action",
     "ignoreOnce": "Jednou povolit",
-    "ignoreHint": "Pro pravidla, která appka nezná (např. Haste)"
+    "ignoreHint": "Pro pravidla, která appka nezná (např. Haste)",
+    "replacesAttack": "místo útoku",
+    "perTurn": "{{count}}× za tah",
+    "perAttack": "1 na útok",
+    "attackAction": "Attack action: útok {{used}} z {{total}}",
+    "switch2024": "Při každém útoku můžeš vytasit nebo schovat jednu zbraň.",
+    "switch2014": "Jedna volná interakce s předmětem za tah (vytasit nebo schovat zbraň).",
+    "endAttack": "Ukončit útočení",
+    "blockedPerTurn": "Tento tah už použito.",
+    "blockedPerAttack": "Jen jeden manévr na útok.",
+    "cleaveHint": "Cleave: po zásahu na blízko zaútoč na druhého tvora do 5 ft (jednou za tah)."
   },
   "roll": {
     "prompt": "Hod {{dice}}:",
@@ -263,6 +273,7 @@
       "session": "Začátek sezení",
       "note": "{{text}}",
       "deathSaveRoll": "Hod death save: {{roll}}"
-    }
+    },
+    "attackAction": "Attack action"
   }
 }

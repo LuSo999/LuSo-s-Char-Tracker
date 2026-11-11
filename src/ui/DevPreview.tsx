@@ -26,7 +26,11 @@ export default function DevPreview() {
       const usePrivate = official !== undefined && valdric !== undefined && !location.hash.includes('sample')
       const packs = usePrivate ? OfficialContent.parse((await official!()).default).packs : []
       const input = usePrivate ? (await valdric!()).default : sampleChampion
-      setState({ character: Character.parse({ id: 'dev', ...(input as object) }), packs: [srd, ...packs] })
+      const character = Character.parse({ id: 'dev', ...(input as object) })
+      // #/dev?level=5 previews a higher level (e.g. Extra Attack).
+      const level = Number(/level=(\d+)/.exec(location.hash)?.[1])
+      if (level) character.classes[0] = { ...character.classes[0], level }
+      setState({ character, packs: [srd, ...packs] })
     })()
   }, [])
   const content = useMemo(() => state && new ContentIndex('2024', state.packs), [state])

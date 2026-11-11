@@ -16,7 +16,7 @@ export type CharacterStore = {
   hasMore: boolean
   loadMore(): void
   /** Apply an action result: save the character and its history group. */
-  commit(result: Extract<ActionResult, { ok: true }>): Promise<HistoryGroup>
+  commit(result: Extract<ActionResult, { ok: true }>, meta?: { actionId?: string }): Promise<HistoryGroup>
   undo(group: HistoryGroup): Promise<void>
   addGroup(group: Omit<HistoryGroup, 'id' | 'at'>): Promise<void>
 }
@@ -64,9 +64,9 @@ export function useFirestoreStore(uid: string, character: Character): CharacterS
     history,
     hasMore,
     loadMore: () => setPages((p) => p + 1),
-    async commit(result) {
+    async commit(result, meta) {
       const { patch, revert } = diff(character, result.character)
-      return write(patch, { kind: result.kind, groupType: result.groupType, items: result.items, revert })
+      return write(patch, { kind: result.kind, groupType: result.groupType, items: result.items, revert, actionId: meta?.actionId })
     },
     async undo(group) {
       if (!group.revert) return
@@ -92,10 +92,10 @@ export function useMemoryStore(initial: Character): CharacterStore & { character
     history,
     hasMore: false,
     loadMore: () => {},
-    async commit(result) {
+    async commit(result, meta) {
       const { revert } = diff(character, result.character)
       setCharacter(result.character)
-      return push({ kind: result.kind, groupType: result.groupType, items: result.items, revert })
+      return push({ kind: result.kind, groupType: result.groupType, items: result.items, revert, actionId: meta?.actionId })
     },
     async undo(group) {
       if (!group.revert) return

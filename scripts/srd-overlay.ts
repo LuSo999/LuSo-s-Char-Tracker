@@ -221,8 +221,41 @@ function checkTable(byId: Map<string, Raw>, classId: string, column: string, tab
   }
 }
 
+/**
+ * Combat options every character has, always active (tag "core").
+ * 2024 (SRD 5.2.1 Rules Glossary, Unarmed Strike): Grapple / Shove force a
+ * Str or Dex save (target's choice) vs 8 + Str + PB.
+ * 2014 (SRD 5.1 Combat, Grappling / Shoving a Creature): a Strength (Athletics)
+ * check contested by the target's Athletics or Acrobatics.
+ * In both, each replaces one attack of the Attack action.
+ */
+function coreCombat(edition: Edition): Raw {
+  const save = { saveDc: '8 + str + pb', saveAbility: 'str' }
+  const contest = { roll: { bonus: 'athletics', kind: 'other' } }
+  const grapple = edition === '2024'
+    ? { ...save, summary: 'Target makes a Str or Dex save (its choice) or is Grappled. Needs a free hand; target at most one size larger.' }
+    : { ...contest, summary: 'Athletics check vs the target\'s Athletics or Acrobatics; on a win it is Grappled. Needs a free hand.' }
+  const shove = edition === '2024'
+    ? { ...save, summary: 'Target makes a Str or Dex save (its choice) or is pushed 5 ft away or knocked Prone.' }
+    : { ...contest, summary: 'Athletics check vs the target\'s Athletics or Acrobatics; on a win push it 5 ft or knock it Prone.' }
+  return {
+    id: 'core-combat',
+    edition,
+    type: 'feature',
+    name: edition === '2024' ? 'Unarmed Strike options' : 'Special melee attacks',
+    description: 'Grapple and Shove replace one attack of the Attack action.',
+    source: { book: edition === '2014' ? 'srd-5.1' : 'srd-5.2' },
+    tags: ['core'],
+    activities: [
+      { id: 'grapple', name: 'Grapple', actionType: 'action', costsAttack: true, fx: 'physical', ...grapple },
+      { id: 'shove', name: 'Shove', actionType: 'action', costsAttack: true, fx: 'physical', ...shove },
+    ],
+  }
+}
+
 export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[] {
   const problems: string[] = []
+  byId.set('core-combat', coreCombat(edition))
   const patches = edition === '2014' ? overlay2014 : overlay2024
   for (const [id, patch] of Object.entries(patches)) {
     const e = byId.get(id)
