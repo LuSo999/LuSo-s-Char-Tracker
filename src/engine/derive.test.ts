@@ -45,6 +45,7 @@ describe('Valdric (2024 Goliath Fighter 4, SRD stand-ins)', () => {
     expect(unarmed.damageDice).toBe('1')
     expect(unarmed.damageBonus).toBe(3)
     expect(sheet.attacks.every((a) => a.attacksPerAction === 1)).toBe(true)
+    expect(sheet.attacks.map((a) => a.key)).toEqual(['flail', 'greatsword', 'javelins', 'quarterstaff', 'unarmed'])
   })
 
   it('has the right resources at level 4', () => {

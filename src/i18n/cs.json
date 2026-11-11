@@ -12,12 +12,104 @@
   "characters": {
     "title": "Tvoje postavy",
     "empty": "Zatím žádné postavy.",
-    "newName": "Jméno postavy",
-    "create": "Vytvořit",
     "delete": "Smazat",
     "confirmDelete": "Smazat {{name}}? Nejde to vrátit.",
-    "loadFailed": "Postavy se nepodařilo načíst: {{message}}"
+    "loadFailed": "Postavy se nepodařilo načíst: {{message}}",
+    "addSample": "Přidat ukázkovou postavu (SRD)",
+    "import": "Importovat ze souboru",
+    "export": "Exportovat",
+    "invalid": "(není platná postava — starý testovací záznam?)",
+    "importFailed": "Soubor není platná postava:",
+    "creatorLater": "Průvodce tvorbou postavy přijde v pozdějším milníku; do té doby použij ukázkovou postavu nebo soubor s postavou."
   },
   "language": "Jazyk",
-  "attribution": "Toto dílo obsahuje materiál ze System Reference Document 5.1 a 5.2 od Wizards of the Coast LLC, licencovaný pod CC-BY-4.0."
+  "attribution": "Toto dílo obsahuje materiál ze System Reference Document 5.1 a 5.2 od Wizards of the Coast LLC, licencovaný pod CC-BY-4.0.",
+  "close": "Zavřít",
+  "content": {
+    "ready": "Sdílený oficiální obsah: načteno balíčků: {{count}}.",
+    "empty": "K dispozici je jen obsah ze SRD: sdílený oficiální obsah zatím nikdo nenahrál.",
+    "noAccess": "K dispozici je jen obsah ze SRD: ke sdílenému oficiálnímu obsahu nemáš pozvánku. Požádej majitele appky.",
+    "error": "Sdílený oficiální obsah se nepodařilo načíst: {{message}}"
+  },
+  "rules": {
+    "unverified": "neověřeno",
+    "openHint": "Ctrl+klik otevře {{site}}",
+    "open": "Otevřít pravidla",
+    "ctrlHint": "Podrž Ctrl (na Macu Cmd) a najeď na cokoli z pravidel pro náhled; Ctrl+klik otevře stránku s pravidly. Na telefonu podrž prst."
+  },
+  "actionFilter": {
+    "all": "Vše",
+    "action": "Action",
+    "bonusAction": "Bonus action",
+    "reaction": "Reaction",
+    "other": "Other"
+  },
+  "sheet": {
+    "abilities": "Vlastnosti",
+    "proficiencyBonus": "Proficiency",
+    "passivePerception": "Passive Perception",
+    "savingThrows": "Saving throws",
+    "skills": "Skills",
+    "hitPoints": "Životy (HP)",
+    "initiative": "Initiative",
+    "speed": "Speed",
+    "deathSaves": "Death saves",
+    "actions": "Akce",
+    "usesLeft": "Zbývá použití",
+    "resources": "Zdroje",
+    "conditions": "Stavy",
+    "features": "Schopnosti",
+    "reminders": "Připomínky",
+    "none": "Nic",
+    "featureGroups": {
+      "class": "Class",
+      "subclass": "Subclass",
+      "species": "Species",
+      "background": "Background",
+      "feats": "Feats",
+      "other": "Ostatní"
+    },
+    "equipped": "Na sobě a po ruce",
+    "attunement": "Attunement",
+    "attuned": "attuned",
+    "notAttuned": "bez attunementu",
+    "missingContent": "Chybí v obsahu",
+    "loadFailed": "Postavu se nepodařilo načíst: {{message}}",
+    "invalid": "Tento záznam není platná postava.",
+    "notFound": "Postava nenalezena.",
+    "backToList": "Zpět na postavy",
+    "computeFailed": "List se nepodařilo spočítat: {{message}}.",
+    "editionHint": "Edice pravidel této postavy",
+    "comingSoon": "Přijde v dalším milníku",
+    "buttons": {
+      "shortRest": "Short rest",
+      "longRest": "Long rest",
+      "levelUp": "Level up",
+      "editMode": "Úpravy",
+      "history": "Historie",
+      "switch": "Postavy"
+    }
+  },
+  "settings": {
+    "title": "Nastavení",
+    "links": "Odkazy na pravidla",
+    "linksHint": "Web, který otevře Ctrl+klik na pravidla, zvlášť pro každou edici.",
+    "account": "Účet"
+  },
+  "admin": {
+    "title": "Správa obsahu",
+    "intro": "Nahraj private/official-content.json (vytváří ho scripts/merge-packs.ts). Nahradí veškerý sdílený oficiální obsah.",
+    "current": "Nahraná verze: {{version}}",
+    "nothing": "Zatím není nahraný žádný sdílený obsah.",
+    "upload": "Nahrát",
+    "uploading": "Nahrávám… {{done}}/{{total}}",
+    "uploaded": "Nahráno.",
+    "uploadFailed": "Nahrání selhalo: {{message}}",
+    "unverified": "neověřeno: {{count}}",
+    "access": "Přístup",
+    "restricted": "Sdílený obsah vidí jen pozvané e-maily",
+    "invited": "Pozvané e-maily (jeden na řádek)",
+    "save": "Uložit",
+    "saved": "Uloženo."
+  }
 }

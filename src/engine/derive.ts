@@ -9,6 +9,7 @@ import {
   type ActionType,
   type Activity,
   type Armor,
+  type Dice,
   type Effect,
   type Entity,
   type Resource,
@@ -84,6 +85,8 @@ export type ActivityRow = {
   /** Remaining uses of the first cost resource, if any. */
   uses?: { remaining: number; max: number; resourceKey: string }
   available: boolean
+  /** Resolved dice, e.g. "1d10" for a level 10 Battle Master's maneuver. */
+  rollDice?: string
   rollBonus?: number
   saveDc?: number
 }
@@ -120,6 +123,12 @@ export function proficiencyBonus(characterLevel: number) {
 
 export function abilityMod(score: number) {
   return Math.floor((score - 10) / 2)
+}
+
+export function resolveDice(dice: Dice | undefined, vars: FormulaVars): string | undefined {
+  if (dice === undefined) return undefined
+  if (typeof dice === 'string') return dice
+  return `${resolveScaled(dice.count, vars)}d${resolveScaled(dice.die, vars)}`
 }
 
 export function choiceKey(grantKey: string, choiceId: string) {
@@ -602,6 +611,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
         actionType: activity.actionType,
         uses: activity.cost[0] ? pool(activity.cost[0].resource) : undefined,
         available,
+        rollDice: resolveDice(activity.roll?.dice, v),
         rollBonus: activity.roll?.bonus === undefined ? undefined : resolveScaled(activity.roll.bonus, v),
         saveDc: activity.saveDc === undefined ? undefined : resolveScaled(activity.saveDc, v),
       })

@@ -442,3 +442,10 @@ export const Pack = z.object({
   entities: z.array(Entity),
 })
 export type Pack = z.infer<typeof Pack>
+
+/** The file the admin uploads: all official (non-SRD) packs, one version stamp. */
+export const OfficialContent = z.object({
+  version: z.string(),
+  packs: z.array(Pack),
+})
+export type OfficialContent = z.infer<typeof OfficialContent>

@@ -45,6 +45,16 @@ Tyhle hodnoty nejsou tajné. Patří do klientského kódu každé Firebase appk
 
 Každý push do větve `main` pak appku sestaví, otestuje a nasadí. Průběh je vidět na záložce **Actions**.
 
+### 6. Sdílený oficiální obsah (jen správce)
+
+Obsah z placených knih mimo SRD se do repa nedává. Leží jen u správce ve složce `private/packs/`, kterou Git ignoruje.
+
+1. Spusť `npm run content:merge`. Skript balíčky zkontroluje, vypíše jejich obsah (neověřené položky označí „?“) a vytvoří `private/official-content.json`.
+2. V appce otevři **Nastavení → Správa obsahu** a soubor nahraj.
+3. Ve stejném místě nastav, kdo obsah uvidí. Výchozí je jen pro pozvané e-maily.
+
+Správce je určený svým UID v `firestore.rules` a v `src/config.ts`. Po změně `firestore.rules` je potřeba pravidla znovu publikovat (krok 3.4).
+
 ## Lokální vývoj
 
 Potřebuješ Node.js 24. Na Fedoře ho nainstaluješ příkazem `sudo dnf install nodejs24 nodejs24-npm`.
@@ -54,7 +64,11 @@ npm install
 npm run dev      # vývojový server na http://localhost:5173/LuSo-s-Char-Tracker/
 npm test         # testy
 npm run build    # produkční build do dist/
+npm run build:srd       # znovu převede SRD data (scripts/build-srd.ts)
+npm run content:merge   # sloučí soukromé balíčky pro nahrání
 ```
+
+Ve vývojovém režimu je na `#/dev` náhled listu bez přihlášení (v produkci neexistuje).
 
 ## Licence obsahu a uvedení zdroje
 

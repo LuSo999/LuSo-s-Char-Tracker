@@ -2,13 +2,41 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // The app owner. Keep in sync with ADMIN_UID in src/config.ts.
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == 'Kj7sPwTCy1hPmbCdtGTfzMDcmTs2';
+    }
+
+    // Shared official content is open to every signed-in user unless the admin
+    // restricts it to invited e-mails (content/access, readable by the admin only).
+    function canReadOfficial() {
+      let access = get(/databases/$(database)/documents/content/access).data;
+      return isAdmin() || (
+        request.auth != null && (
+          access.restricted == false ||
+          (request.auth.token.email_verified == true && request.auth.token.email.lower() in access.invited)
+        )
+      );
+    }
+
     // Each user may read and write only their own data:
     // characters, history, homebrew packs and settings.
     match /users/{uid}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // Shared official content and the admin/invite configuration
-    // are added in milestone 3. Everything else is denied.
+    match /content/access {
+      allow read, write: if isAdmin();
+    }
+
+    // content/official holds the version and pack list; packs/{part} the data.
+    match /content/official {
+      allow read: if canReadOfficial();
+      allow write: if isAdmin();
+    }
+    match /content/official/packs/{part} {
+      allow read: if canReadOfficial();
+      allow write: if isAdmin();
+    }
   }
 }

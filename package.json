@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:srd": "node scripts/build-srd.ts"
+    "build:srd": "node scripts/build-srd.ts",
+    "content:merge": "node scripts/merge-packs.ts"
   },
   "dependencies": {
     "firebase": "^13.2.0",

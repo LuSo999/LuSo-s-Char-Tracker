@@ -365,6 +365,8 @@ async function build(edition: Edition) {
     if (cat === 'weapon' || cat === 'weapons') tags.push('magic-weapon')
     if (cat === 'armor') tags.push('magic-armor')
     if (m.variants?.length) tags.push('variant-group')
+    const group = files['Magic-Items'].find((g: Raw) => g.variants?.some((v: Raw) => v.index === m.index))
+    if (group) tags.push(`variant-of:${group.index}`)
     const kind = miKind[cat] ?? 'wondrous'
     entities.push({
       ...base(m),

@@ -12,12 +12,104 @@
   "characters": {
     "title": "Your characters",
     "empty": "No characters yet.",
-    "newName": "Character name",
-    "create": "Create",
     "delete": "Delete",
     "confirmDelete": "Delete {{name}}? This cannot be undone.",
-    "loadFailed": "Could not load characters: {{message}}"
+    "loadFailed": "Could not load characters: {{message}}",
+    "addSample": "Add sample character (SRD)",
+    "import": "Import from file",
+    "export": "Export",
+    "invalid": "(not a valid character — old test entry?)",
+    "importFailed": "The file is not a valid character:",
+    "creatorLater": "The character creator comes in a later milestone; until then use the sample or a character file."
   },
   "language": "Language",
-  "attribution": "This work includes material from the System Reference Document 5.1 and 5.2 by Wizards of the Coast LLC, licensed under CC-BY-4.0."
+  "attribution": "This work includes material from the System Reference Document 5.1 and 5.2 by Wizards of the Coast LLC, licensed under CC-BY-4.0.",
+  "close": "Close",
+  "content": {
+    "ready": "Shared official content: {{count}} pack(s) loaded.",
+    "empty": "Only SRD content is available: shared official content has not been uploaded yet.",
+    "noAccess": "Only SRD content is available: you have not been invited to the shared official content. Ask the app owner.",
+    "error": "Shared official content could not be loaded: {{message}}"
+  },
+  "rules": {
+    "unverified": "unverified",
+    "openHint": "Ctrl+click opens {{site}}",
+    "open": "Open rules",
+    "ctrlHint": "Hold Ctrl (Cmd on Mac) and point at anything from the rules to preview it; Ctrl+click opens the rules page. On a phone, press and hold."
+  },
+  "actionFilter": {
+    "all": "All",
+    "action": "Action",
+    "bonusAction": "Bonus action",
+    "reaction": "Reaction",
+    "other": "Other"
+  },
+  "sheet": {
+    "abilities": "Abilities",
+    "proficiencyBonus": "Proficiency",
+    "passivePerception": "Passive Perception",
+    "savingThrows": "Saving throws",
+    "skills": "Skills",
+    "hitPoints": "Hit points",
+    "initiative": "Initiative",
+    "speed": "Speed",
+    "deathSaves": "Death saves",
+    "actions": "Actions",
+    "usesLeft": "Uses left",
+    "resources": "Resources",
+    "conditions": "Conditions",
+    "features": "Features",
+    "reminders": "Reminders",
+    "none": "None",
+    "featureGroups": {
+      "class": "Class",
+      "subclass": "Subclass",
+      "species": "Species",
+      "background": "Background",
+      "feats": "Feats",
+      "other": "Other"
+    },
+    "equipped": "Equipped",
+    "attunement": "Attunement",
+    "attuned": "attuned",
+    "notAttuned": "not attuned",
+    "missingContent": "Missing from content",
+    "loadFailed": "Could not load the character: {{message}}",
+    "invalid": "This entry is not a valid character.",
+    "notFound": "Character not found.",
+    "backToList": "Back to characters",
+    "computeFailed": "The sheet could not be computed: {{message}}.",
+    "editionHint": "Rules edition of this character",
+    "comingSoon": "Coming in a later milestone",
+    "buttons": {
+      "shortRest": "Short rest",
+      "longRest": "Long rest",
+      "levelUp": "Level up",
+      "editMode": "Edit",
+      "history": "History",
+      "switch": "Characters"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "links": "Rule links",
+    "linksHint": "Website opened by Ctrl+click on rules, per edition.",
+    "account": "Account"
+  },
+  "admin": {
+    "title": "Content admin",
+    "intro": "Upload private/official-content.json (built by scripts/merge-packs.ts). It replaces all shared official content.",
+    "current": "Uploaded version: {{version}}",
+    "nothing": "No shared content uploaded yet.",
+    "upload": "Upload",
+    "uploading": "Uploading… {{done}}/{{total}}",
+    "uploaded": "Uploaded.",
+    "uploadFailed": "Upload failed: {{message}}",
+    "unverified": "{{count}} unverified",
+    "access": "Access",
+    "restricted": "Only invited e-mails can see the shared content",
+    "invited": "Invited e-mails (one per line)",
+    "save": "Save",
+    "saved": "Saved."
+  }
 }

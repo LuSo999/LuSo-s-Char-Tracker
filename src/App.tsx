@@ -1,10 +1,22 @@
-import { HashRouter, Route, Routes } from 'react-router'
+import { lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { HashRouter, Navigate, Route, Routes } from 'react-router'
+import { ADMIN_UID } from './config'
 import { isFirebaseConfigured } from './firebase/config'
 import { useAuth } from './state/auth'
+import { loadOfficial } from './state/official'
+import { watchSettings } from './state/settings'
+import { AdminPage } from './ui/AdminPage'
+import { Card } from './ui/Card'
 import { CharacterList } from './ui/CharacterList'
 import { Layout } from './ui/Layout'
+import { PinnedPreview, RulePreview } from './ui/rules/RulePreview'
+import { SettingsPage } from './ui/SettingsPage'
+import { SheetPage } from './ui/sheet/SheetPage'
 import { SignIn } from './ui/SignIn'
+
+// Dev-only sheet preview without sign-in; compiled out of production builds.
+const DevPreview = import.meta.env.DEV ? lazy(() => import('./ui/DevPreview')) : null
 
 // Hash router: GitHub Pages has no SPA fallback, so the route lives after '#'.
 export default function App() {
@@ -13,6 +25,8 @@ export default function App() {
       <Layout>
         <Main />
       </Layout>
+      <RulePreview />
+      <PinnedPreview />
     </HashRouter>
   )
 }
@@ -20,25 +34,40 @@ export default function App() {
 function Main() {
   const { t } = useTranslation()
   const { user, loading } = useAuth()
+  const uid = user?.uid
 
-  if (!isFirebaseConfigured) {
+  useEffect(() => {
+    watchSettings(uid)
+    if (uid) void loadOfficial(true)
+  }, [uid])
+
+  if (DevPreview && location.hash.startsWith('#/dev')) {
     return (
-      <Card>
-        <h2 className="font-heading text-xl">{t('notConfigured.title')}</h2>
-        <p className="mt-2 text-muted">{t('notConfigured.body')}</p>
-      </Card>
+      <Suspense>
+        <DevPreview />
+      </Suspense>
     )
   }
-  if (loading) return <p className="text-muted">{t('loading')}</p>
-  if (!user) return <SignIn />
+  if (!isFirebaseConfigured) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-8">
+        <Card>
+          <h2 className="font-heading text-xl">{t('notConfigured.title')}</h2>
+          <p className="mt-2 text-muted">{t('notConfigured.body')}</p>
+        </Card>
+      </div>
+    )
+  }
+  if (loading) return <p className="p-4 text-muted">{t('loading')}</p>
+  if (!user || !uid) return <SignIn />
 
   return (
     <Routes>
-      <Route path="*" element={<CharacterList uid={user.uid} />} />
+      <Route path="/" element={<CharacterList uid={uid} />} />
+      <Route path="/c/:id" element={<SheetPage uid={uid} />} />
+      <Route path="/settings" element={<SettingsPage uid={uid} />} />
+      {uid === ADMIN_UID && <Route path="/admin" element={<AdminPage />} />}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
-}
-
-export function Card({ children }: { children: React.ReactNode }) {
-  return <section className="rounded-card border border-border bg-card p-6 shadow-sm">{children}</section>
 }
