@@ -670,6 +670,8 @@
     "spend": "Utratit spell slot:",
     "recover": "Obnovit sloty ({{used}}/{{budget}} úrovní):",
     "clear": "Vymazat",
-    "apply": "Obnovit"
+    "apply": "Obnovit",
+    "title": "Spell sloty",
+    "pact": "Pact sloty ({{level}}. úroveň)"
   }
 }

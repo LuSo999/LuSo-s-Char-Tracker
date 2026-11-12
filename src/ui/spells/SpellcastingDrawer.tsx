@@ -1,14 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
+import { SpellSlots } from './SpellSlots'
 import type { Choice, Spell } from '../../content/schema'
-import { setResourceRemaining } from '../../engine/actions'
 import { selections, type ActiveEntity } from '../../engine/derive'
 import { addExtra } from '../../engine/extras'
 import { castOptions, endConcentration, setChoice, setClassSpell, toggleFavoriteSpell } from '../../engine/spellActions'
 import { spellBrief, spellDice, upcastNote, type CasterState, type SpellRow } from '../../engine/spells'
 import { RuleRef } from '../rules/RuleRef'
-import { Dots } from '../sheet/common'
 import { useRun, useSheet } from '../sheet/context'
 import { useEditMode } from '../sheet/editMode'
 import { signed } from '../sheet/format'
@@ -466,14 +465,12 @@ function StatusStrip() {
 export function SpellcastingDrawer({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation()
   const { character, sheet } = useSheet()
-  const run = useRun()
   const edit = useEditMode((s) => s.on)
   const [manage, setManage] = useState<string>()
   const [filters, setFilters] = useState<SpellFilters>(defaultSpellFilters)
   useOnResetFilters(useCallback(() => setFilters(defaultSpellFilters), []))
   const set = (p: Partial<SpellFilters>) => setFilters((f) => ({ ...f, ...p }))
   const sc = sheet.spellcasting
-  const slotState = (key: string) => sheet.resources.find((r) => r.key === key)
   const granters = sheet.active.filter((ae) => (ae.entity.spells ?? []).length > 0)
   const shown = filterSpells(sc.rows, filters, sheet, character.favoriteSpells)
   const groups = new Map<number | 'all', SpellRow[]>()
@@ -503,25 +500,7 @@ export function SpellcastingDrawer({ onClose }: { onClose: () => void }) {
               </button>
             </div>
           ))}
-          {(sc.slots.length > 0 || sc.pact) && (
-            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              {sc.slots.map((sl) => {
-                const st = slotState(sl.key)!
-                return (
-                  <span key={sl.key} className="flex items-center gap-1">
-                    <span className="text-xs text-muted">{sl.level}.</span>
-                    <Dots remaining={st.remaining} max={st.max} onSet={(n) => void run(setResourceRemaining(character, sheet, sl.key, n))} />
-                  </span>
-                )
-              })}
-              {sc.pact && (
-                <span className="flex items-center gap-1">
-                  <span className="text-xs text-muted">{t('spells.pactShort', { level: sc.pact.level })}</span>
-                  <Dots remaining={slotState('pact')!.remaining} max={slotState('pact')!.max} onSet={(n) => void run(setResourceRemaining(character, sheet, 'pact', n))} />
-                </span>
-              )}
-            </div>
-          )}
+          <SpellSlots interactive className="mt-1.5 text-sm" />
           {!manage && sc.rows.length > 0 && (
             <div className="mt-2">
               <Filters f={filters} set={set} rows={sc.rows} />

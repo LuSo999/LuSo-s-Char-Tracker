@@ -14,6 +14,7 @@ import { useRun, useSheet } from './context'
 import { Editable } from './Editable'
 import { useEditMode } from './editMode'
 import { Term } from '../rules/Term'
+import { SpellSlots } from '../spells/SpellSlots'
 
 const rechargeLabel: Record<RechargeOn, string> = {
   shortRest: 'Short',
@@ -29,9 +30,30 @@ export function ResourcesPanel() {
   const edit = useEditMode((s) => s.on)
   return (
     <Panel title={t('sheet.resources')} icon="🔋">
-      {sheet.resources.every((r) => r.key.startsWith('slot:') || r.key === 'pact') && <p className="text-sm text-muted">{t('sheet.none')}</p>}
+      {(sheet.spellcasting.slots.length > 0 || sheet.spellcasting.pact) && (
+        <div className="mb-2 border-b border-border pb-2">
+          <div className="flex items-center justify-between gap-2">
+            <Term id="rule-spell-slots">
+              <span className="text-sm font-semibold">{t('slots.title')}</span>
+            </Term>
+            <span className="text-xs text-muted">
+              ↻ <Term id="rule-long-rest">Long</Term>
+              {sheet.spellcasting.pact && (
+                <>
+                  {' '}
+                  / Pact: <Term id="rule-short-rest">Short</Term>
+                </>
+              )}
+            </span>
+          </div>
+          <SpellSlots interactive className="mt-1 text-sm" />
+        </div>
+      )}
+      {sheet.resources.every((r) => r.key.startsWith('slot:') || r.key === 'pact' || r.resource.hidden) && !(sheet.spellcasting.slots.length > 0 || sheet.spellcasting.pact) && (
+        <p className="text-sm text-muted">{t('sheet.none')}</p>
+      )}
       <ul className="space-y-1">
-        {/* Spell slots are shown in the Magic tile and the Spellcasting panel. */}
+        {/* Spell slots are listed above as squares (also in the Magic tile and the Spellcasting panel). */}
         {sheet.resources.filter((r) => !r.key.startsWith('slot:') && r.key !== 'pact' && !r.resource.hidden).map((r) => {
           const recharge = r.resource.recharge.length
             ? r.resource.recharge.map((x, i) => {

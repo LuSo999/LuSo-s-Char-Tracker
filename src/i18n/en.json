@@ -670,6 +670,8 @@
     "spend": "Expend a spell slot:",
     "recover": "Recover slots ({{used}}/{{budget}} levels):",
     "clear": "Clear",
-    "apply": "Recover"
+    "apply": "Recover",
+    "title": "Spell slots",
+    "pact": "Pact slots (level {{level}})"
   }
 }

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { SpellSlots } from '../spells/SpellSlots'
 import i18n from '../../i18n'
 import type { ContentIndex } from '../../content'
 import type { ActionType, Entity } from '../../content/schema'
@@ -248,7 +249,6 @@ function MagicTile({ onOpen }: { onOpen: () => void }) {
   const { t } = useTranslation()
   const { character, sheet } = useSheet()
   const sc = sheet.spellcasting
-  const left = (key: string) => sheet.resources.find((r) => r.key === key)
   const caster = sc.casters[0]
   const favorites = sc.rows.filter((r) => character.favoriteSpells.includes(r.spell.id)).length
   return (
@@ -268,19 +268,7 @@ function MagicTile({ onOpen }: { onOpen: () => void }) {
           </Term>
         </span>
       )}
-      {sc.slots.map((s) => {
-        const st = left(s.key)!
-        return (
-          <span key={s.key} className="flex items-center gap-1 text-xs">
-            {s.level}. <Dots remaining={st.remaining} max={st.max} />
-          </span>
-        )
-      })}
-      {sc.pact && (
-        <span className="flex items-center gap-1 text-xs">
-          {t('spells.pactShort', { level: sc.pact.level })} <Dots remaining={left('pact')!.remaining} max={left('pact')!.max} />
-        </span>
-      )}
+      <SpellSlots className="text-xs" />
       {character.concentration && <span className="text-violet-700 dark:text-violet-300">🔮 {character.concentration.name}</span>}
       <span className="ml-auto text-xs text-muted">
         ★ {t('spells.inActions', { count: favorites })} · {t('spells.open')} ›
