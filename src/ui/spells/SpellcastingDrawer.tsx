@@ -213,7 +213,7 @@ function ManageSpells({ caster }: { caster: CasterState }) {
   const [query, setQuery] = useState('')
   const [level, setLevel] = useState<number | 'all'>('all')
   const pool = useMemo(
-    () => content.all('spell').filter((s) => s.classes.includes(caster.classId) && s.level <= caster.maxSpellLevel).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name)),
+    () => content.all('spell').filter((s) => (s.classes.includes(caster.classId) || caster.expanded.includes(s.id)) && s.level <= caster.maxSpellLevel).sort((a, b) => a.level - b.level || a.name.localeCompare(b.name)),
     [content, caster.classId, caster.maxSpellLevel],
   )
   const q = query.trim().toLowerCase()

@@ -2,7 +2,11 @@
 import { longOnly, option, shortAndLong, type ClassOverlay, type Patch } from './common.ts'
 
 const atWill = (...ids: string[]) => ({ spells: ids.map((id) => ({ id, atWill: true })) })
-const withSlot = (id: string) => ({ spells: [{ id }] })
+/** 2014: cast once with a Warlock spell slot, then not again until a long rest. */
+const withSlot = (id: string, invocation: string) => ({
+  resources: [{ id: `invocation-${invocation}`, name: `${invocation.replace(/-/g, ' ')} (once per long rest)`, max: 1, recharge: [{ on: 'longRest', amount: 'all' }] }],
+  spells: [{ id, limit: `invocation-${invocation}` }],
+})
 /** Pact slot level by Warlock level: 1st at 1, 2nd at 3 … 5th from 9. */
 const pactLevel = 'min(5, ceil(level / 2))'
 
@@ -21,17 +25,17 @@ const invocations2014: Record<string, Patch> = {
   'eldritch-invocation-mask-of-many-faces': atWill('disguise-self'),
   'eldritch-invocation-misty-visions': atWill('silent-image'),
   'eldritch-invocation-repelling-blast': {},
-  'eldritch-invocation-thief-of-five-fates': withSlot('bane'),
+  'eldritch-invocation-thief-of-five-fates': withSlot('bane', 'thief-of-five-fates'),
   'eldritch-invocation-voice-of-the-chain-master': {},
-  'eldritch-invocation-mire-the-mind': withSlot('slow'),
+  'eldritch-invocation-mire-the-mind': withSlot('slow', 'mire-the-mind'),
   'eldritch-invocation-one-with-shadows': { activities: [{ id: 'use', name: 'One with Shadows', actionType: 'action', summary: 'In dim light or darkness: invisible until you move or take an action or reaction.' }] },
-  'eldritch-invocation-sign-of-ill-omen': withSlot('bestow-curse'),
+  'eldritch-invocation-sign-of-ill-omen': withSlot('bestow-curse', 'sign-of-ill-omen'),
   'eldritch-invocation-thirsting-blade': { effects: [{ target: 'attacksPerAction', op: 'max', value: 2 }] },
-  'eldritch-invocation-bewitching-whispers': withSlot('compulsion'),
-  'eldritch-invocation-dreadful-word': withSlot('confusion'),
-  'eldritch-invocation-sculptor-of-flesh': withSlot('polymorph'),
+  'eldritch-invocation-bewitching-whispers': withSlot('compulsion', 'bewitching-whispers'),
+  'eldritch-invocation-dreadful-word': withSlot('confusion', 'dreadful-word'),
+  'eldritch-invocation-sculptor-of-flesh': withSlot('polymorph', 'sculptor-of-flesh'),
   'eldritch-invocation-ascendant-step': atWill('levitate'),
-  'eldritch-invocation-minions-of-chaos': withSlot('conjure-elemental'),
+  'eldritch-invocation-minions-of-chaos': withSlot('conjure-elemental', 'minions-of-chaos'),
   'eldritch-invocation-otherworldly-leap': atWill('jump'),
   'eldritch-invocation-whispers-of-the-grave': atWill('speak-with-dead'),
   'eldritch-invocation-lifedrinker': {
@@ -130,9 +134,10 @@ export const warlock: ClassOverlay = {
     'mystic-arcanum-9th-level': { name: 'Mystic Arcanum (9th)', ...arcanum(9, 17) },
     'eldritch-master': {
       resources: [{ id: 'eldritch-master', name: 'Eldritch Master', max: 1, recharge: longOnly }],
-      activities: [{ id: 'use', name: 'Eldritch Master', actionType: 'other', cost: [{ resource: 'eldritch-master' }], fx: 'magic', summary: '1 minute of entreating your patron: regain all Pact Magic slots (restore them on the dots).' }],
+      activities: [{ id: 'use', name: 'Eldritch Master', actionType: 'other', cost: [{ resource: 'eldritch-master' }], restore: [{ resource: 'pact', amount: 'all' }], fx: 'magic', summary: '1 minute of entreating your patron: regain all Pact Magic slots.' }],
     },
     // The Fiend
+    fiend: { expandedSpells: ['burning-hands', 'command', 'blindness-deafness', 'scorching-ray', 'fireball', 'stinking-cloud', 'fire-shield', 'wall-of-fire', 'flame-strike', 'hallow'] },
     'dark-ones-blessing': {
       activities: [{ id: 'use', name: "Dark One's Blessing", actionType: 'other', roll: { bonus: 'max(1, cha + level)', kind: 'temp' }, fx: 'magic', summary: 'When you reduce a hostile creature to 0 HP: Temp HP = Charisma + Warlock level.' }],
     },
@@ -153,7 +158,13 @@ export const warlock: ClassOverlay = {
     },
     'warlock-magical-cunning': {
       resources: [{ id: 'magical-cunning', name: 'Magical Cunning', max: 1, recharge: longOnly }],
-      activities: [{ id: 'use', name: 'Magical Cunning', actionType: 'other', cost: [{ resource: 'magical-cunning' }], fx: 'magic', summary: '1-minute rite: regain expended Pact slots up to half your maximum, rounded up (all from level 20). Restore them on the dots.' }],
+      activities: [
+        {
+          id: 'use', name: 'Magical Cunning', actionType: 'other', cost: [{ resource: 'magical-cunning' }], fx: 'magic',
+          restore: [{ resource: 'pact', amount: { byLevel: { 2: 'ceil(max_pact / 2)', 20: 'max_pact' } } }],
+          summary: '1-minute rite: regain expended Pact slots, up to half your maximum rounded up (all with Eldritch Master at level 20).',
+        },
+      ],
     },
     'warlock-contact-patron': {
       resources: [{ id: 'contact-patron', name: 'Contact Patron (free cast)', max: 1, recharge: longOnly }],
@@ -176,7 +187,10 @@ export const warlock: ClassOverlay = {
     'fiend-patron-fiendish-resilience': { choices: [{ id: 'type', label: 'Resistance', kind: 'option', options: damageTypes, changeable: 'shortRest' }] },
     'fiend-patron-hurl-through-hell': {
       resources: [{ id: 'hurl-through-hell', name: 'Hurl Through Hell', max: 1, recharge: longOnly }],
-      activities: [{ id: 'use', name: 'Hurl Through Hell', actionType: 'other', attack: true, perTurn: 1, cost: [{ resource: 'hurl-through-hell' }], saveDc: '8 + cha + pb', saveAbility: 'cha', roll: { dice: '8d10', kind: 'damage' }, fx: 'magic', summary: 'On a hit: Cha save or the target vanishes until the end of your next turn, Incapacitated, 8d10 Psychic unless a Fiend. A Pact slot restores the use.' }],
+      activities: [
+        { id: 'use', name: 'Hurl Through Hell', actionType: 'other', attack: true, perTurn: 1, cost: [{ resource: 'hurl-through-hell' }], saveDc: '8 + cha + pb', saveAbility: 'cha', roll: { dice: '8d10', kind: 'damage' }, fx: 'magic', summary: 'On a hit: Cha save or the target vanishes until the end of your next turn, Incapacitated, 8d10 Psychic unless a Fiend.' },
+        { id: 'restore', name: 'Hurl Through Hell: Pact slot', actionType: 'other', cost: [{ resource: 'pact' }], restore: [{ resource: 'hurl-through-hell', amount: 1 }], summary: 'Expend a Pact Magic slot to restore Hurl Through Hell (no action).' },
+      ],
     },
   },
 

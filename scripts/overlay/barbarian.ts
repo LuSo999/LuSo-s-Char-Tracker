@@ -38,7 +38,13 @@ export const barbarian: ClassOverlay = {
     'brutal-critical-2-dice': { upgradeOf: 'brutal-critical-1-die' },
     'brutal-critical-3-dice': { upgradeOf: 'brutal-critical-1-die' },
     'relentless-rage': {
-      activities: [{ id: 'use', name: 'Relentless Rage', actionType: 'other', saveDc: 10, saveAbility: 'con', summary: 'At 0 HP while raging: DC 10 Con save to drop to 1 HP instead; +5 DC each use until a short or long rest.' }],
+      resources: [{ id: 'relentless-rage', name: 'Relentless Rage (uses)', max: 20, hidden: true, recharge: shortAndLong() }],
+      activities: [
+        {
+          id: 'use', name: 'Relentless Rage', actionType: 'other', cost: [{ resource: 'relentless-rage' }], saveDc: '10 + 5 * used_relentless_rage', saveAbility: 'con', roll: { bonus: 1, kind: 'heal' },
+          summary: 'Dropped to 0 HP while raging: on a successful Con save, use it to stay at 1 HP. The DC rises by 5 each use until a short or long rest.',
+        },
+      ],
     },
     'primal-champion': {
       effects: [
@@ -50,11 +56,11 @@ export const barbarian: ClassOverlay = {
     frenzy: {
       activities: [
         {
-          id: 'frenzy', name: 'Frenzy', actionType: 'other', toggle: 'Frenzied', fx: 'power',
+          id: 'frenzy', name: 'Frenzy', actionType: 'other', toggle: 'Frenzied', endsWith: 'Raging', onEnd: { exhaustion: 1 }, fx: 'power',
           summary: 'When you rage: frenzy. While raging, one melee weapon attack as a Bonus Action each turn; one level of exhaustion when the rage ends.',
         },
       ],
-      effects: [note('Frenzied: one melee weapon attack as a Bonus Action each turn; exhaustion when the rage ends.', 'Frenzied')],
+      effects: [note('Frenzied: one melee weapon attack as a Bonus Action each turn; ending the rage adds one level of exhaustion.', 'Frenzied')],
     },
     'mindless-rage': { effects: [note('Raging: can’t be charmed or frightened (suspended if it happens before).', 'Raging')] },
     'intimidating-presence': {
@@ -111,11 +117,17 @@ export const barbarian: ClassOverlay = {
     'barbarian-improved-brutal-strike-1': { upgradeOf: 'barbarian-brutal-strike' },
     'barbarian-improved-brutal-strike-2': { upgradeOf: 'barbarian-brutal-strike' },
     'barbarian-relentless-rage': {
-      activities: [{ id: 'use', name: 'Relentless Rage', actionType: 'other', saveDc: 10, saveAbility: 'con', summary: 'At 0 HP while raging: DC 10 Con save to have HP = twice your Barbarian level; +5 DC each use until a Short or Long Rest.' }],
+      resources: [{ id: 'relentless-rage', name: 'Relentless Rage (uses)', max: 20, hidden: true, recharge: shortAndLong() }],
+      activities: [
+        {
+          id: 'use', name: 'Relentless Rage', actionType: 'other', cost: [{ resource: 'relentless-rage' }], saveDc: '10 + 5 * used_relentless_rage', saveAbility: 'con', roll: { bonus: '2 * level', kind: 'heal' },
+          summary: 'Dropped to 0 HP while raging: on a successful Con save, use it to have HP = twice your Barbarian level. The DC rises by 5 each use until a Short or Long Rest.',
+        },
+      ],
     },
     'barbarian-persistent-rage': {
       resources: [{ id: 'persistent-rage', name: 'Persistent Rage', max: 1, recharge: longOnly }],
-      activities: [{ id: 'use', name: 'Persistent Rage', actionType: 'other', cost: [{ resource: 'persistent-rage' }], summary: 'When you roll Initiative: regain all uses of Rage (restore them on the dots). Rage lasts 10 minutes.' }],
+      activities: [{ id: 'use', name: 'Persistent Rage', actionType: 'other', cost: [{ resource: 'persistent-rage' }], restore: [{ resource: 'rage', amount: 'all' }], fx: 'power', summary: 'When you roll Initiative: regain all uses of Rage. Rage lasts 10 minutes.' }],
     },
     'barbarian-primal-champion': {
       effects: [
@@ -142,8 +154,9 @@ export const barbarian: ClassOverlay = {
       activities: [
         {
           id: 'use', name: 'Intimidating Presence', actionType: 'bonusAction', cost: [{ resource: 'intimidating-presence' }], saveDc: '8 + str + pb', saveAbility: 'wis', fx: 'power',
-          summary: 'Chosen creatures in a 30-ft Emanation: Frightened for 1 minute, repeat the save each turn. Spend a Rage to use it again.',
+          summary: 'Chosen creatures in a 30-ft Emanation: Frightened for 1 minute, repeat the save each turn.',
         },
+        { id: 'restore', name: 'Intimidating Presence: spend a Rage', actionType: 'other', cost: [{ resource: 'rage' }], restore: [{ resource: 'intimidating-presence', amount: 1 }], summary: 'Expend a use of Rage to restore Intimidating Presence (no action).' },
       ],
     },
   },

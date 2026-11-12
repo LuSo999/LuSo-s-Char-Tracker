@@ -42,7 +42,7 @@ export const bard: ClassOverlay = {
     'magical-secrets-1': { name: 'Magical Secrets', choices: [{ id: 'spells', label: 'Magical Secrets', kind: 'spell', count: 2 }], spells: [{ fromChoice: 'spells' }] },
     'magical-secrets-2': { name: 'Magical Secrets (14th)', choices: [{ id: 'spells', label: 'Magical Secrets', kind: 'spell', count: 2 }], spells: [{ fromChoice: 'spells' }] },
     'magical-secrets-3': { name: 'Magical Secrets (18th)', choices: [{ id: 'spells', label: 'Magical Secrets', kind: 'spell', count: 2 }], spells: [{ fromChoice: 'spells' }] },
-    'superior-inspiration': { activities: [{ id: 'use', name: 'Superior Inspiration', actionType: 'other', summary: 'When you roll initiative with no Bardic Inspiration left: regain one (restore it on the dots).' }] },
+    'superior-inspiration': { activities: [{ id: 'use', name: 'Superior Inspiration', actionType: 'other', restore: [{ resource: 'bardic-inspiration', amount: 1, upTo: true }], summary: 'Roll initiative with no Bardic Inspiration left: regain one.' }] },
     // College of Lore
     'bonus-proficiencies': { choices: [{ id: 'skills', label: 'Skills', kind: 'skill', count: 3 }] },
     'cutting-words': cuttingWords('When a creature within 60 ft makes an attack roll, ability check or damage roll: subtract the die.'),
@@ -57,7 +57,10 @@ export const bard: ClassOverlay = {
     'bard-countercharm': {
       activities: [{ id: 'use', name: 'Countercharm', actionType: 'reaction', fx: 'magic', summary: 'You or a creature within 30 ft fails a save against Charmed or Frightened: reroll with Advantage.' }],
     },
-    'bard-superior-inspiration': { activities: [{ id: 'use', name: 'Superior Inspiration', actionType: 'other', summary: 'When you roll Initiative: regain Bardic Inspiration up to two uses (restore them on the dots).' }] },
+    'bard-superior-inspiration': { activities: [{ id: 'use', name: 'Superior Inspiration', actionType: 'other', restore: [{ resource: 'bardic-inspiration', amount: 2, upTo: true }], summary: 'When you roll Initiative: regain Bardic Inspiration until you have two.' }] },
+    'bard-font-of-inspiration': {
+      activities: [{ id: 'use', name: 'Font of Inspiration: spend a slot', actionType: 'other', slotCost: true, restore: [{ resource: 'bardic-inspiration', amount: 1 }], fx: 'magic', summary: 'Expend a spell slot to regain one Bardic Inspiration (no action).' }],
+    },
     'bard-words-of-creation': { spells: [{ id: 'power-word-heal' }, { id: 'power-word-kill' }] },
     // College of Lore
     'lore-bonus-proficiencies': { choices: [{ id: 'skills', label: 'Skills', kind: 'skill', count: 3 }] },

@@ -9,7 +9,7 @@ Ověřeno proti SRD 5.1 (2014) a SRD 5.2.1 (2024). Sorcery Points se porovnávaj
 | Slot na body | Bonus action, body = úroveň slotu | Bez akce | Automaticky |
 | Metamagic | 2 (3.), +1 (10.), +1 (17.); 8 možností | 2/4/6 (2/10/17); 10 možností včetně Seeking a Transmuted | Volba; každá možnost je akce, která utratí body. Twinned (2014) se zeptá kolik |
 | Innate Sorcery | — | Bonus Action, 2× long rest: DC +1, advantage na útoky Sorcerer kouzel | Stav **Innate Sorcery**; DC automaticky (pro všechna kouzla postavy) |
-| Sorcerous Restoration | 4 SP po short restu | ½ levelu SP po short restu, 1× long rest | Akce-připomínka |
+| Sorcerous Restoration | 4 SP po short restu | ½ levelu SP po short restu, 1× long rest | Automaticky vrátí body (2014: 4, 2024: ½ levelu, 1× long rest) |
 | Sorcery Incarnate, Arcane Apotheosis | — | Innate Sorcery za 2 SP; 2 metamagic na kouzlo | Akce / popis |
 
 ## Draconic Bloodline / Draconic Sorcery
@@ -20,5 +20,5 @@ Ověřeno proti SRD 5.1 (2014) a SRD 5.2.1 (2024). Sorcery Points se porovnávaj
 | Draconic Resilience | +1 HP za level, AC 13 + Dex bez zbroje | +1 HP za level, AC 10 + Dex + Cha | Automaticky |
 | Draconic Spells | — | 3: Alter Self, Chromatic Orb, Command, Dragon's Breath · 5: Fear, Fly · 7: Arcane Eye, Charm Monster · 9: Legend Lore, Summon Dragon | Automaticky vždy připravené |
 | Elemental Affinity | +Cha k damage typu draka; 1 SP odolnost | Volba typu; Resistance a +Cha | Popis / volba |
-| Dragon Wings | Bonus action, létání | Bonus Action, 60 ft na hodinu, 1× long rest (nebo 3 SP) | Stav **Dragon Wings** |
+| Dragon Wings | Bonus action, létání | Bonus Action, 60 ft na hodinu, 1× long rest (nebo 3 SP) | Stav **Dragon Wings**; obnova za 3 SP jako akce |
 | Draconic Presence / Dragon Companion | 5 SP aura strachu nebo úcty | Summon Dragon 1× zdarma | Akce / sešlení zdarma |

@@ -13,8 +13,8 @@ Ověřeno proti SRD 5.1 (2014) a SRD 5.2.1 (2024). Ki / Focus Points, Martial Ar
 | Step of the Wind | 1 ki: Dash nebo Disengage | Zdarma Dash; 1 FP: Disengage + Dash | Dvě akce |
 | Ki / Focus save DC | 8 + PB + Wis | 8 + Wis + PB | Automaticky u Stunning Strike atd. |
 | Unarmored Movement | +10…+30 ft | Totéž | Automaticky (bez zbroje a štítu) |
-| Uncanny Metabolism | — | Při initiative: vrátí všechny FP a léčí MA die + level; 1× long rest | Akce s léčením; FP vrátíš na tečkách |
-| Deflect Missiles / Attacks | Reakce: −(1d10 + Dex + level) střelné zbraně | Reakce: totéž pro B/P/S útoky (od 13. všechny) | Akce s hodem |
+| Uncanny Metabolism | — | Při initiative: vrátí všechny FP a léčí MA die + level; 1× long rest | Automaticky: vrátí všechny FP a vyléčí |
+| Deflect Missiles / Attacks | Reakce: −(1d10 + Dex + level) střelné zbraně | Reakce: totéž pro B/P/S útoky (od 13. všechny) | Akce s hodem; hození zpět / přesměrování jako akce s kostkami a DC |
 | Slow Fall | −5× level | Totéž | Akce |
 | Extra Attack | 5. | 5. | Automaticky |
 | Stunning Strike | 1 ki při zásahu, Con save nebo Stunned | 1 FP, 1× za tah; při úspěchu poloviční Speed a advantage | Akce s DC |

@@ -67,12 +67,18 @@ describe.each(editions)('SRD %s', (edition) => {
       const all = [
         ...e.effects.flatMap((x) => formulas(x.value)),
         ...e.resources.flatMap((r) => [...formulas(r.max), ...formulas(r.die)]),
-        ...e.activities.flatMap((a) => [...formulas(a.roll?.bonus), ...formulas(a.saveDc)]),
+        ...e.activities.flatMap((a) => [
+          ...formulas(a.roll?.bonus),
+          ...formulas(a.saveDc),
+          ...formulas(a.recoverSlots),
+          ...a.restore.flatMap((r) => (r.amount === 'all' ? [] : formulas(r.amount))),
+        ]),
         ...e.choices.flatMap((c) => formulas(c.count)),
       ]
       for (const f of all) {
         try {
-          evalFormula(f, formulaVars)
+          // Resource counts (used_<id>, max_<id>) exist at runtime for every resource.
+          evalFormula(f, new Proxy(formulaVars, { get: (t, k: string) => (k in t ? t[k as keyof typeof t] : /^(used|max)_/.test(k) ? 1 : undefined) }))
         } catch (err) {
           bad.push(`${e.id}: ${(err as Error).message}`)
         }

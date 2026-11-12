@@ -22,7 +22,7 @@ Ověřeno proti SRD 5.1 (2014) a SRD 5.2.1 (2024). **Automaticky** znamená, že
 | Schopnost | 5e (2014) | 5.5e (2024) | Appka |
 | --- | --- | --- | --- |
 | Spellbook | Zapisují se kouzla, připravují se z knihy | stejné | Automaticky (📖 a „připravené“) |
-| Arcane Recovery | Jednou denně po short restu obnovit sloty v součtu levelů ≤ polovina levelu Wizarda (nahoru), žádný 6.+ | Stejné, jednou za long rest | Použití se hlídá, sloty doklikneš na tečkách |
+| Arcane Recovery | Jednou denně po short restu obnovit sloty v součtu levelů ≤ polovina levelu Wizarda (nahoru), žádný 6.+ | Stejné, jednou za long rest | Automaticky: vybereš sloty, appka hlídá součet úrovní a doplní je |
 | Ritual Adept | (součást Spellcasting) | Rituál z knihy bez přípravy | Automaticky |
 | Scholar | — | Level 2: expertise v Arcana, History, Investigation, Medicine, Nature nebo Religion | Automaticky (volba) |
 | Memorize Spell | — | Po short restu vyměnit jedno připravené kouzlo za jiné z knihy | Výměnu uděláš ve „Spravovat kouzla“ |

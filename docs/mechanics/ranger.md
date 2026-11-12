@@ -9,7 +9,7 @@ Ověřeno proti SRD 5.1 (2014) a SRD 5.2.1 (2024). Počty Favored Enemy / Favore
 | Deft Explorer | — | Expertise v 1 dovednosti, 2 jazyky | Volby |
 | Fighting Style | Archery, Defense, Dueling, Two-Weapon Fighting | Fighting Style feat (nebo Druidic Warrior) | 2014: automaticky. 2024: feat |
 | Weapon Mastery | — | 2 zbraně | Automaticky |
-| Primeval Awareness | Action, utratí slot | — | Akce; slot odečteš na tečkách |
+| Primeval Awareness | Action, utratí slot | — | Akce: vybereš slot, appka ho utratí |
 | Extra Attack | 5. | 5. | Automaticky |
 | Roving / Land's Stride | Bez postihu v přírodním terénu | +10 ft bez těžké zbroje, Climb a Swim Speed | 2024: rychlost automaticky |
 | Expertise | — | 2 dovednosti (9.) | Volba |

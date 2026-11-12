@@ -137,7 +137,8 @@ export const paladin: ClassOverlay = {
     'devotion-holy-nimbus': {
       resources: [{ id: 'holy-nimbus', name: 'Holy Nimbus', max: 1, recharge: longOnly }],
       activities: [
-        { id: 'use', name: 'Holy Nimbus', actionType: 'bonusAction', cost: [{ resource: 'holy-nimbus' }], toggle: 'Holy Nimbus', fx: 'magic', summary: '10 minutes: Advantage on saves forced by Fiends and Undead; enemies starting in your aura take Radiant (Cha + PB); Bright Light. A level 5 slot restores the use.' },
+        { id: 'use', name: 'Holy Nimbus', actionType: 'bonusAction', cost: [{ resource: 'holy-nimbus' }], toggle: 'Holy Nimbus', fx: 'magic', summary: '10 minutes: Advantage on saves forced by Fiends and Undead; enemies starting in your aura take Radiant (Cha + PB); Bright Light.' },
+        { id: 'restore', name: 'Holy Nimbus: level 5 slot', actionType: 'other', cost: [{ resource: 'slot:5' }], restore: [{ resource: 'holy-nimbus', amount: 1 }], summary: 'Expend a level 5 spell slot to restore Holy Nimbus (no action).' },
       ],
     },
   },

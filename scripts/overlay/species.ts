@@ -31,7 +31,7 @@ export const species: ClassOverlay = {
       ],
       spells: [
         { id: 'thaumaturgy', ability: 'cha' },
-        { id: 'hellish-rebuke', minLevel: 3, freeCast: 'infernal-legacy-rebuke', ability: 'cha' },
+        { id: 'hellish-rebuke', minLevel: 3, freeCast: 'infernal-legacy-rebuke', freeLevel: 2, ability: 'cha' },
         { id: 'darkness', minLevel: 5, freeCast: 'infernal-legacy-darkness', ability: 'cha' },
       ],
     },

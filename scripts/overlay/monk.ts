@@ -33,8 +33,9 @@ export const monk: ClassOverlay = {
       activities: [
         {
           id: 'use', name: 'Deflect Missiles', actionType: 'reaction', roll: { dice: '1d10', bonus: 'dex + level', kind: 'other' },
-          summary: 'Hit by a ranged weapon attack: reduce the damage. At 0 you can catch it and spend 1 ki to throw it back (monk weapon, 20/60 ft).',
+          summary: 'Hit by a ranged weapon attack: reduce the damage. At 0 you can catch it and throw it back (below).',
         },
+        { id: 'throw', name: 'Deflect Missiles: throw back', actionType: 'other', attack: true, cost: [{ resource: 'ki' }], roll: { dice: { count: 1, die: { byLevel: { 1: 4, 5: 6, 11: 8, 17: 10 } } }, bonus: 'max(str, dex)', kind: 'damage' }, summary: 'Caught missile: ranged attack (monk weapon, 20/60 ft).' },
       ],
     },
     'slow-fall': {
@@ -52,6 +53,9 @@ export const monk: ClassOverlay = {
     'diamond-soul': {
       effects: [{ target: 'proficiency:save:all', value: 1 }],
       activities: [{ id: 'use', name: 'Diamond Soul', actionType: 'other', cost: [{ resource: 'ki' }], summary: 'Reroll a failed saving throw and use the new roll.' }],
+    },
+    'perfect-self': {
+      activities: [{ id: 'use', name: 'Perfect Self', actionType: 'other', restore: [{ resource: 'ki', amount: 4, upTo: true }], summary: 'Roll initiative with no ki left: regain 4 ki points.' }],
     },
     'empty-body': {
       activities: [
@@ -105,7 +109,8 @@ export const monk: ClassOverlay = {
         {
           id: 'use', name: 'Uncanny Metabolism', actionType: 'other', cost: [{ resource: 'uncanny-metabolism' }],
           roll: { dice: { count: 1, die: { byLevel: { 1: 6, 5: 8, 11: 10, 17: 12 } } }, bonus: 'level', kind: 'heal' },
-          summary: 'When you roll Initiative: regain all Focus Points (restore them on the dots) and heal Martial Arts die + Monk level.',
+          restore: [{ resource: 'focus', amount: 'all' }],
+          summary: 'When you roll Initiative: regain all Focus Points and heal Martial Arts die + Monk level.',
         },
       ],
     },
@@ -113,7 +118,11 @@ export const monk: ClassOverlay = {
       activities: [
         {
           id: 'use', name: 'Deflect Attacks', actionType: 'reaction', roll: { dice: '1d10', bonus: 'dex + level', kind: 'other' },
-          summary: 'Hit by an attack dealing Bludgeoning, Piercing or Slashing (any type from level 13): reduce the damage. At 0, spend 1 Focus to redirect it (Dex save, 2 Martial Arts dice + Dex).',
+          summary: 'Hit by an attack dealing Bludgeoning, Piercing or Slashing (any type from level 13): reduce the damage. At 0 you can redirect it (below).',
+        },
+        {
+          id: 'redirect', name: 'Deflect Attacks: redirect', actionType: 'other', attack: true, cost: [{ resource: 'focus' }], saveDc: '8 + dex + pb', saveAbility: 'dex',
+          roll: { dice: { count: 2, die: { byLevel: { 1: 6, 5: 8, 11: 10, 17: 12 } } }, bonus: 'dex', kind: 'damage' }, summary: 'Damage reduced to 0: a creature within 5 ft (60 ft if the attack was ranged) makes a Dex save or takes this damage.',
         },
       ],
     },

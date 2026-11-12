@@ -33,7 +33,7 @@ export const ranger: ClassOverlay = {
     'ranger-fighting-style-dueling': fightingStyleEffects2014.dueling,
     'ranger-fighting-style-two-weapon-fighting': fightingStyleEffects2014['two-weapon-fighting'],
     'primeval-awareness': {
-      activities: [{ id: 'use', name: 'Primeval Awareness', actionType: 'action', fx: 'magic', summary: 'Expend a ranger spell slot (spend it on the slot dots): for 1 minute per slot level, sense aberrations, celestials, dragons, elementals, fey, fiends and undead within 1 mile (6 in favored terrain).' }],
+      activities: [{ id: 'use', name: 'Primeval Awareness', actionType: 'action', slotCost: true, fx: 'magic', summary: 'Expend a spell slot: for 1 minute per slot level, sense aberrations, celestials, dragons, elementals, fey, fiends and undead within 1 mile (6 in favored terrain).' }],
     },
     'ranger-extra-attack': { effects: [{ target: 'attacksPerAction', op: 'max', value: 2 }] },
     'ranger-archetype-improvement-1': { upgradeOf: 'ranger-archetype' },

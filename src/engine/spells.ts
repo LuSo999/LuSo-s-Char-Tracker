@@ -32,6 +32,8 @@ export type CasterState = {
   known: string[]
   prepared: string[]
   pact: boolean
+  /** Extra spells on this class's list (2014 Fiend: Expanded Spell List). */
+  expanded: string[]
 }
 
 export type SpellRow = {
@@ -54,6 +56,10 @@ export type SpellRow = {
   freeCast?: string
   /** Cast without a slot at will (Eldritch Invocations). */
   atWill?: boolean
+  /** Casting with a slot also spends one use of this resource. */
+  limit?: string
+  /** Level of the free cast, if higher than the spell's own. */
+  freeLevel?: number
 }
 
 export type SlotLevel = { level: number; max: number; key: string }
@@ -116,6 +122,7 @@ export function computeSpellcasting(
       known: state.known.filter((id) => !isCantrip(id)),
       prepared: state.prepared,
       pact: cls.spellcasting === 'pact',
+      expanded: active.filter((ae) => ae.classId === cls.id).flatMap((ae) => ae.entity.expandedSpells ?? []),
     })
   }
 
@@ -182,6 +189,8 @@ export function computeSpellcasting(
           castable: true, always: true, ritualOnly: false, canRitual: spell.ritual,
           freeCast: 'freeCast' in g ? g.freeCast : undefined,
           atWill: 'atWill' in g ? g.atWill : undefined,
+          limit: 'limit' in g ? g.limit : undefined,
+          freeLevel: 'freeLevel' in g ? g.freeLevel : undefined,
         })
       }
     }

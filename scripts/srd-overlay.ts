@@ -84,7 +84,7 @@ const overlay2014: Record<string, Patch> = {
   // Wizard
   'arcane-recovery': {
     resources: [{ id: 'arcane-recovery', name: 'Arcane Recovery', max: 1, recharge: longOnly }],
-    activities: [{ id: 'use', name: 'Arcane Recovery', actionType: 'other', cost: [{ resource: 'arcane-recovery' }], roll: { bonus: 'ceil(level / 2)', kind: 'other' }, summary: 'After a Short Rest: recover spell slots with this combined level (none 6th+). Restore them on the slot dots.' }],
+    activities: [{ id: 'use', name: 'Arcane Recovery', actionType: 'other', cost: [{ resource: 'arcane-recovery' }], recoverSlots: 'ceil(level / 2)', fx: 'magic', summary: 'Once per day after a short rest: recover expended spell slots with a combined level up to half your wizard level (none 6th+).' }],
   },
   // Champion
   'improved-critical': { effects: [{ target: 'critRange', op: 'min', value: 19, when: 'weaponAttack' }] },
@@ -168,7 +168,7 @@ const overlay2024: Record<string, Patch> = {
   // Wizard
   'wizard-arcane-recovery': {
     resources: [{ id: 'arcane-recovery', name: 'Arcane Recovery', max: 1, recharge: longOnly }],
-    activities: [{ id: 'use', name: 'Arcane Recovery', actionType: 'other', cost: [{ resource: 'arcane-recovery' }], roll: { bonus: 'ceil(level / 2)', kind: 'other' }, summary: 'After a Short Rest: recover spell slots with this combined level (none level 6+). Restore them on the slot dots.' }],
+    activities: [{ id: 'use', name: 'Arcane Recovery', actionType: 'other', cost: [{ resource: 'arcane-recovery' }], recoverSlots: 'ceil(level / 2)', fx: 'magic', summary: 'After a Short Rest: recover expended spell slots with a combined level up to half your Wizard level (none level 6+).' }],
   },
   'wizard-scholar': {
     choices: [{ id: 'skill', label: 'Expertise', kind: 'skill', expertise: true, options: ['arcana', 'history', 'investigation', 'medicine', 'nature', 'religion'] }],

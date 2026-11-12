@@ -330,6 +330,65 @@ function BlockedPrompt({ row, problem, onChoose }: { row: Row; problem: Problem;
 }
 
 /** Asks for the physical dice result of a healing action; the bonus is added by the app. */
+/**
+ * Slot choice for activities: expend one slot (Font of Inspiration, Wild
+ * Resurgence) or recover expended slots up to a combined level (Arcane Recovery).
+ */
+function SlotPrompt({ row, onDone }: { row: ActivityRow; onDone: (opts?: { slotKey?: string; recover?: number[] }) => void }) {
+  const { t } = useTranslation()
+  const { sheet } = useSheet()
+  const [picked, setPicked] = useState<number[]>([])
+  const res = (key: string) => sheet.resources.find((r) => r.key === key)
+  const slots = [...sheet.spellcasting.slots.map((s) => ({ key: s.key, level: s.level })), ...(sheet.spellcasting.pact ? [{ key: 'pact', level: sheet.spellcasting.pact.level }] : [])]
+  if (row.recoverSlots === undefined) {
+    return (
+      <div className="mt-1 flex flex-wrap items-center gap-1.5 rounded border border-violet-500/60 bg-violet-500/5 p-2 text-sm">
+        <span className="font-semibold">{t('slots.spend')}</span>
+        {slots.map((s) => (
+          <button key={s.key} disabled={(res(s.key)?.remaining ?? 0) <= 0} className="rounded border border-violet-500/60 px-2 py-0.5 hover:bg-violet-500/10 disabled:opacity-40" onClick={() => onDone({ slotKey: s.key })}>
+            {s.key === 'pact' ? t('spells.castPact', { level: s.level }) : t('spells.castAt', { level: s.level })} <span className="text-xs text-muted">({res(s.key)?.remaining ?? 0})</span>
+          </button>
+        ))}
+        <button className="text-muted underline" onClick={() => onDone()}>
+          {t('cancel')}
+        </button>
+      </div>
+    )
+  }
+  const budget = row.recoverSlots
+  const used = picked.reduce((a, b) => a + b, 0)
+  const expended = (level: number) => (res(`slot:${level}`)?.used ?? 0) - picked.filter((l) => l === level).length
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-1.5 rounded border border-violet-500/60 bg-violet-500/5 p-2 text-sm">
+      <span className="font-semibold">{t('slots.recover', { used, budget })}</span>
+      {sheet.spellcasting.slots
+        .filter((s) => s.level <= 5)
+        .map((s) => (
+          <button
+            key={s.key}
+            disabled={expended(s.level) <= 0 || used + s.level > budget}
+            className="rounded border border-violet-500/60 px-2 py-0.5 hover:bg-violet-500/10 disabled:opacity-40"
+            onClick={() => setPicked([...picked, s.level])}
+          >
+            + {t('spells.castAt', { level: s.level })} <span className="text-xs text-muted">({Math.max(0, expended(s.level))})</span>
+          </button>
+        ))}
+      {picked.length > 0 && <span className="text-xs">{picked.map((l) => `L${l}`).join(' + ')}</span>}
+      <button disabled={!picked.length} className="rounded bg-accent px-3 py-0.5 font-semibold text-accent-text disabled:opacity-50" onClick={() => onDone({ recover: picked })}>
+        {t('slots.apply')}
+      </button>
+      {picked.length > 0 && (
+        <button className="text-muted underline" onClick={() => setPicked([])}>
+          {t('slots.clear')}
+        </button>
+      )}
+      <button className="text-muted underline" onClick={() => onDone()}>
+        {t('cancel')}
+      </button>
+    </div>
+  )
+}
+
 /** Font of Magic: pick the slot level to create (for Sorcery Points) or to turn into points. */
 function FontPrompt({ row, onDone }: { row: ActivityRow; onDone: () => void }) {
   const { t } = useTranslation()
@@ -373,7 +432,8 @@ function FontPrompt({ row, onDone }: { row: ActivityRow; onDone: () => void }) {
 
 /** Activities that ask for a number first: healing / Temp HP rolls, and points spent from a pool. */
 const healing = (r: Row) => ['heal', 'temp'].includes(r.activity?.activity.roll?.kind ?? '')
-const needsPrompt = (r: Row) => !!r.activity && (r.activity.activity.spendInput || !!r.activity.activity.fontOfMagic || (healing(r) && !!r.activity.rollDice))
+const slotPicker = (r: Row) => !!r.activity && (r.activity.activity.slotCost || r.activity.recoverSlots !== undefined)
+const needsPrompt = (r: Row) => !!r.activity && (r.activity.activity.spendInput || !!r.activity.activity.fontOfMagic || slotPicker(r) || (healing(r) && !!r.activity.rollDice))
 /** Healing / Temp HP without dice (Dark One's Blessing): the bonus applies straight away. */
 const autoRoll = (r: Row) => (healing(r) && !r.activity?.rollDice ? 0 : undefined)
 
@@ -500,8 +560,16 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
   }
 
   /** Pay, record and animate. `as` spends a different slot (Opportunity Attack…) or none ("ignore"). */
-  async function perform(r: Row, as?: Slot | 'ignore', at?: { x: number; y: number }, roll?: number, thrown = false, spendOnly = false) {
-    const result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll, { spendOnly })
+  async function perform(
+    r: Row,
+    as?: Slot | 'ignore',
+    at?: { x: number; y: number },
+    roll?: number,
+    thrown = false,
+    spendOnly = false,
+    slots: { slotKey?: string; recover?: number[] } = {},
+  ) {
+    const result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll, { spendOnly, ...slots })
     if (!result.ok) return void run(result)
     const before = snapshotTurn()
     let actionId: string | undefined
@@ -778,7 +846,16 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
             )}
             {blocked?.key === r.key && <BlockedPrompt row={r} problem={blocked.problem} onChoose={(c) => void chooseBlocked(r, c)} />}
             {prompt === r.key && r.activity?.activity.fontOfMagic && <FontPrompt row={r.activity} onDone={() => setPrompt(undefined)} />}
-            {prompt === r.key && r.activity && !r.activity.activity.fontOfMagic && <RollPrompt row={r.activity} onDone={(roll, spendOnly) => void finishRoll(r, roll, spendOnly)} />}
+            {prompt === r.key && r.activity && slotPicker(r) && (
+              <SlotPrompt
+                row={r.activity}
+                onDone={(opts) => {
+                  setPrompt(undefined)
+                  if (opts) void perform(r, mode === 'strict' && problemOf(r) ? 'ignore' : undefined, undefined, autoRoll(r), false, false, opts)
+                }}
+              />
+            )}
+            {prompt === r.key && r.activity && !r.activity.activity.fontOfMagic && !slotPicker(r) && <RollPrompt row={r.activity} onDone={(roll, spendOnly) => void finishRoll(r, roll, spendOnly)} />}
           </li>
         ))}
       </ul>

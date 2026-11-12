@@ -665,5 +665,11 @@
   "font": {
     "create": "Create a spell slot:",
     "convert": "Turn a spell slot into Sorcery Points:"
+  },
+  "slots": {
+    "spend": "Expend a spell slot:",
+    "recover": "Recover slots ({{used}}/{{budget}} levels):",
+    "clear": "Clear",
+    "apply": "Recover"
   }
 }

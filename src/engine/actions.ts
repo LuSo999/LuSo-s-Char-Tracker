@@ -154,6 +154,13 @@ function remainingOf(char: Character, sheet: Sheet, key: string): { remaining: n
 }
 
 /** Write a new "remaining" value for a resource key (uses, item charges or item quantity). */
+/** Remaining uses taking earlier changes to the same character into account. */
+function currentRemaining(char: Character, sheet: Sheet, key: string): number | undefined {
+  const r = sheet.resources.find((x) => x.key === key)
+  if (!r || r.source.item) return r?.remaining
+  return r.max - (char.resourcesUsed[key] ?? 0)
+}
+
 function withRemaining(char: Character, sheet: Sheet, key: string, remaining: number): Character {
   if (key.startsWith('quantity:')) {
     const uid = key.slice('quantity:'.length)
@@ -187,7 +194,13 @@ export function setResourceRemaining(char: Character, sheet: Sheet, key: string,
  * features (spendInput) — the number of points spent; `opts.spendOnly` spends
  * them without healing (Lay on Hands curing Poisoned).
  */
-export function performActivity(char: Character, sheet: Sheet, row: ActivityRow, roll?: number, opts: { spendOnly?: boolean } = {}): ActionResult {
+export function performActivity(
+  char: Character,
+  sheet: Sheet,
+  row: ActivityRow,
+  roll?: number,
+  opts: { spendOnly?: boolean; slotKey?: string; recover?: number[] } = {},
+): ActionResult {
   let next = char
   const name = row.source.entity.type === 'item' ? `${row.source.entity.name}` : row.activity.name
   const items: HistoryItem[] = [{ type: 'use', params: { name }, entity: row.source.entity.id }]
@@ -198,6 +211,36 @@ export function performActivity(char: Character, sheet: Sheet, row: ActivityRow,
     if (!r || r.remaining < amount) return { ok: false, error: 'notEnough', params: { name: r?.name ?? cost.resourceKey } }
     next = withRemaining(next, sheet, cost.resourceKey, r.remaining - amount)
     items.push({ type: 'resource', params: { name: r.name }, before: r.remaining, after: r.remaining - amount })
+  }
+  // Font of Inspiration, Wild Resurgence…: also expends a spell slot the player picks.
+  if (row.activity.slotCost) {
+    const r = opts.slotKey && remainingOf(next, sheet, opts.slotKey)
+    if (!r || r.remaining <= 0) return { ok: false, error: 'noSlot', params: { level: opts.slotKey?.replace('slot:', '') ?? '?' } }
+    next = withRemaining(next, sheet, opts.slotKey!, r.remaining - 1)
+    items.push({ type: 'resource', params: { name: r.name }, before: r.remaining, after: r.remaining - 1 })
+  }
+  // Uncanny Metabolism, Magical Cunning…: give resources back.
+  for (const back of row.restores) {
+    const r = remainingOf(next, sheet, back.resourceKey)
+    if (!r) continue
+    const current = currentRemaining(next, sheet, back.resourceKey) ?? r.remaining
+    const after = back.amount === 'all' ? r.max : back.upTo ? Math.max(current, Math.min(r.max, back.amount)) : Math.min(r.max, current + back.amount)
+    if (after === current) continue
+    next = withRemaining(next, sheet, back.resourceKey, after)
+    items.push({ type: 'resource', params: { name: r.name }, before: current, after })
+  }
+  // Arcane Recovery, Natural Recovery: chosen expended slots, combined level within the budget, none above 5.
+  if (row.recoverSlots !== undefined && opts.recover?.length) {
+    const total = opts.recover.reduce((a, b) => a + b, 0)
+    if (total > row.recoverSlots || opts.recover.some((l) => l > 5)) return { ok: false, error: 'slotTooHigh', params: { level: Math.max(...opts.recover) } }
+    for (const level of opts.recover) {
+      const key = `slot:${level}`
+      const r = remainingOf(next, sheet, key)
+      const current = currentRemaining(next, sheet, key)
+      if (!r || current === undefined || current >= r.max) return { ok: false, error: 'noChange' }
+      next = withRemaining(next, sheet, key, current + 1)
+      items.push({ type: 'resource', params: { name: r.name }, before: current, after: current + 1 })
+    }
   }
   // Rage, Wild Shape…: the activity switches its state on.
   const state = row.activity.toggle && `state:${row.activity.toggle}`
@@ -269,10 +312,45 @@ export function setExhaustion(char: Character, level: number): ActionResult {
   return ok({ ...char, exhaustion: value }, 'condition', [{ type: 'exhaustion', before: char.exhaustion, after: value, entity: 'exhaustion' }])
 }
 
-export function toggleEffect(char: Character, key: string, label: string): ActionResult {
+export function toggleEffect(char: Character, key: string, label: string, sheet?: Sheet): ActionResult {
   const on = char.toggles.includes(key)
+  if (on && sheet) {
+    const ended = endStates(char, sheet, [key])
+    return ok(ended.character, 'toggle', ended.items)
+  }
   const toggles = on ? char.toggles.filter((t) => t !== key) : [...char.toggles, key]
   return ok({ ...char, toggles }, 'toggle', [{ type: on ? 'toggleOff' : 'toggleOn', params: { name: label } }])
+}
+
+/**
+ * Switch states off, with the states tied to them (Frenzied ends with
+ * Raging) and what ending them costs (2014 Frenzy: one level of Exhaustion).
+ */
+export function endStates(char: Character, sheet: Sheet, keys: string[]): { character: Character; items: HistoryItem[] } {
+  const ending = new Set(keys.filter((k) => char.toggles.includes(k)))
+  const stateActivities = sheet.active.flatMap((ae) => ae.entity.activities.filter((a) => a.toggle))
+  for (let grew = true; grew; ) {
+    grew = false
+    for (const a of stateActivities) {
+      const key = `state:${a.toggle}`
+      if (a.endsWith && ending.has(`state:${a.endsWith}`) && char.toggles.includes(key) && !ending.has(key)) {
+        ending.add(key)
+        grew = true
+      }
+    }
+  }
+  const items: HistoryItem[] = []
+  let exhaustion = char.exhaustion
+  for (const key of ending) {
+    items.push({ type: 'toggleOff', params: { name: key.replace(/^state:/, '').replace(/^.*#/, '') } })
+    const onEnd = stateActivities.find((a) => `state:${a.toggle}` === key)?.onEnd
+    if (onEnd?.exhaustion) {
+      const after = Math.min(6, exhaustion + onEnd.exhaustion)
+      items.push({ type: 'exhaustion', before: exhaustion, after, entity: 'exhaustion' })
+      exhaustion = after
+    }
+  }
+  return { character: { ...char, exhaustion, toggles: char.toggles.filter((k) => !ending.has(k)) }, items }
 }
 
 // --- Rests ------------------------------------------------------------------------------

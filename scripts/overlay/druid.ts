@@ -63,7 +63,7 @@ export const druid: ClassOverlay = {
     'bonus-cantrip': { choices: [{ id: 'cantrip', label: 'Druid cantrip', kind: 'spell', spellLevel: 0, spellClasses: ['druid'] }], spells: [{ fromChoice: 'cantrip' }] },
     'natural-recovery': {
       resources: [{ id: 'natural-recovery', name: 'Natural Recovery', max: 1, recharge: longOnly }],
-      activities: [{ id: 'use', name: 'Natural Recovery', actionType: 'other', cost: [{ resource: 'natural-recovery' }], roll: { bonus: 'ceil(level / 2)', kind: 'other' }, summary: 'During a short rest: recover spell slots with this combined level (none 6th+). Restore them on the slot dots.' }],
+      activities: [{ id: 'use', name: 'Natural Recovery', actionType: 'other', cost: [{ resource: 'natural-recovery' }], recoverSlots: 'ceil(level / 2)', fx: 'magic', summary: 'During a short rest: recover expended spell slots with a combined level up to half your druid level (none 6th+).' }],
     },
   },
 
@@ -80,10 +80,20 @@ export const druid: ClassOverlay = {
       effects: [note('Wild Shape: the Beast’s stat block replaces yours (keep HP, Hit Dice, Int, Wis, Cha, class features); no spellcasting.', 'Wild Shape')],
     },
     'druid-wild-companion': {
-      activities: [{ id: 'use', name: 'Wild Companion', actionType: 'action', cost: [{ resource: 'wild-shape' }], fx: 'magic', summary: 'Cast Find Familiar without Material components (or spend a spell slot instead). The Fey familiar leaves on a Long Rest.' }],
+      activities: [
+        { id: 'use', name: 'Wild Companion', actionType: 'action', cost: [{ resource: 'wild-shape' }], fx: 'magic', summary: 'Cast Find Familiar without Material components. The Fey familiar leaves on a Long Rest.' },
+        { id: 'slot', name: 'Wild Companion (spell slot)', actionType: 'action', slotCost: true, fx: 'magic', summary: 'The same, spending a spell slot instead of Wild Shape.' },
+      ],
     },
     'druid-wild-resurgence': {
-      activities: [{ id: 'use', name: 'Wild Resurgence', actionType: 'other', summary: 'No Wild Shape left: spend a spell slot to regain one (once per turn). Or spend a Wild Shape for a level 1 slot once per Long Rest. Adjust the dots.' }],
+      resources: [{ id: 'wild-resurgence', name: 'Wild Resurgence (slot)', max: 1, recharge: longOnly }],
+      activities: [
+        { id: 'slot-to-shape', name: 'Wild Resurgence: slot → Wild Shape', actionType: 'other', perTurn: 1, slotCost: true, restore: [{ resource: 'wild-shape', amount: 1 }], fx: 'magic', summary: 'No Wild Shape left: expend a spell slot to regain one (once per turn).' },
+        { id: 'shape-to-slot', name: 'Wild Resurgence: Wild Shape → level 1 slot', actionType: 'other', cost: [{ resource: 'wild-shape' }, { resource: 'wild-resurgence' }], restore: [{ resource: 'slot:1', amount: 1 }], fx: 'magic', summary: 'Expend a Wild Shape for a level 1 spell slot (once per Long Rest).' },
+      ],
+    },
+    'druid-archdruid': {
+      activities: [{ id: 'evergreen', name: 'Evergreen Wild Shape', actionType: 'other', restore: [{ resource: 'wild-shape', amount: 1, upTo: true }], summary: 'Roll Initiative with no Wild Shape left: regain one.' }],
     },
     'druid-elemental-fury': {
       choices: [{ id: 'option', label: 'Elemental Fury', kind: 'entity', from: { ids: ['druid-potent-spellcasting', 'druid-primal-strike'] } }],
@@ -103,7 +113,7 @@ export const druid: ClassOverlay = {
     },
     'land-natural-recovery': {
       resources: [{ id: 'natural-recovery', name: 'Natural Recovery', max: 1, recharge: longOnly }],
-      activities: [{ id: 'use', name: 'Natural Recovery', actionType: 'other', cost: [{ resource: 'natural-recovery' }], roll: { bonus: 'ceil(level / 2)', kind: 'other' }, summary: 'After a Short Rest: recover slots with this combined level (none 6+). Also cast one level 1+ circle spell free once per Long Rest. Adjust the dots.' }],
+      activities: [{ id: 'use', name: 'Natural Recovery', actionType: 'other', cost: [{ resource: 'natural-recovery' }], recoverSlots: 'ceil(level / 2)', fx: 'magic', summary: 'After a Short Rest: recover expended slots with a combined level up to half your Druid level (none 6+).' }],
     },
     'land-natures-sanctuary': {
       activities: [{ id: 'use', name: "Nature's Sanctuary", actionType: 'action', cost: [{ resource: 'wild-shape' }], fx: 'magic', summary: '15-ft cube within 120 ft for 1 minute: you and allies have Half Cover there; allies get your Nature’s Ward Resistance. Move it 60 ft as a Bonus Action.' }],

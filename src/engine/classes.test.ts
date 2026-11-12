@@ -266,3 +266,67 @@ describe('Species spells', () => {
     expect(computeSheet(t, c14).spellcasting.rows.map((r) => r.spell.id).sort()).toEqual(['darkness', 'hellish-rebuke', 'thaumaturgy'])
   })
 })
+
+describe('Bookkeeping the app does itself', () => {
+  it('Relentless Rage: DC 10, then 15, 20…; a short rest resets it', () => {
+    const c = hero('2024', 'barbarian', 11, { hp: { current: 0 } })
+    const s = computeSheet(c, c24)
+    const rr = () => (sheet: typeof s) => sheet.activities.find((a) => a.activity.name === 'Relentless Rage')!
+    expect(rr()(s).saveDc).toBe(10)
+    const once = okR(performActivity(c, s, rr()(s), 0))
+    expect(once.hp.current).toBe(22)
+    const s2 = computeSheet(once, c24)
+    expect(rr()(s2).saveDc).toBe(15)
+    expect(rr()(computeSheet(shortRest(once, c24).character, c24)).saveDc).toBe(10)
+    expect(s.resources.find((r) => r.key === 'relentless-rage')?.resource.hidden).toBe(true)
+  })
+
+  it('2014 Frenzy: ending the rage ends Frenzied and adds a level of exhaustion', () => {
+    const c = hero('2014', 'barbarian', 3, { classes: [{ classId: 'barbarian', level: 3, subclassId: 'berserker' }], toggles: ['state:Raging', 'state:Frenzied'] })
+    const s = computeSheet(c, c14)
+    const off = okR(toggleEffect(c, 'state:Raging', 'Raging', s))
+    expect(off.toggles).toEqual([])
+    expect(off.exhaustion).toBe(1)
+  })
+
+  it('Uncanny Metabolism restores all Focus Points; Magical Cunning half the Pact slots (rounded up)', () => {
+    const monk = hero('2024', 'monk', 5, { resourcesUsed: { focus: 5 }, hp: { current: 10 } })
+    const sm = computeSheet(monk, c24)
+    const um = sm.activities.find((a) => a.activity.name === 'Uncanny Metabolism')!
+    const after = okR(performActivity(monk, sm, um, 5))
+    expect(after.resourcesUsed.focus).toBe(0)
+    expect(after.hp.current).toBe(10 + 5 + 5)
+    const wl = hero('2024', 'warlock', 11, { resourcesUsed: { pact: 3 } })
+    const sw = computeSheet(wl, c24)
+    const mc = sw.activities.find((a) => a.activity.name === 'Magical Cunning')!
+    expect(computeSheet(okR(performActivity(wl, sw, mc)), c24).resources.find((r) => r.key === 'pact')?.remaining).toBe(2)
+  })
+
+  it('Arcane Recovery recovers chosen slots within half the Wizard level; Font of Inspiration spends a slot', () => {
+    const w = hero('2024', 'wizard', 6, { resourcesUsed: { 'slot:1': 2, 'slot:2': 2, 'slot:3': 1 } })
+    const s = computeSheet(w, c24)
+    const ar = s.activities.find((a) => a.activity.name === 'Arcane Recovery')!
+    expect(ar.recoverSlots).toBe(3)
+    expect(performActivity(w, s, ar, undefined, { recover: [2, 2] }).ok).toBe(false)
+    const rec = okR(performActivity(w, s, ar, undefined, { recover: [1, 2] }))
+    expect(rec.resourcesUsed).toMatchObject({ 'slot:1': 1, 'slot:2': 1, 'slot:3': 1 })
+    const b = hero('2024', 'bard', 5, { resourcesUsed: { 'bardic-inspiration': 1 } })
+    const sb = computeSheet(b, c24)
+    const font = sb.activities.find((a) => a.activity.name === 'Font of Inspiration: spend a slot')!
+    expect(okR(performActivity(b, sb, font, undefined, { slotKey: 'slot:1' })).resourcesUsed).toMatchObject({ 'bardic-inspiration': 0, 'slot:1': 1 })
+  })
+
+  it('2014 limited invocations need their once-per-long-rest use as well as a slot; Fiend expands the Warlock list', async () => {
+    const { castOptions, castSpell } = await import('./spellActions')
+    const c = hero('2014', 'warlock', 5, { classes: [{ classId: 'warlock', level: 5, subclassId: 'fiend' }] })
+    const inv = computeSheet(c, c14).active.find((a) => a.entity.id === 'eldritch-invocations')!
+    const wl = { ...c, choices: { [`${inv.grantKey}/invocations`]: ['eldritch-invocation-mire-the-mind'] } }
+    const s = computeSheet(wl, c14)
+    const slow = s.spellcasting.rows.find((r) => r.spell.id === 'slow')!
+    expect(castOptions(slow, s).map((o) => o.kind)).toEqual(['pact'])
+    const used = okR(castSpell(wl, s, slow, { kind: 'pact' }))
+    const s2 = computeSheet(used, c14)
+    expect(castOptions(s2.spellcasting.rows.find((r) => r.spell.id === 'slow')!, s2)).toEqual([])
+    expect(s.spellcasting.casters[0].expanded).toContain('fireball')
+  })
+})

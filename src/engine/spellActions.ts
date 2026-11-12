@@ -28,7 +28,7 @@ export function castOptions(row: SpellRow, sheet: Sheet): CastHow[] {
   if (spell.level === 0) return [{ kind: 'cantrip' }]
   const out: CastHow[] = []
   const left = (key: string) => sheet.resources.find((r) => r.key === key)?.remaining ?? 0
-  if (row.castable) {
+  if (row.castable && (!row.limit || left(row.limit) > 0)) {
     for (const s of sc.slots) if (s.level >= spell.level && left(s.key) > 0) out.push({ kind: 'slot', level: s.level })
     // Pact slots: the Warlock's own spells, or any spell when multiclassing (both SRDs).
     if (sc.pact && sc.pact.level >= spell.level && left('pact') > 0) out.push({ kind: 'pact' })
@@ -59,6 +59,7 @@ export function castSpell(char: Character, sheet: Sheet, row: SpellRow, how: Cas
     return true
   }
   let level = spell.level
+  if ((how.kind === 'slot' || how.kind === 'pact') && row.limit && !spend(row.limit)) return { ok: false, error: 'notEnough', params: { name: spell.name } }
   if (how.kind === 'slot') {
     if (how.level < spell.level) return { ok: false, error: 'slotTooLow' }
     if (!spend(`slot:${how.level}`)) return { ok: false, error: 'noSlot', params: { level: how.level } }
@@ -68,6 +69,7 @@ export function castSpell(char: Character, sheet: Sheet, row: SpellRow, how: Cas
     level = sheet.spellcasting.pact!.level
   } else if (how.kind === 'free') {
     if (!row.atWill && (!row.freeCast || !spend(row.freeCast))) return { ok: false, error: 'notEnough', params: { name: spell.name } }
+    level = row.freeLevel ?? level
   } else if (how.kind === 'ritual') {
     if (!row.canRitual) return { ok: false, error: 'notRitual' }
   } else if (spell.level !== 0) {

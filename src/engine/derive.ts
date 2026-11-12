@@ -102,6 +102,10 @@ export type ActivityRow = {
   uses?: { remaining: number; max: number; resourceKey: string }
   /** Every cost, resolved to resource keys ("quantity:<uid>" spends the item itself). */
   costs: { resourceKey: string; amount: number }[]
+  /** Resources it gives back, resolved (see Activity.restore). */
+  restores: { resourceKey: string; amount: number | 'all'; upTo: boolean }[]
+  /** Combined slot levels it recovers (Arcane Recovery). */
+  recoverSlots?: number
   available: boolean
   /** Resolved dice, e.g. "1d10" for a level 10 Battle Master's maneuver. */
   rollDice?: string
@@ -738,7 +742,12 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     for (const activity of ae.entity.activities) {
       if (activity.minLevel !== undefined && characterLevel < activity.minLevel) continue
       // Activity formulas may also use skill totals (e.g. "athletics" for a 2014 grapple check).
-      const v = { ...vars(ae), ...Object.fromEntries(Object.entries(skillValues).map(([k, sv]) => [k.replace(/-/g, '_'), sv.value])) }
+      // ... and resource counts: used_<id> / max_<id> (Relentless Rage DC, Magical Cunning's half of the Pact slots).
+      const v = {
+        ...vars(ae),
+        ...Object.fromEntries(Object.entries(skillValues).map(([k, sv]) => [k.replace(/-/g, '_'), sv.value])),
+        ...Object.fromEntries(resources.flatMap((r) => [[`used_${r.key.replace(/[^a-z0-9]/gi, '_')}`, Math.max(0, r.used)], [`max_${r.key.replace(/[^a-z0-9]/gi, '_')}`, r.max]])),
+      }
       // "@quantity" spends the item itself (potions); other costs name a resource id.
       const pool = (resource: string): ActivityRow['uses'] => {
         if (resource === '@quantity') {
@@ -756,6 +765,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
         actionType: activity.actionType,
         uses: activity.cost[0] ? pool(activity.cost[0].resource) : undefined,
         costs: activity.cost.map((c) => ({ resourceKey: pool(c.resource)?.resourceKey ?? c.resource, amount: c.amount })),
+        restores: activity.restore.map((r) => ({ resourceKey: pool(r.resource)?.resourceKey ?? r.resource, amount: r.amount === 'all' ? 'all' : resolveScaled(r.amount, v), upTo: r.upTo })),
+        recoverSlots: activity.recoverSlots === undefined ? undefined : resolveScaled(activity.recoverSlots, v),
         available,
         rollDice: resolveDice(activity.roll?.dice, v),
         rollBonus: activity.roll?.bonus === undefined ? undefined : resolveScaled(activity.roll.bonus, v),

@@ -665,5 +665,11 @@
   "font": {
     "create": "Vytvořit spell slot:",
     "convert": "Přeměnit spell slot na Sorcery Points:"
+  },
+  "slots": {
+    "spend": "Utratit spell slot:",
+    "recover": "Obnovit sloty ({{used}}/{{budget}} úrovní):",
+    "clear": "Vymazat",
+    "apply": "Obnovit"
   }
 }

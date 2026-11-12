@@ -32,7 +32,7 @@ export function ResourcesPanel() {
       {sheet.resources.every((r) => r.key.startsWith('slot:') || r.key === 'pact') && <p className="text-sm text-muted">{t('sheet.none')}</p>}
       <ul className="space-y-1">
         {/* Spell slots are shown in the Magic tile and the Spellcasting panel. */}
-        {sheet.resources.filter((r) => !r.key.startsWith('slot:') && r.key !== 'pact').map((r) => {
+        {sheet.resources.filter((r) => !r.key.startsWith('slot:') && r.key !== 'pact' && !r.resource.hidden).map((r) => {
           const recharge = r.resource.recharge.length
             ? r.resource.recharge.map((x, i) => {
                 const label = `${rechargeLabel[x.on]}${x.amount === 'all' ? '' : ` (+${typeof x.amount === 'number' ? x.amount : '…'})`}`
@@ -154,7 +154,7 @@ export function ConditionsPanel() {
             {sheet.toggles.map((tg) => (
               <li key={tg.key}>
                 <label className="flex cursor-pointer items-center gap-2">
-                  <input type="checkbox" checked={tg.on} onChange={() => void run(toggleEffect(character, tg.key, tg.label))} />
+                  <input type="checkbox" checked={tg.on} onChange={() => void run(toggleEffect(character, tg.key, tg.label, sheet))} />
                   <span>
                     {tg.label} <span className="text-xs text-muted">({tg.source.entity.name})</span>
                   </span>
@@ -286,7 +286,7 @@ export function Reminders() {
             <button
               className="rounded-full border border-accent bg-accent px-2.5 py-0.5 text-xs font-semibold text-accent-text hover:opacity-80"
               title={t('sheet.endState', { name: tg.label })}
-              onClick={() => void run(toggleEffect(character, tg.key, tg.label))}
+              onClick={() => void run(toggleEffect(character, tg.key, tg.label, sheet))}
             >
               ⚡ {tg.label} ✕
             </button>

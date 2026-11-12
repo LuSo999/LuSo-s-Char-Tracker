@@ -28,4 +28,4 @@ Ověřeno proti SRD 5.1 (2014) a SRD 5.2.1 (2024). Dosah aury (2014) a počet Ch
 | Turn the Unholy | Channel Divinity: fiends a undead turned | — | Akce s DC |
 | Aura of Devotion | Spojenci nejdou okouzlit | Immunity na Charmed | Popis |
 | Smite of Protection | — | Při Divine Smite Half Cover v auře | Popis |
-| Holy Nimbus | Action, 1 minuta, 10 radiant | Bonus Action, 10 minut, Cha + PB radiant; obnoví slot 5. úrovně | Stav **Holy Nimbus** |
+| Holy Nimbus | Action, 1 minuta, 10 radiant | Bonus Action, 10 minut, Cha + PB radiant; obnoví slot 5. úrovně | Stav **Holy Nimbus**; 2024 obnova za slot 5. úrovně jako akce |

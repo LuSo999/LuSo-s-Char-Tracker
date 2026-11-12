@@ -64,7 +64,7 @@ export const sorcerer: ClassOverlay = {
     'sorcerous-origin-improvement-2': { upgradeOf: 'sorcerous-origin' },
     'sorcerous-origin-improvement-3': { upgradeOf: 'sorcerous-origin' },
     'sorcerous-restoration': {
-      activities: [{ id: 'use', name: 'Sorcerous Restoration', actionType: 'other', summary: 'Finishing a short rest: regain 4 Sorcery Points (restore them on the dots).' }],
+      activities: [{ id: 'use', name: 'Sorcerous Restoration', actionType: 'other', restore: [{ resource: 'sorcery-points', amount: 4 }], fx: 'magic', summary: 'Finishing a short rest: regain 4 Sorcery Points.' }],
     },
     // Draconic Bloodline
     'draconic-resilience': {
@@ -99,7 +99,7 @@ export const sorcerer: ClassOverlay = {
     },
     'sorcerer-sorcerous-restoration': {
       resources: [{ id: 'sorcerous-restoration', name: 'Sorcerous Restoration', max: 1, recharge: longOnly }],
-      activities: [{ id: 'use', name: 'Sorcerous Restoration', actionType: 'other', cost: [{ resource: 'sorcerous-restoration' }], roll: { bonus: 'floor(level / 2)', kind: 'other' }, summary: 'After a Short Rest: regain up to this many Sorcery Points (restore them on the dots).' }],
+      activities: [{ id: 'use', name: 'Sorcerous Restoration', actionType: 'other', cost: [{ resource: 'sorcerous-restoration' }], restore: [{ resource: 'sorcery-points', amount: 'floor(level / 2)' }], fx: 'magic', summary: 'After a Short Rest: regain Sorcery Points up to half your Sorcerer level.' }],
     },
     'sorcerer-sorcery-incarnate': {
       activities: [{ id: 'use', name: 'Innate Sorcery (2 SP)', actionType: 'bonusAction', cost: [{ resource: 'sorcery-points', amount: 2 }], toggle: 'Innate Sorcery', fx: 'magic', summary: 'No Innate Sorcery uses left: activate it for 2 Sorcery Points. While active, up to two Metamagic options per spell.' }],
@@ -117,7 +117,10 @@ export const sorcerer: ClassOverlay = {
     },
     'draconic-sorcery-dragon-wings': {
       resources: [{ id: 'dragon-wings', name: 'Dragon Wings', max: 1, recharge: longOnly }],
-      activities: [{ id: 'use', name: 'Dragon Wings', actionType: 'bonusAction', cost: [{ resource: 'dragon-wings' }], toggle: 'Dragon Wings', fx: 'magic', summary: 'Fly Speed 60 ft for 1 hour. 3 Sorcery Points restore the use.' }],
+      activities: [
+        { id: 'use', name: 'Dragon Wings', actionType: 'bonusAction', cost: [{ resource: 'dragon-wings' }], toggle: 'Dragon Wings', fx: 'magic', summary: 'Fly Speed 60 ft for 1 hour.' },
+        { id: 'restore', name: 'Dragon Wings: 3 Sorcery Points', actionType: 'other', cost: [{ resource: 'sorcery-points', amount: 3 }], restore: [{ resource: 'dragon-wings', amount: 1 }], summary: 'Restore the use of Dragon Wings (no action).' },
+      ],
     },
     'draconic-sorcery-dragon-companion': {
       resources: [{ id: 'dragon-companion', name: 'Dragon Companion (free cast)', max: 1, recharge: longOnly }],

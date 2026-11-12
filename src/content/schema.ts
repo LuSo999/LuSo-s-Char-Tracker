@@ -140,6 +140,8 @@ export const Resource = z.object({
   max: Scaled,
   /** For dice pools: the die size, e.g. 8 for d8 (may scale with level). */
   die: Scaled.optional(),
+  /** Bookkeeping only (e.g. how often Relentless Rage was used): not listed in the Resources panel. */
+  hidden: z.boolean().optional(),
   /** What each rest restores. "all", or a (scaled) number of uses. */
   /** What each rest restores: "all", a (scaled) number, or dice the player rolls (e.g. a wand's "1d6+1" at dawn). */
   recharge: z.array(z.object({ on: RechargeOn, amount: z.union([z.literal('all'), Scaled]), dice: z.string().optional() })).default([]),
@@ -172,6 +174,16 @@ export const Activity = z.object({
   perTurn: z.number().int().min(1).optional(),
   /** At most one activity of this group per attack (e.g. "maneuver"). */
   perAttack: z.string().optional(),
+  /** Resources the activity gives back: "all", a number, or (upTo) refill until you have that many. Slots as "slot:<n>" / "pact". */
+  restore: z.array(z.object({ resource: z.string(), amount: z.union([z.literal('all'), Scaled]), upTo: z.boolean().default(false) })).default([]),
+  /** Also expends one spell slot of the player's choice (Font of Inspiration, Primeval Awareness, Wild Resurgence). */
+  slotCost: z.boolean().default(false),
+  /** Recover spell slots with this combined level, none above level 5 (Arcane Recovery, Natural Recovery). */
+  recoverSlots: Scaled.optional(),
+  /** The state of this activity also ends when that state ends (Frenzied ends with Raging). */
+  endsWith: z.string().optional(),
+  /** What happens when its state ends (2014 Frenzy: one level of Exhaustion). */
+  onEnd: z.object({ exhaustion: z.number().int() }).optional(),
   /** Font of Magic: turn Sorcery Points into a spell slot ("create") or a slot into points ("convert"). */
   fontOfMagic: z.enum(['create', 'convert']).optional(),
   /** Pool features (Lay on Hands): the player enters how many points to spend; with a heal roll that many HP are restored. */
@@ -236,6 +248,10 @@ export const GrantedSpell = z.object({
   freeCast: z.string().optional(),
   /** Cast without a slot as often as you like (Eldritch Invocations: Armor of Shadows, Mask of Many Faces…). */
   atWill: z.boolean().optional(),
+  /** Casting it (with a slot) also needs one use of this resource (2014 invocations: once per Long Rest with a Warlock slot). */
+  limit: z.string().optional(),
+  /** Spell level of the free cast (2014 Infernal Legacy: Hellish Rebuke as a 2nd-level spell). */
+  freeLevel: z.number().int().optional(),
 })
 export type GrantedSpell = z.infer<typeof GrantedSpell>
 
@@ -257,6 +273,8 @@ const base = {
   activities: z.array(Activity).default([]),
   choices: z.array(Choice).default([]),
   spells: z.array(GrantedSpell).default([]),
+  /** Spells added to the class list the entity belongs to, to learn or prepare (2014 Fiend: Expanded Spell List). */
+  expandedSpells: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
 }
 
