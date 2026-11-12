@@ -82,6 +82,7 @@ export function allChoices(char: Character, sheet: Sheet): PendingChoice[] {
   return out
 }
 
+import { spellbookFree } from './spells'
 export { spellbookSize } from './spells'
 
 /**
@@ -98,7 +99,10 @@ export function allDecisions(char: Character, content: ContentIndex, sheet: Shee
   for (const c of sheet.spellcasting.casters) {
     const missing: PendingSpells['missing'] = []
     if (c.cantrips.length < c.cantripsMax) missing.push({ what: 'cantrips', count: c.cantripsMax - c.cantrips.length })
-    if (c.spellbookMax && c.known.length < c.spellbookMax) missing.push({ what: 'spellbook', count: c.spellbookMax - c.known.length })
+    if (c.spellbookPlaces) {
+      const free = spellbookFree(c.spellbookPlaces, c.known.map((id) => content.getTyped(id, 'spell')?.level ?? 1)).length
+      if (free) missing.push({ what: 'spellbook', count: free })
+    }
     const counted = c.mode === 'known' ? c.known.length : c.prepared.length
     if (counted < c.spellsMax) missing.push({ what: c.mode === 'known' ? 'known' : 'prepared', count: c.spellsMax - counted })
     out.push({ kind: 'spells', classId: c.classId, className: c.name, missing })

@@ -252,7 +252,8 @@
     "swapUsed": {
       "levelUp": "{{name}}: výměna kouzla za tento level je využitá.",
       "longRestOne": "{{name}}: výměna kouzla za tento Long Rest je využitá."
-    }
+    },
+    "spellbookLevel": "Pro kouzlo {{level}}. úrovně není volné místo zdarma; jen zkopírováním."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -606,7 +607,12 @@
       "swapNoneConfirm": "Tahle class podle pravidel kouzla nevyměňuje. Přesto odebrat {{name}}?",
       "swapCantripsNoneConfirm": "Tahle class podle pravidel cantripy nevyměňuje. Přesto odebrat {{name}}?",
       "swapUsedLevelUpConfirm": "{{name}} smí vyměnit jedno kouzlo za získaný level a to už je využité. Přesto odebrat?",
-      "swapUsedLongRestConfirm": "{{name}} smí vyměnit jedno kouzlo za Long Rest a to už je využité. Přesto odebrat?"
+      "swapUsedLongRestConfirm": "{{name}} smí vyměnit jedno kouzlo za Long Rest a to už je využité. Přesto odebrat?",
+      "copyLevelConfirm": "Volná místa zdarma pojmou jen kouzla nižší úrovně (další přibudou s levely Wizarda). Zkopírovat {{name}} ({{level}}. úroveň) ze svitku nebo cizí knihy? (Stojí {{gp}} GP a {{hours}} h.)",
+      "freePlace": "{{count}}× do {{level}}. úrovně",
+      "freePlaces": "Zbývá přidat zdarma: {{list}}",
+      "noFreePlaces": "Do dalšího levelu Wizarda už nic zdarma nepřidáš.",
+      "thisLevel": "Tento level: {{added}}/{{of}} nová kouzla do spellbooku (do {{level}}. úrovně)"
     }
   },
   "actionCategory": {

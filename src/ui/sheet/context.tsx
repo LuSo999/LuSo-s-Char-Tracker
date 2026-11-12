@@ -21,6 +21,8 @@ export type SheetCtx = {
   store: CharacterStore
   /** A copy being edited (Level up): actions apply to it without toasts or effects. */
   draft?: boolean
+  /** With `draft`: the character as it was before (to show what this level added). */
+  base?: Character
 }
 
 export const SheetContext = createContext<SheetCtx | null>(null)

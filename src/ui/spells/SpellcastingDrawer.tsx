@@ -7,7 +7,7 @@ import type { Choice, Spell } from '../../content/schema'
 import { selections, type ActiveEntity } from '../../engine/derive'
 import { addExtra } from '../../engine/extras'
 import { castOptions, endConcentration, setChoice, setClassSpell, toggleFavoriteSpell } from '../../engine/spellActions'
-import { spellBrief, spellDice, upcastNote, type CasterState, type SpellRow } from '../../engine/spells'
+import { spellbookFree, spellBrief, spellDice, upcastNote, type CasterState, type SpellRow } from '../../engine/spells'
 import { RuleRef } from '../rules/RuleRef'
 import { useRun, useSheet } from '../sheet/context'
 import { useEditMode } from '../sheet/editMode'
@@ -232,6 +232,7 @@ export function ManageSpells({ caster }: { caster: CasterState }) {
       limitCantrips: 'spells.overLimit',
       spellTooHigh: 'spells.overLimit',
       spellbookFull: 'spells.rules.copyConfirm',
+      spellbookLevel: 'spells.rules.copyLevelConfirm',
       spellbookRemove: 'spells.rules.bookRemoveConfirm',
       swapNone: 'spells.rules.swapNoneConfirm',
       swapCantripsNone: 'spells.rules.swapCantripsNoneConfirm',
@@ -311,6 +312,16 @@ export function ManageSpells({ caster }: { caster: CasterState }) {
   )
 }
 
+/** Free spellbook places left, grouped by the highest spell level they hold. */
+function SpellbookFree({ caster }: { caster: CasterState }) {
+  const { t } = useTranslation()
+  const { content } = useSheet()
+  const levels = caster.known.map((id) => content.getTyped(id, 'spell')?.level ?? 1)
+  const free = spellbookFree(caster.spellbookPlaces ?? [], levels)
+  const groups = [...new Set(free)].map((l) => t('spells.rules.freePlace', { count: free.filter((x) => x === l).length, level: l }))
+  return <li className="font-semibold text-text">{free.length ? t('spells.rules.freePlaces', { list: groups.join(', ') }) : t('spells.rules.noFreePlaces')}</li>
+}
+
 /** The class's rules for adding and replacing spells, with what's used up. */
 function SpellRules({ caster }: { caster: CasterState }) {
   const { t } = useTranslation()
@@ -322,6 +333,7 @@ function SpellRules({ caster }: { caster: CasterState }) {
   return (
     <ul className="list-disc pl-4 text-xs text-muted">
       {caster.spellbookMax !== undefined && <li>{t('spells.rules.spellbook')}</li>}
+      {caster.spellbookPlaces && <SpellbookFree caster={caster} />}
       {caster.cantripsMax > 0 && <li>{rule('cantrips')}</li>}
       <li>{rule('spells')}</li>
     </ul>

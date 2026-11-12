@@ -6,6 +6,7 @@ import { choiceOptions, isComplete, setChoiceValues, setSubclass, type Option, t
 import { RuleRef } from '../rules/RuleRef'
 import { useRun, useSheet } from '../sheet/context'
 import { ManageSpells } from '../spells/SpellcastingDrawer'
+import { spellbookFree } from '../../engine/spells'
 
 const card = 'rounded border p-2.5 text-sm'
 const chip = (on: boolean, blocked?: boolean) =>
@@ -60,10 +61,11 @@ export function SubclassCard({ classId, className }: { classId: string; classNam
 
 function SpellsCard({ classId }: { classId: string }) {
   const { t } = useTranslation()
-  const { sheet } = useSheet()
+  const { sheet, base, content } = useSheet()
   const caster = sheet.spellcasting.casters.find((c) => c.classId === classId)
+  const free = caster?.spellbookPlaces ? spellbookFree(caster.spellbookPlaces, caster.known.map((id) => content.getTyped(id, 'spell')?.level ?? 1)) : []
   // Open right away when something is missing.
-  const [open, setOpen] = useState(() => !!caster && (caster.cantrips.length < caster.cantripsMax || (caster.mode === 'known' ? caster.known.length : caster.prepared.length) < caster.spellsMax || (caster.spellbookMax ?? 0) > caster.known.length))
+  const [open, setOpen] = useState(() => !!caster && (caster.cantrips.length < caster.cantripsMax || (caster.mode === 'known' ? caster.known.length : caster.prepared.length) < caster.spellsMax || free.length > 0))
   if (!caster) return null
   const counted = caster.mode === 'known' ? caster.known.length : caster.prepared.length
   const parts = [
@@ -71,7 +73,12 @@ function SpellsCard({ classId }: { classId: string }) {
     caster.spellbookMax !== undefined ? `📖 ${t('spells.spellbook')} ${caster.known.length}/${caster.spellbookMax}` : undefined,
     `${t(caster.mode === 'known' ? 'spells.known' : 'spells.prepared')} ${counted}/${caster.spellsMax}`,
   ].filter(Boolean)
-  const done = caster.cantrips.length >= caster.cantripsMax && counted >= caster.spellsMax && caster.known.length >= (caster.spellbookMax ?? 0)
+  const done = caster.cantrips.length >= caster.cantripsMax && counted >= caster.spellsMax && free.length === 0
+  // In Level up: the two spells this Wizard level adds.
+  const baseEntry = base?.classes.find((c) => c.classId === classId)
+  const gained = base && caster.spellbookPlaces && caster.level > (baseEntry?.level ?? 0)
+  const added = caster.known.length - (base?.spells[classId]?.known.length ?? 0)
+  const newPlaces = caster.level === 1 ? 6 : 2
   return (
     <div className={`${card} ${done ? 'border-border' : 'border-accent/60 bg-accent/5'}`}>
       <Header title={`${caster.name}: ${t('levelUp.spells')}`} done={done}>
@@ -80,6 +87,11 @@ function SpellsCard({ classId }: { classId: string }) {
           {open ? t('edit.done') : `📖 ${t('spells.manage')}`}
         </button>
       </Header>
+      {gained && (
+        <p className={`mb-1 text-xs font-semibold ${added >= newPlaces ? 'text-muted' : 'text-accent'}`}>
+          📖 {t('spells.rules.thisLevel', { added: Math.max(0, added), of: newPlaces, level: caster.spellbookPlaces!.at(-1) })}
+        </p>
+      )}
       {open && <ManageSpells caster={caster} />}
     </div>
   )

@@ -252,7 +252,8 @@
     "swapUsed": {
       "levelUp": "{{name}}: the spell replacement for this level is used up.",
       "longRestOne": "{{name}}: the spell replacement for this Long Rest is used up."
-    }
+    },
+    "spellbookLevel": "No free place for a level {{level}} spell; only by copying."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -606,7 +607,12 @@
       "swapNoneConfirm": "The rules don't let this class replace spells. Remove {{name}} anyway?",
       "swapCantripsNoneConfirm": "The rules don't let this class replace cantrips. Remove {{name}} anyway?",
       "swapUsedLevelUpConfirm": "{{name}} may replace one spell per level gained, and it is used up. Remove {{name}} anyway?",
-      "swapUsedLongRestConfirm": "{{name}} may replace one spell per Long Rest, and it is used up. Remove {{name}} anyway?"
+      "swapUsedLongRestConfirm": "{{name}} may replace one spell per Long Rest, and it is used up. Remove {{name}} anyway?",
+      "copyLevelConfirm": "The free places left only hold lower-level spells (more come with Wizard levels). Copy {{name}} (level {{level}}) from a scroll or another book? (Costs {{gp}} GP and {{hours}} hours.)",
+      "freePlace": "{{count}}× up to level {{level}}",
+      "freePlaces": "Free spells left to add: {{list}}",
+      "noFreePlaces": "No free spells left to add until the next Wizard level.",
+      "thisLevel": "This level: {{added}}/{{of}} new spells in the spellbook (up to level {{level}})"
     }
   },
   "actionCategory": {

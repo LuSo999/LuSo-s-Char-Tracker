@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { ActionResult } from './actions'
 import { longRest } from './rest'
 import { setClassSpell } from './spellActions'
+import { spellbookFree, spellbookPlaces } from './spells'
 import type { Character, CharacterInput } from './character'
 import { choiceKey, computeSheet } from './derive'
 import { makeCharacter, srd } from './fixtures'
@@ -219,6 +220,25 @@ describe('Spell limits and replacing spells', () => {
     // A level up brings two more.
     const up = okR(levelUp(eighth, c24, 'wizard', null))
     expect(setClassSpell(up, computeSheet(up, c24), c24, 'wizard', 'known', 'charm-person', true).ok).toBe(true)
+  })
+
+  it('Wizard: six level 1 spells, then two per level of a level with slots', () => {
+    const cls = c24.require('wizard', 'class')
+    expect(spellbookPlaces(cls, 1)).toEqual([1, 1, 1, 1, 1, 1])
+    expect(spellbookPlaces(cls, 4)).toEqual([1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2])
+    // Level 3: 6 + 2×L1 + 2×L2 places. Two level 2 spells fit; a third only by copying.
+    const c = wizard(3, [...level1, 'feather-fall', 'burning-hands', 'misty-step', 'shatter'])
+    const s = computeSheet(c, c24)
+    const third = setClassSpell(c, s, c24, 'wizard', 'known', 'web', true)
+    expect(!third.ok && third.error).toBe('spellbookFull')
+    // With 9 level 1 spells, the last place (up to level 2) still takes a level 2 spell…
+    const nine = wizard(3, [...level1, 'feather-fall', 'burning-hands', 'charm-person'])
+    expect(setClassSpell(nine, computeSheet(nine, c24), c24, 'wizard', 'known', 'misty-step', true).ok).toBe(true)
+    // …but three level 2 spells at level 3 don't fit: the third asks to copy.
+    const two = wizard(3, [...level1, 'misty-step', 'shatter'])
+    const r = setClassSpell(two, computeSheet(two, c24), c24, 'wizard', 'known', 'web', true)
+    expect(!r.ok && r.error).toBe('spellbookLevel')
+    expect(spellbookFree(spellbookPlaces(cls, 3), [1, 1, 1, 1, 1, 1, 2, 2])).toEqual([1, 1])
   })
 
   it('Wizard: spells never leave the spellbook; prepared ones change freely', () => {

@@ -7,7 +7,7 @@ import type { ContentIndex } from '../content'
 import type { ActionResult, HistoryItem } from './actions'
 import type { Character } from './character'
 import { choiceKey, type ActiveEntity, type Sheet } from './derive'
-import { swapKey, type SpellRow } from './spells'
+import { spellbookFitting, swapKey, type SpellRow } from './spells'
 
 export type CastHow = { kind: 'slot'; level: number } | { kind: 'pact' } | { kind: 'free' } | { kind: 'ritual' } | { kind: 'cantrip' }
 
@@ -117,6 +117,11 @@ export function setClassSpell(
   const has = current[list].includes(spellId)
   if (has === on) return { ok: false, error: 'noChange' }
   const inBook = caster.spellbook && list === 'known' && spell.level > 0
+  // Free when the book with this spell still fits the places its Wizard levels give.
+  const fitsFree = () => {
+    const levels = [...caster.known, spellId].map((id) => content.getTyped(id, 'spell')?.level ?? 1)
+    return spellbookFitting(caster.spellbookPlaces ?? [], levels) === levels.length
+  }
   // Removing one: the class's rules say when spells may be replaced.
   let swapCounter: string | undefined
   if (!on && !force) {
@@ -133,8 +138,9 @@ export function setClassSpell(
   if (on && !force) {
     if (spell.level > caster.maxSpellLevel) return { ok: false, error: 'spellTooHigh', params: { level: spell.level } }
     // Wizard: two free spells per level; more only by copying them from a scroll or another book.
-    if (inBook && caster.spellbookMax !== undefined && caster.known.length >= caster.spellbookMax) {
-      return { ok: false, error: 'spellbookFull', params: { max: caster.spellbookMax, gp: 50 * spell.level, hours: 2 * spell.level } }
+    if (inBook && !fitsFree()) {
+      const full = caster.known.length >= (caster.spellbookMax ?? 0)
+      return { ok: false, error: full ? 'spellbookFull' : 'spellbookLevel', params: { max: caster.spellbookMax ?? 0, gp: 50 * spell.level, hours: 2 * spell.level, level: spell.level } }
     }
     if (spell.level === 0 && caster.cantrips.length >= caster.cantripsMax) return { ok: false, error: 'limitCantrips', params: { max: caster.cantripsMax } }
     if (spell.level > 0) {
@@ -146,7 +152,7 @@ export function setClassSpell(
   // Removing a spell from the spellbook / known list also unprepares it.
   const prepared = list === 'known' && !on ? current.prepared.filter((id) => id !== spellId) : current.prepared
   const entry = { ...current, prepared, [list]: nextList }
-  const copied = force && on && inBook && caster.spellbookMax !== undefined && caster.known.length >= caster.spellbookMax
+  const copied = force && on && inBook && !fitsFree()
   const type = copied ? 'spellCopied' : list === 'prepared' ? (on ? 'spellPrepared' : 'spellUnprepared') : on ? 'spellLearned' : 'spellForgotten'
   const spellSwaps = swapCounter ? { ...char.spellSwaps, [swapCounter]: (char.spellSwaps[swapCounter] ?? 0) + 1 } : char.spellSwaps
   const params = { name: spell.name, class: caster.name, ...(copied ? { gp: 50 * spell.level, hours: 2 * spell.level } : {}) }

@@ -36,6 +36,8 @@ export type CasterState = {
   expanded: string[]
   /** Wizard: spells the spellbook gets for free (6 + 2 per level); more only by copying. */
   spellbookMax?: number
+  /** Wizard: the free places by highest spell level (see spellbookPlaces). */
+  spellbookPlaces?: number[]
   /** When cantrips / spells may be replaced, and how many replacements are used up. */
   swap: { cantrips: SwapRule; spells: SwapRule }
   swapsUsed: { cantrips: number; spells: number }
@@ -97,6 +99,40 @@ function tableRow(cls: Class, level: number) {
 /** Expected spellbook size of a Wizard: 6 at level 1, +2 per Wizard level. */
 export const spellbookSize = (level: number) => 6 + 2 * (level - 1)
 
+/**
+ * The free places in a Wizard's spellbook, as the highest spell level each
+ * may hold: six level 1 spells at level 1, then two per Wizard level of a
+ * level the Wizard has slots for at that level.
+ */
+export function spellbookPlaces(cls: Class, level: number): number[] {
+  const places = [1, 1, 1, 1, 1, 1]
+  for (let l = 2; l <= level; l++) {
+    const slots = tableRow(cls, l)?.slots ?? []
+    const max = slots.reduce((m, n, i) => (n > 0 ? i + 1 : m), 1)
+    places.push(max, max)
+  }
+  return places
+}
+
+/** Fit the book's spells into the free places (highest levels first, each in the lowest place that holds it). */
+function fitSpellbook(places: number[], spellLevels: number[]): { fitted: number; free: number[] } {
+  const free = [...places].sort((a, b) => a - b)
+  let fitted = 0
+  for (const lvl of [...spellLevels].sort((a, b) => b - a)) {
+    const i = free.findIndex((p) => p >= lvl)
+    if (i < 0) continue
+    free.splice(i, 1)
+    fitted++
+  }
+  return { fitted, free }
+}
+
+/** How many of the spells fit the free places. */
+export const spellbookFitting = (places: number[], spellLevels: number[]) => fitSpellbook(places, spellLevels).fitted
+
+/** Free places still empty, by highest spell level, e.g. [1, 2, 2]. */
+export const spellbookFree = (places: number[], spellLevels: number[]) => fitSpellbook(places, spellLevels).free
+
 /** Key of a swap counter in Character.spellSwaps. */
 export const swapKey = (classId: string, what: 'cantrips' | 'spells', rule: SwapRule) => `${classId}:${what}:${rule === 'levelUp' ? 'levelUp' : 'longRest'}`
 
@@ -140,6 +176,7 @@ export function computeSpellcasting(
       prepared: state.prepared,
       pact: cls.spellcasting === 'pact',
       spellbookMax: cls.caster.spellbook ? spellbookSize(entry.level) : undefined,
+      spellbookPlaces: cls.caster.spellbook ? spellbookPlaces(cls, entry.level) : undefined,
       swap: cls.caster.swap,
       swapsUsed: { cantrips: swapsUsed(char, cls.id, 'cantrips', cls.caster.swap.cantrips), spells: swapsUsed(char, cls.id, 'spells', cls.caster.swap.spells) },
       expanded: active.filter((ae) => ae.classId === cls.id).flatMap((ae) => ae.entity.expandedSpells ?? []),

@@ -67,7 +67,7 @@ function DraftProvider({ draft, setDraft, children }: { draft: Draft; setDraft: 
     }),
     [setDraft],
   )
-  return <SheetContext.Provider value={{ ...real, character: draft.character, sheet, store, draft: true }}>{children}</SheetContext.Provider>
+  return <SheetContext.Provider value={{ ...real, character: draft.character, sheet, store, draft: true, base: real.character }}>{children}</SheetContext.Provider>
 }
 
 type Step = 'class' | 'hp' | 'choices' | 'summary'
