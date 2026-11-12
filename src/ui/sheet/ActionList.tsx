@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { SpellSlots } from '../spells/SpellSlots'
 import i18n from '../../i18n'
 import type { ContentIndex } from '../../content'
 import type { ActionType, Entity } from '../../content/schema'
@@ -268,7 +267,6 @@ function MagicTile({ onOpen }: { onOpen: () => void }) {
           </Term>
         </span>
       )}
-      <SpellSlots className="text-xs" />
       {character.concentration && <span className="text-violet-700 dark:text-violet-300">🔮 {character.concentration.name}</span>}
       <span className="ml-auto text-xs text-muted">
         ★ {t('spells.inActions', { count: favorites })} · {t('spells.open')} ›

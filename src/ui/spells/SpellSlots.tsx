@@ -5,8 +5,8 @@ import { Dots } from '../sheet/common'
 
 /**
  * Spell slots and Pact slots as squares (light blue = available, dark blue =
- * spent). Shown in the Magic tile, the Resources panel and the Spellcasting
- * panel. With `interactive` a click spends or restores a slot.
+ * spent). Shown in the Resources panel and the Spellcasting panel. With
+ * `interactive` a click spends or restores a slot.
  */
 export function SpellSlots({ interactive, className = '' }: { interactive?: boolean; className?: string }) {
   const { t } = useTranslation()
