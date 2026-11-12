@@ -13,6 +13,7 @@ import { AddFeatureDialog } from './AddFeatureDialog'
 import { useRun, useSheet } from './context'
 import { Editable } from './Editable'
 import { useEditMode } from './editMode'
+import { Term } from '../rules/Term'
 
 const rechargeLabel: Record<RechargeOn, string> = {
   shortRest: 'Short',
@@ -32,9 +33,18 @@ export function ResourcesPanel() {
       <ul className="space-y-1">
         {/* Spell slots are shown in the Magic tile and the Spellcasting panel. */}
         {sheet.resources.filter((r) => !r.key.startsWith('slot:') && r.key !== 'pact').map((r) => {
-          const recharge = r.resource.recharge
-            .map((x) => `${rechargeLabel[x.on]}${x.amount === 'all' ? '' : ` (+${typeof x.amount === 'number' ? x.amount : '…'})`}`)
-            .join(' / ')
+          const recharge = r.resource.recharge.length
+            ? r.resource.recharge.map((x, i) => {
+                const label = `${rechargeLabel[x.on]}${x.amount === 'all' ? '' : ` (+${typeof x.amount === 'number' ? x.amount : '…'})`}`
+                const term = x.on === 'shortRest' ? 'rule-short-rest' : x.on === 'longRest' ? 'rule-long-rest' : undefined
+                return (
+                  <span key={i}>
+                    {i > 0 && ' / '}
+                    {term ? <Term id={term}>{label}</Term> : label}
+                  </span>
+                )
+              })
+            : null
           return (
             <li key={r.key} className="flex items-center justify-between gap-2">
               <span className="min-w-0">

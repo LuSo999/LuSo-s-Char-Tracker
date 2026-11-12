@@ -4,6 +4,7 @@ import { restItems } from '../../engine/actions'
 import { dawnDice, longRest, shortRest } from '../../engine/rest'
 import { itemText } from '../history/text'
 import { useRun, useSheet } from './context'
+import { Term } from '../rules/Term'
 
 export function Dialog({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
@@ -48,7 +49,9 @@ export function RestDialog({ kind, onClose }: { kind: 'short' | 'long'; onClose:
     <Dialog title={t(kind === 'short' ? 'rest.shortTitle' : 'rest.longTitle')} onClose={onClose}>
       {kind === 'short' && (
         <section className="mb-4">
-          <h3 className="text-sm font-semibold">{t('rest.hitDice')}</h3>
+          <h3 className="text-sm font-semibold">
+            <Term id="rule-hit-point-dice">{t('rest.hitDice')}</Term>
+          </h3>
           <p className="text-xs text-muted">{t('rest.hitDiceHint', { con: sheet.mods.con >= 0 ? `+${sheet.mods.con}` : sheet.mods.con })}</p>
           {sheet.hitDice.map((pool) => {
             const list = rolls[pool.die] ?? []

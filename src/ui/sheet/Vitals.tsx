@@ -5,13 +5,14 @@ import { useRun, useSheet } from './context'
 import { Editable } from './Editable'
 import { breakdown, signed } from './format'
 import { NumberAdjust } from './NumberAdjust'
+import { Term } from '../rules/Term'
 
-function Stat({ icon, label, value, title, accent }: { icon: string; label: string; value: React.ReactNode; title?: string; accent?: boolean }) {
+function Stat({ icon, label, value, title, accent, term }: { icon: string; label: string; value: React.ReactNode; title?: string; accent?: boolean; term?: string }) {
   return (
     <div className="rounded-card border border-border bg-card px-3 py-2 text-center shadow-sm" title={title}>
       <div className="text-[11px] font-semibold uppercase text-muted">
         <span aria-hidden>{icon} </span>
-        {label}
+        {term ? <Term id={term}>{label}</Term> : label}
       </div>
       <div className={`text-2xl font-semibold tabular-nums ${accent ? 'text-accent' : ''}`}>{value}</div>
     </div>
@@ -33,10 +34,10 @@ export function Vitals() {
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-[11px] font-semibold uppercase text-muted" title={breakdown(sheet.hpMax)}>
             <span aria-hidden>❤️ </span>
-            {t('sheet.hitPoints')}
+            <Term id="rule-hit-points">{t('sheet.hitPoints')}</Term>
           </span>
           <span className="flex items-center gap-1 text-xs text-sky-700 dark:text-sky-300">
-            <span aria-hidden>💠</span> {t('sheet.tempHp')}
+            <span aria-hidden>💠</span> <Term id="rule-temporary-hit-points">{t('sheet.tempHp')}</Term>
             <NumberAdjust
               label={t('sheet.tempHp')}
               value={temp}
@@ -62,9 +63,9 @@ export function Vitals() {
           <div className={`h-full ${bloodied ? 'bg-danger' : 'bg-emerald-600'}`} style={{ width: `${pct}%` }} />
         </div>
       </div>
-      <Stat icon="🛡️" label="AC" value={<Editable value={sheet.ac} overrideKey="ac" label="AC" />} />
-      <Stat icon="⚡" label={t('sheet.initiative')} value={<Editable value={sheet.initiative} overrideKey="initiative" label={t('sheet.initiative')} format={signed} />} />
-      <Stat icon="👣" label={t('sheet.speed')} value={<Editable value={sheet.speed} overrideKey="speed" label={t('sheet.speed')} format={(n) => `${n} ft`} />} />
+      <Stat icon="🛡️" label="AC" term="rule-armor-class" value={<Editable value={sheet.ac} overrideKey="ac" label="AC" />} />
+      <Stat icon="⚡" label={t('sheet.initiative')} term="rule-initiative" value={<Editable value={sheet.initiative} overrideKey="initiative" label={t('sheet.initiative')} format={signed} />} />
+      <Stat icon="👣" label={t('sheet.speed')} term="rule-speed" value={<Editable value={sheet.speed} overrideKey="speed" label={t('sheet.speed')} format={(n) => `${n} ft`} />} />
       <DeathSaves />
     </div>
   )
@@ -91,7 +92,7 @@ function DeathSaves() {
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[11px] font-semibold uppercase text-muted">
           <span aria-hidden>💀 </span>
-          {t('sheet.deathSaves')}
+          <Term id="rule-death-saving-throw">{t('sheet.deathSaves')}</Term>
         </span>
         {status && <span className={`text-xs font-semibold ${status === 'stable' ? 'text-emerald-700 dark:text-emerald-300' : 'text-danger'}`}>{statusText[status]}</span>}
       </div>

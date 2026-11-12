@@ -11,12 +11,13 @@ import { fileURLToPath } from 'node:url'
 import { Pack, skills, type Ability, type Edition, type Entity } from '../src/content/schema.ts'
 import { applyOverlay } from './srd-overlay.ts'
 import { spellBriefs, spellBriefs2014 } from './spell-briefs.ts'
+import { glossary } from './rules-glossary.ts'
 
 const SOURCE_REPO = '5e-bits/5e-srd-api'
 const SOURCE_COMMIT = 'dff09cc6f6764734d20fdba65a07a041613697ca'
 const FILES = [
   'Classes', 'Subclasses', 'Features', 'Levels', 'Feats', 'Traits', 'Backgrounds', 'Equipment',
-  'Magic-Items', 'Spells', 'Conditions', 'Proficiencies',
+  'Magic-Items', 'Spells', 'Conditions', 'Proficiencies', 'Weapon-Properties', 'Skills',
 ]
 const EDITION_FILES: Record<Edition, string[]> = {
   '2014': [...FILES, 'Races', 'Subraces'],
@@ -620,6 +621,26 @@ async function build(edition: Edition) {
 
   for (const c of files.Conditions) entities.push({ ...base(c), type: 'condition' })
   for (const m of files['Weapon-Mastery-Properties'] ?? []) entities.push({ ...base(m), type: 'weaponMastery' })
+
+  // Rules terms (Ctrl+hover on the sheet): glossary, weapon properties, skills.
+  for (const g of glossary) {
+    const text = typeof g.text === 'string' ? g.text : g.text[edition]
+    const url = g.url[edition]
+    entities.push({
+      id: `rule-${g.id}`, edition, name: (edition === '2014' && g.name2014) || g.name, description: text,
+      source: { ...source, ...(url ? { url } : {}) }, type: 'rule', category: 'glossary',
+    })
+  }
+  const weaponsPage = edition === '2014' ? 'https://dnd5e.wikidot.com/weapons' : 'https://dnd2024.wikidot.com/equipment:weapon'
+  for (const w of files['Weapon-Properties']) {
+    const text = textOf(w)
+    entities.push({ id: `property-${w.index}`, edition, name: w.name, description: summarize(text), text, source: { ...source, url: weaponsPage }, type: 'rule', category: 'weaponProperty' })
+  }
+  for (const k of files.Skills) {
+    const text = textOf(k)
+    const url = edition === '2014' ? `https://www.dndbeyond.com/sources/dnd/basic-rules-2014/using-ability-scores#${k.name.replace(/[^A-Za-z]/g, '')}` : 'https://www.dndbeyond.com/sources/dnd/free-rules/rules-glossary#Skill'
+    entities.push({ id: `skill-${k.index}`, edition, name: k.name, description: summarize(text), text, source: { ...source, url }, type: 'rule', category: 'skill' })
+  }
 
   // De-duplicate ids across files (5e-bits reuses a few indexes between types).
   // A clashing trait is renamed and the `traits` lists that point to it are

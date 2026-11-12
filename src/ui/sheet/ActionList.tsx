@@ -21,6 +21,8 @@ import { useRun, useSheet } from './context'
 import { Editable } from './Editable'
 import { actionTypeClass, actionTypeIcon, actionTypeShort, categoryIcon, signed, type ActionCategory } from './format'
 import { attacksLeft, rememberTurn, slotFree, slotMax, snapshotTurn, useTurn, type Slot } from './turn'
+import { Term } from '../rules/Term'
+import { actionTypeTerm } from '../rules/terms'
 
 type Filter = 'all' | ActionType
 type CategoryFilter = 'all' | ActionCategory
@@ -48,13 +50,19 @@ const sectionOrder = { attack: 0, activity: 1, spell: 2, item: 3 }
 function spellRow(r: SpellRow, characterLevel: number, mod: number): Row {
   const s = r.spell
   const dice = spellDice(s, Math.max(1, s.level), characterLevel, mod)
-  const details: React.ReactNode[] = [<span key="lvl" className="text-xs text-muted">{s.level === 0 ? 'Cantrip' : `L${s.level}`}</span>]
-  if (s.attack) details.push(<strong key="hit">{signed(r.attackBonus)}</strong>)
-  if (s.save) details.push(<strong key="dc">DC {r.dc} {s.save.toUpperCase()}</strong>)
+  const details: React.ReactNode[] = [
+    s.level === 0 ? (
+      <Term key="lvl" id="rule-cantrip" className="text-xs text-muted">Cantrip</Term>
+    ) : (
+      <Term key="lvl" id="rule-spell-slots" className="text-xs text-muted">{`L${s.level}`}</Term>
+    ),
+  ]
+  if (s.attack) details.push(<Term key="hit" id="rule-spell-attack"><strong>{signed(r.attackBonus)}</strong></Term>)
+  if (s.save) details.push(<Term key="dc" id="rule-saving-throw"><strong>DC {r.dc} {s.save.toUpperCase()}</strong></Term>)
   if (dice.damage) details.push(<span key="dmg">{dice.damage}</span>)
   if (dice.heal) details.push(<span key="heal">❤️ {dice.heal}</span>)
   details.push(<span key="range" className="text-xs text-muted">{s.range}</span>)
-  if (s.concentration) details.push(<span key="c" className="text-xs">🔮</span>)
+  if (s.concentration) details.push(<Term key="c" id="rule-concentration" className="text-xs">🔮</Term>)
   return {
     key: `spell:${r.key}`,
     name: s.name,
@@ -92,8 +100,8 @@ function attackRow(a: AttackRow, content: ContentIndex): Row {
   ]
   if (a.reach) details.push(<span key="reach">{a.reach} ft</span>)
   if (a.range) details.push(<span key="range">{a.range.normal}/{a.range.long ?? a.range.normal} ft</span>)
-  if (a.thrown) details.push(<span key="thrown">thrown {a.thrown.normal}/{a.thrown.long ?? a.thrown.normal} ft</span>)
-  if (a.critRange < 20) details.push(<span key="crit">crit {a.critRange}–20</span>)
+  if (a.thrown) details.push(<span key="thrown"><Term id="property-thrown">thrown</Term> {a.thrown.normal}/{a.thrown.long ?? a.thrown.normal} ft</span>)
+  if (a.critRange < 20) details.push(<Term key="crit" id="rule-critical-hit">crit {a.critRange}–20</Term>)
   if (a.mastery) {
     details.push(
       <RuleRef key="mastery" entity={content.get(a.mastery)} content={content} className="rounded bg-accent/15 px-1.5 text-xs font-semibold text-accent">
@@ -183,7 +191,10 @@ export function TurnBar() {
         key={flashing ? `${slot}-${turn.flash!.at}` : slot}
         className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${flashing ? 'fx-flash' : ''} ${used >= max ? 'border-border bg-border/60 text-muted line-through' : 'border-accent text-accent'}`}
       >
-        <span aria-hidden>{actionTypeIcon[slot]}</span> {label} {Math.max(0, max - used)}/{max}
+        <Term id={actionTypeTerm(slot)!}>
+          <span aria-hidden>{actionTypeIcon[slot]}</span> {label}
+        </Term>{' '}
+        {Math.max(0, max - used)}/{max}
       </span>
     )
   }
@@ -248,7 +259,13 @@ function MagicTile({ onOpen }: { onOpen: () => void }) {
       <span className="font-heading text-base font-semibold">✨ {t('spells.magic')}</span>
       {caster && (
         <span>
-          DC <strong>{caster.dc}</strong> · <strong>{signed(caster.attack)}</strong> {t('spells.toHit')}
+          <Term id="rule-saving-throw">
+            DC <strong>{caster.dc}</strong>
+          </Term>{' '}
+          ·{' '}
+          <Term id="rule-spell-attack">
+            <strong>{signed(caster.attack)}</strong> {t('spells.toHit')}
+          </Term>
         </span>
       )}
       {sc.slots.map((s) => {
@@ -583,7 +600,15 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
               }}
             >
               <span className={`mt-0.5 w-20 shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-semibold ${actionTypeClass[r.actionType]}`}>
-                <span aria-hidden>{actionTypeIcon[r.actionType]}</span> {actionTypeShort[r.actionType]}
+                {actionTypeTerm(r.actionType, !!r.spellRow) ? (
+                  <Term id={actionTypeTerm(r.actionType, !!r.spellRow)!}>
+                    <span aria-hidden>{actionTypeIcon[r.actionType]}</span> {actionTypeShort[r.actionType]}
+                  </Term>
+                ) : (
+                  <>
+                    <span aria-hidden>{actionTypeIcon[r.actionType]}</span> {actionTypeShort[r.actionType]}
+                  </>
+                )}
               </span>
               <span className="mt-0.5 w-6 shrink-0 text-center text-lg leading-none" title={t(`actionCategory.${r.category}`)} aria-label={t(`actionCategory.${r.category}`)}>
                 {categoryIcon[r.category]}

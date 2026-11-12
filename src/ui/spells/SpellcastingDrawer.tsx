@@ -22,6 +22,8 @@ import { NumberAdjust } from '../sheet/NumberAdjust'
 import { SidePanel } from '../sheet/SidePanel'
 import { useOnResetFilters } from '../sheet/shortcuts'
 import { centerOf } from '../fx/fx'
+import { Term } from '../rules/Term'
+import { actionTypeTerm } from '../rules/terms'
 
 type TFn = TFunction
 
@@ -30,8 +32,16 @@ const levelName = (t: TFn, level: number) => (level === 0 ? t('spells.cantrips')
 function SpellTags({ spell }: { spell: Spell }) {
   return (
     <span className="ml-1 inline-flex gap-1 text-[10px] font-semibold uppercase">
-      {spell.concentration && <span className="rounded bg-violet-500/15 px-1 text-violet-700 dark:text-violet-300" title="Concentration">🔮 C</span>}
-      {spell.ritual && <span className="rounded bg-amber-500/15 px-1 text-amber-700 dark:text-amber-300" title="Ritual">📿 R</span>}
+      {spell.concentration && (
+        <Term id="rule-concentration" className="rounded bg-violet-500/15 px-1 text-violet-700 dark:text-violet-300">
+          <span title="Concentration">🔮 C</span>
+        </Term>
+      )}
+      {spell.ritual && (
+        <Term id="rule-ritual" className="rounded bg-amber-500/15 px-1 text-amber-700 dark:text-amber-300">
+          <span title="Ritual">📿 R</span>
+        </Term>
+      )}
     </span>
   )
 }
@@ -90,11 +100,23 @@ function SpellLine({ row }: { row: SpellRow }) {
         </span>
       </div>
       <div className="flex flex-wrap gap-x-3 text-xs text-muted">
-        <span>{s.castingTime}</span>
+        {actionTypeTerm(s.actionType, true) ? <Term id={actionTypeTerm(s.actionType, true)!}>{s.castingTime}</Term> : <span>{s.castingTime}</span>}
         <span>{s.range}</span>
         <span>{s.duration}</span>
-        {s.attack && <strong className="text-text">{signed(row.attackBonus)} {t('spells.toHit')}</strong>}
-        {s.save && <strong className="text-text">DC {row.dc} {s.save.toUpperCase()}</strong>}
+        {s.attack && (
+          <Term id="rule-spell-attack">
+            <strong className="text-text">
+              {signed(row.attackBonus)} {t('spells.toHit')}
+            </strong>
+          </Term>
+        )}
+        {s.save && (
+          <Term id="rule-saving-throw">
+            <strong className="text-text">
+              DC {row.dc} {s.save.toUpperCase()}
+            </strong>
+          </Term>
+        )}
         {dice.damage && <span className="text-text">{dice.damage}</span>}
         {dice.heal && <span className="text-text">❤️ {dice.heal}</span>}
       </div>
@@ -467,10 +489,10 @@ export function SpellcastingDrawer({ onClose }: { onClose: () => void }) {
             <div key={c.classId} className="mt-1 flex flex-wrap items-center gap-x-3 text-sm">
               <strong>{c.name}</strong>
               <span>{c.ability.toUpperCase()}</span>
-              <span>DC {c.dc}</span>
-              <span>
+              <Term id="rule-saving-throw">DC {c.dc}</Term>
+              <Term id="rule-spell-attack">
                 {signed(c.attack)} {t('spells.toHit')}
-              </span>
+              </Term>
               <button className="ml-auto rounded border border-border px-2 py-0.5 text-xs hover:bg-bg" onClick={() => setManage(manage === c.classId ? undefined : c.classId)}>
                 {manage === c.classId ? `✅ ${t('edit.done')}` : `📖 ${t('spells.manage')}`}
               </button>

@@ -9,6 +9,7 @@ import { useRun, useSheet } from './context'
 import { Editable } from './Editable'
 import { useEditMode } from './editMode'
 import { breakdown, signed } from './format'
+import { Term } from '../rules/Term'
 
 const abilityNames = { str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' }
 
@@ -39,7 +40,7 @@ export function AbilitiesPanel({ sheet }: { sheet: Sheet; content: ContentIndex 
                 className={`border-t border-border text-[11px] leading-4 ${save.proficient ? 'font-semibold' : 'text-muted'}`}
                 title={`${t('sheet.savingThrow')} (${abilityNames[a]})\n${breakdown(save)}`}
               >
-                <ProfDot level={save.proficient ? 1 : 0} /> {t('sheet.save')}{' '}
+                <ProfDot level={save.proficient ? 1 : 0} /> <Term id="rule-saving-throw">{t('sheet.save')}</Term>{' '}
                 <Editable value={save} overrideKey={`save:${a}`} label={`${t('sheet.savingThrow')} (${abilityNames[a]})`} format={signed} className="tabular-nums" />
               </div>
             </div>
@@ -49,13 +50,13 @@ export function AbilitiesPanel({ sheet }: { sheet: Sheet; content: ContentIndex 
 
       <div className="mt-2 flex justify-between text-sm">
         <span title={breakdown(sheet.pb)}>
-          {t('sheet.proficiencyBonus')}{' '}
+          <Term id="rule-proficiency-bonus">{t('sheet.proficiencyBonus')}</Term>{' '}
           <strong>
             <Editable value={sheet.pb} overrideKey="pb" label={t('sheet.proficiencyBonus')} format={signed} />
           </strong>
         </span>
         <span title={breakdown(sheet.passivePerception)}>
-          {t('sheet.passivePerception')}{' '}
+          <Term id="rule-passive-perception">{t('sheet.passivePerception')}</Term>{' '}
           <strong>
             <Editable value={sheet.passivePerception} overrideKey="passive:perception" label={t('sheet.passivePerception')} />
           </strong>
@@ -69,7 +70,7 @@ export function AbilitiesPanel({ sheet }: { sheet: Sheet; content: ContentIndex 
           return (
             <li key={s} className={`flex justify-between ${v.proficiency ? 'font-semibold' : 'text-muted'}`} title={breakdown(v)}>
               <span>
-                <ProfDot level={v.proficiency} /> {skillName(s)} <span className="text-[10px] uppercase opacity-70">{skills[s]}</span>
+                <ProfDot level={v.proficiency} /> <Term id={`skill-${s}`}>{skillName(s)}</Term> <span className="text-[10px] uppercase opacity-70">{skills[s]}</span>
               </span>
               <Editable value={v} overrideKey={`skill:${s}`} label={skillName(s)} format={signed} className="tabular-nums" />
             </li>

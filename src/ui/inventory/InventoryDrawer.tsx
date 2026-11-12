@@ -17,6 +17,7 @@ import {
 import { unitWeight, type ResolvedEntry } from '../../engine/items'
 import { fx } from '../fx/fx'
 import { RuleRef } from '../rules/RuleRef'
+import { Term } from '../rules/Term'
 import { Dots } from '../sheet/common'
 import { useRun, useSheet } from '../sheet/context'
 import { NumberAdjust } from '../sheet/NumberAdjust'
@@ -91,7 +92,7 @@ function ItemRow({ r }: { r: ResolvedEntry }) {
               if (group && !e.attuned) fx('magic')
             }}
           >
-            🔗 {e.attuned ? t('inventory.attuned') : t('inventory.attune')}
+            🔗 <Term id="rule-attunement">{e.attuned ? t('inventory.attuned') : t('inventory.attune')}</Term>
           </button>
         )}
         {weapon?.versatileDamage && e.equipped && (

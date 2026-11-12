@@ -5,9 +5,18 @@ import type { ResolvedEntry } from '../../engine/items'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
 import { useSheet } from './context'
+import { PropertyList, Term } from '../rules/Term'
 
-function itemDetail(r: ResolvedEntry, item: Item): string {
-  if (r.weapon) return [r.weapon.damage && `${r.weapon.damage.dice} ${r.weapon.damage.type}`, r.weapon.properties.join(', ')].filter(Boolean).join(' · ')
+function itemDetail(r: ResolvedEntry, item: Item): React.ReactNode {
+  if (r.weapon) {
+    return (
+      <>
+        {r.weapon.damage && `${r.weapon.damage.dice} ${r.weapon.damage.type}`}
+        {r.weapon.damage && r.weapon.properties.length > 0 && ' · '}
+        <PropertyList properties={r.weapon.properties} />
+      </>
+    )
+  }
   if (r.armor) return r.armor.category === 'shield' ? `+${r.armor.ac.base} AC` : `AC ${r.armor.ac.base}${r.armor.ac.dex ? ' + Dex' : ''}`
   return item.description
 }
@@ -28,7 +37,7 @@ export function EquippedPanel({ onOpen }: { onOpen: () => void }) {
           {t('sheet.equipped')} <span className="normal-case">→</span>
         </button>
         <span className="text-xs text-muted">
-          🔗 {attuned}/{ATTUNEMENT_SLOTS} · ⚖️ {sheet.weight.total}/{sheet.weight.capacity} lb ·{' '}
+          <Term id="rule-attunement">🔗 {attuned}/{ATTUNEMENT_SLOTS}</Term> · ⚖️ {sheet.weight.total}/{sheet.weight.capacity} lb ·{' '}
           {Object.entries(character.currency)
             .filter(([, v]) => v > 0)
             .map(([k, v]) => `${v} ${k.toUpperCase()}`)

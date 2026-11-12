@@ -28,6 +28,7 @@ import { ConditionsPanel, FeaturesPanel, Reminders, ResourcesPanel } from './Sid
 import { SheetShortcuts } from './shortcuts'
 import { useTurn } from './turn'
 import { Vitals } from './Vitals'
+import { Term } from '../rules/Term'
 
 export function SheetPage({ uid }: { uid: string }) {
   const { t } = useTranslation()
@@ -134,10 +135,10 @@ function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => voi
       </span>
       <div className="ml-auto flex flex-wrap gap-1.5">
         <button className={button} onClick={() => onRest('short')}>
-          ☕ {t('sheet.buttons.shortRest')}
+          ☕ <Term id="rule-short-rest">{t('sheet.buttons.shortRest')}</Term>
         </button>
         <button className={button} onClick={() => onRest('long')}>
-          🌙 {t('sheet.buttons.longRest')}
+          🌙 <Term id="rule-long-rest">{t('sheet.buttons.longRest')}</Term>
         </button>
         {/* Wired up in later milestones; visible now so the layout is final. */}
         <button disabled className={button} title={t('sheet.comingSoon')}>

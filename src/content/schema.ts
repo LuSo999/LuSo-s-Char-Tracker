@@ -480,6 +480,14 @@ export const WeaponMastery = z.object({
 })
 export type WeaponMastery = z.infer<typeof WeaponMastery>
 
+/** Rules terms for Ctrl+hover / Ctrl+click: glossary terms, weapon properties, skills. */
+export const RuleDef = z.object({
+  ...base,
+  type: z.literal('rule'),
+  category: z.enum(['glossary', 'weaponProperty', 'skill']).default('glossary'),
+})
+export type RuleDef = z.infer<typeof RuleDef>
+
 export const Entity = z.union([
   Class,
   Subclass,
@@ -493,6 +501,7 @@ export const Entity = z.union([
   Spell,
   ConditionDef,
   WeaponMastery,
+  RuleDef,
 ])
 export type Entity = z.infer<typeof Entity>
 export type EntityType = Entity['type']
