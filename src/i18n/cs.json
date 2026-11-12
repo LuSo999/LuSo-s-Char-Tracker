@@ -68,7 +68,8 @@
       "species": "Species",
       "background": "Background",
       "feats": "Feats",
-      "other": "Ostatní"
+      "other": "Ostatní",
+      "extras": "Navíc"
     },
     "equipped": "Na sobě a po ruce",
     "attunement": "Attunement",
@@ -218,7 +219,10 @@
     "notEnoughMoney": "Nemáš dost {{coin}}.",
     "nothingToRecover": "Není co sebrat.",
     "noReload": "Tahle zbraň nemá zásobník.",
-    "magazineEmpty": "{{name}} je prázdná: nejdřív přebij."
+    "magazineEmpty": "{{name}} je prázdná: nejdřív přebij.",
+    "unknownEntity": "V obsahu nenalezeno.",
+    "alreadyHave": "Postava už má {{name}}.",
+    "nameRequired": "Zadej název."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -271,7 +275,8 @@
       "recover": "Po boji",
       "reload": "Přebití",
       "settings": "Nastavení",
-      "edit": "Ruční úprava"
+      "edit": "Ruční úprava",
+      "extras": "Schopnosti"
     },
     "items": {
       "damage": "Zranění {{amount}}: HP {{before}} → {{after}}",
@@ -325,7 +330,9 @@
       "customReset": "{{what}} – {{field}}: zpět na původní",
       "renamed": "Postava přejmenována: {{before}} → {{after}}",
       "baseScore": "Základ {{ability}} {{before}} → {{after}}",
-      "itemRenamed": "Předmět přejmenován: {{before}} → {{after}}"
+      "itemRenamed": "Předmět přejmenován: {{before}} → {{after}}",
+      "extraAdded": "Přidáno: {{name}} {{note}}",
+      "extraRemoved": "Odebráno: {{name}}"
     },
     "attackAction": "Attack action"
   },
@@ -436,5 +443,31 @@
       "description": "popis",
       "url": "odkaz"
     }
+  },
+  "addFeature": {
+    "title": "Přidat schopnost",
+    "fromRules": "Z pravidel",
+    "custom": "Vlastní",
+    "search": "Hledat featury, featy, traity…",
+    "kinds": {
+      "all": "Vše",
+      "feat": "Feat",
+      "feature": "Featura",
+      "trait": "Trait"
+    },
+    "actionType": "Typ akce",
+    "passive": "Pasivní (bez akce)",
+    "uses": "Použití",
+    "recharge": "Obnova",
+    "noRecharge": "Nikdy (jen ručně)",
+    "bonuses": "Bonusy",
+    "addBonus": "Přidat bonus",
+    "allSaves": "Všechny saving throws",
+    "allChecks": "Všechny ability checks",
+    "weaponAttack": "Útoky zbraní",
+    "weaponDamage": "Damage zbraní",
+    "note": "Odkud to je (nepovinné)",
+    "notePlaceholder": "Od DM, backstory, homebrew…",
+    "confirmRemove": "Odebrat {{name}} z postavy?"
   }
 }

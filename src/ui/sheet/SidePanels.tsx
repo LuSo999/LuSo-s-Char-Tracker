@@ -6,6 +6,8 @@ import { setExhaustion, setResourceRemaining, toggleCondition, toggleEffect } fr
 import type { ActiveEntity, Sheet } from '../../engine/derive'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
+import { removeExtra } from '../../engine/extras'
+import { AddFeatureDialog } from './AddFeatureDialog'
 import { useRun, useSheet } from './context'
 import { Editable } from './Editable'
 import { useEditMode } from './editMode'
@@ -146,6 +148,7 @@ export function ConditionsPanel() {
 type Group = { key: string; title: string; items: ActiveEntity[] }
 
 function groupFor(ae: ActiveEntity, content: ContentIndex): string {
+  if (ae.grantKey.startsWith('extra:')) return 'extras'
   switch (ae.entity.type) {
     case 'feature': {
       // Options picked through a choice (maneuvers) belong where their parent feature does.
@@ -171,7 +174,10 @@ function groupFor(ae: ActiveEntity, content: ContentIndex): string {
 
 export function FeaturesPanel() {
   const { t } = useTranslation()
-  const { sheet, content } = useSheet()
+  const { character, sheet, content } = useSheet()
+  const run = useRun()
+  const edit = useEditMode((s) => s.on)
+  const [adding, setAdding] = useState(false)
   // Subspecies are shown through their traits; the "choose a subclass" placeholder feature is skipped.
   const shown = sheet.active.filter(
     (ae) =>
@@ -180,10 +186,12 @@ export function FeaturesPanel() {
       !ae.entity.tags.includes('core') &&
       !(ae.entity.type === 'feature' && ae.entity.id.endsWith('-subclass')),
   )
-  const order = ['class', 'subclass', 'species', 'background', 'feats', 'other']
+  const order = ['class', 'subclass', 'species', 'background', 'feats', 'extras', 'other']
   const groups: Group[] = order
     .map((key) => ({ key, title: t(`sheet.featureGroups.${key}`), items: shown.filter((ae) => groupFor(ae, content) === key) }))
     .filter((g) => g.items.length)
+  /** The extra behind an entity granted as "extra:<uid>" (only the top-level one can be removed). */
+  const extraOf = (ae: ActiveEntity) => (/^extra:([^/]+)$/.exec(ae.grantKey) ? character.extras.find((x) => `extra:${x.uid}` === ae.grantKey) : undefined)
 
   return (
     <Panel title={t('sheet.features')} icon="📜">
@@ -191,21 +199,43 @@ export function FeaturesPanel() {
         <div key={g.key} className="mb-2">
           <h3 className="text-xs font-semibold uppercase text-muted">{g.title}</h3>
           <ul className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-            {g.items.map((ae) => (
-              <li key={ae.grantKey}>
-                <FeatureName entity={ae.entity} content={content} />
-              </li>
-            ))}
+            {g.items.map((ae) => {
+              const extra = extraOf(ae)
+              return (
+                <li key={ae.grantKey} className="inline-flex items-baseline gap-1">
+                  <FeatureName entity={ae.entity} content={content} editable={!extra?.custom} />
+                  {extra?.note && <span className="text-[10px] text-muted">({extra.note})</span>}
+                  {edit && extra && (
+                    <button
+                      className="text-xs text-danger"
+                      aria-label={t('inventory.remove')}
+                      title={t('inventory.remove')}
+                      onClick={() => {
+                        if (confirm(t('addFeature.confirmRemove', { name: ae.entity.name }))) void run(removeExtra(character, content, extra.uid))
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </div>
       ))}
+      {edit && (
+        <button className="mt-1 w-full rounded border-2 border-dashed border-accent py-1 text-sm font-semibold text-accent hover:bg-accent/10" onClick={() => setAdding(true)}>
+          ➕ {t('addFeature.title')}
+        </button>
+      )}
+      {adding && <AddFeatureDialog onClose={() => setAdding(false)} />}
     </Panel>
   )
 }
 
-function FeatureName({ entity, content }: { entity: Entity; content: ContentIndex }) {
+function FeatureName({ entity, content, editable = true }: { entity: Entity; content: ContentIndex; editable?: boolean }) {
   return (
-    <RuleRef entity={entity} content={content} editable>
+    <RuleRef entity={entity} content={content} editable={editable}>
       {entity.name.replace(/^Giant Ancestry: /, '')}
       {entity.isNew && <sup className="ml-0.5 text-[9px] font-semibold uppercase text-accent">new</sup>}
       {!entity.verified && <sup className="ml-0.5 text-danger">?</sup>}

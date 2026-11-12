@@ -205,6 +205,12 @@ export function collectActive(char: Character, content: ContentIndex): ActiveEnt
   if (bg.feat) push(content.get(bg.feat), `${bg.id}/feat`, characterLevel)
   for (const f of bg.features) push(content.get(f), f, characterLevel)
 
+  // Extras: granted by the DM, from the backstory, or the character's own features.
+  for (const extra of char.extras) {
+    const entity = extra.custom ?? (extra.entityId ? content.get(extra.entityId) : undefined)
+    push(entity, `extra:${extra.uid}`, characterLevel, char.classes[0].classId)
+  }
+
   // Entities picked through choices (fighting style, feats, …), recursively.
   for (let i = 0; i < out.length; i++) {
     const ae = out[i]

@@ -2,7 +2,7 @@
 // Only what the player decided or what changes during play is stored;
 // everything derived (AC, attack bonuses, maxima) is computed by the engine.
 import { z } from 'zod'
-import { Ability, Edition } from '../content/schema'
+import { Ability, Edition, Feature } from '../content/schema'
 
 export const AbilityScores = z.object({
   str: z.number().int(),
@@ -106,6 +106,22 @@ export const Character = z.object({
   customizations: z
     .record(z.string(), z.object({ name: z.string().optional(), description: z.string().optional(), url: z.string().optional() }))
     .default({}),
+  /**
+   * Things the character has beyond class, species and background: granted
+   * by the DM, from the backstory, or homebrew. Either a rules entity by id
+   * or the character's own feature (same format as content packs).
+   */
+  extras: z
+    .array(
+      z.object({
+        uid: z.string(),
+        entityId: z.string().optional(),
+        custom: Feature.optional(),
+        /** Where it comes from, e.g. "From the DM", "Backstory". */
+        note: z.string().optional(),
+      }),
+    )
+    .default([]),
   /** Manual overrides from edit mode, keyed by derived value path (e.g. "ac", "skill:stealth"). */
   overrides: z.record(z.string(), z.union([z.number(), z.string()])).default({}),
   settings: z

@@ -16,6 +16,8 @@ Platné zadání je v `dnd-tracker-spec2.md` (`dnd-tracker-spec.md` je původní
 
 - **Historie:** přidat tlačítko pro začátek herního sezení a filtr podle typu události.
 
+- **Navíc (extras):** v edit módu jde postavě přidat schopnost z pravidel nebo vlastní (od DM, z backstory, homebrew). V milníku 7 stejný mechanismus přijme i kouzla s příznakem always prepared, která se nepočítají do limitu připravených kouzel.
+
 ## Testovací postava
 
 Valdric Greywing, Fighter 4 (5.5e), cantripy Mage Hand a Prestidigitation. Heavy Armor Master podle znění z 2024: snížení B/P/S poškození z útoků v heavy armor, bez slova „nonmagical“. Obsah mimo SRD (subclass, manévry, některé featy) se do repa nedává. Přijde přes sdílený oficiální obsah z balíčků v `private/packs/` (mimo git).

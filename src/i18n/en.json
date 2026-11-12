@@ -68,7 +68,8 @@
       "species": "Species",
       "background": "Background",
       "feats": "Feats",
-      "other": "Other"
+      "other": "Other",
+      "extras": "Extra"
     },
     "equipped": "Equipped",
     "attunement": "Attunement",
@@ -218,7 +219,10 @@
     "notEnoughMoney": "Not enough {{coin}}.",
     "nothingToRecover": "Nothing to recover.",
     "noReload": "This weapon has no magazine.",
-    "magazineEmpty": "{{name}} is empty: reload first."
+    "magazineEmpty": "{{name}} is empty: reload first.",
+    "unknownEntity": "Not found in the content.",
+    "alreadyHave": "The character already has {{name}}.",
+    "nameRequired": "Give it a name."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -271,7 +275,8 @@
       "recover": "After the fight",
       "reload": "Reload",
       "settings": "Settings",
-      "edit": "Manual change"
+      "edit": "Manual change",
+      "extras": "Features"
     },
     "items": {
       "damage": "Took {{amount}} damage: HP {{before}} → {{after}}",
@@ -325,7 +330,9 @@
       "customReset": "{{what}} – {{field}}: back to the original",
       "renamed": "Character renamed: {{before}} → {{after}}",
       "baseScore": "Base {{ability}} {{before}} → {{after}}",
-      "itemRenamed": "Item renamed: {{before}} → {{after}}"
+      "itemRenamed": "Item renamed: {{before}} → {{after}}",
+      "extraAdded": "Added: {{name}} {{note}}",
+      "extraRemoved": "Removed: {{name}}"
     },
     "attackAction": "Attack action"
   },
@@ -436,5 +443,31 @@
       "description": "summary",
       "url": "link"
     }
+  },
+  "addFeature": {
+    "title": "Add feature",
+    "fromRules": "From the rules",
+    "custom": "Own",
+    "search": "Search features, feats, traits…",
+    "kinds": {
+      "all": "All",
+      "feat": "Feat",
+      "feature": "Feature",
+      "trait": "Trait"
+    },
+    "actionType": "Action type",
+    "passive": "Passive (no action)",
+    "uses": "Uses",
+    "recharge": "Recharges on",
+    "noRecharge": "Never (until reset by hand)",
+    "bonuses": "Bonuses",
+    "addBonus": "Add bonus",
+    "allSaves": "All saving throws",
+    "allChecks": "All ability checks",
+    "weaponAttack": "Weapon attacks",
+    "weaponDamage": "Weapon damage",
+    "note": "Where it comes from (optional)",
+    "notePlaceholder": "From the DM, backstory, homebrew…",
+    "confirmRemove": "Remove {{name}} from the character?"
   }
 }
