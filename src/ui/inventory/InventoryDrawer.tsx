@@ -21,6 +21,7 @@ import { Dots } from '../sheet/common'
 import { useRun, useSheet } from '../sheet/context'
 import { NumberAdjust } from '../sheet/NumberAdjust'
 import { AddItemDialog } from './AddItemDialog'
+import { SidePanel } from '../sheet/SidePanel'
 import { setItemLabel } from '../../engine/edits'
 import { magicName } from '../../engine/items'
 import { useEditMode } from '../sheet/editMode'
@@ -144,15 +145,12 @@ export function InventoryDrawer({ onClose }: { onClose: () => void }) {
   const pack = sheet.items.filter((r) => !r.entry.equipped)
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-black/40" onClick={onClose}>
-      <aside className="flex h-full w-full flex-col border-l border-border bg-card shadow-xl sm:max-w-lg" onClick={(e) => e.stopPropagation()} aria-label={t('inventory.title')}>
-        <header className="border-b border-border p-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-heading text-xl font-semibold">🎒 {t('inventory.title')}</h2>
-            <button className="text-2xl leading-none text-muted" aria-label={t('close')} onClick={onClose}>
-              ×
-            </button>
-          </div>
+    <SidePanel
+      side="right"
+      title={`🎒 ${t('inventory.title')}`}
+      onClose={onClose}
+      header={
+        <>
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
             <div title={t('inventory.capacityHint')}>
               ⚖️ {t('inventory.weight')}: <strong className={total > capacity ? 'text-danger' : ''}>{total}</strong> / {capacity} lb
@@ -183,8 +181,10 @@ export function InventoryDrawer({ onClose }: { onClose: () => void }) {
               </span>
             ))}
           </div>
-        </header>
-        <div className="flex-1 space-y-3 overflow-y-auto p-3">
+        </>
+      }
+    >
+      <div className="space-y-3">
           <button className="w-full rounded border-2 border-dashed border-accent py-1.5 font-semibold text-accent hover:bg-accent/10" onClick={() => setAdding(true)}>
             + {t('inventory.add')}
           </button>
@@ -207,8 +207,7 @@ export function InventoryDrawer({ onClose }: { onClose: () => void }) {
             </ul>
           </section>
         </div>
-      </aside>
       {adding && <AddItemDialog onClose={() => setAdding(false)} />}
-    </div>
+    </SidePanel>
   )
 }

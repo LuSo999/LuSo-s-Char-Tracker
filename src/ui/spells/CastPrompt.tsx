@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { castOptions, castSpell, type CastHow } from '../../engine/spellActions'
 import type { SpellRow } from '../../engine/spells'
 import { fx } from '../fx/fx'
+import { useSettings } from '../../state/settings'
 import { useRun, useSheet } from '../sheet/context'
+import { rememberTurn, slotFree, snapshotTurn, useTurn } from '../sheet/turn'
 
 type TFn = TFunction
 
@@ -26,9 +28,21 @@ export function CastPrompt({ row, onDone }: { row: SpellRow; onDone: (cast: bool
   const options = castOptions(row, sheet)
   const left = (key: string) => sheet.resources.find((r) => r.key === key)?.remaining ?? 0
 
+  const mode = useSettings((s) => s.turnMode)
+
   async function cast(how: CastHow) {
+    const before = snapshotTurn()
     const group = await run(castSpell(character, sheet, row, how))
-    if (group) fx('magic')
+    if (group) {
+      fx('magic')
+      // Casting time spends the matching turn slot, wherever the spell was cast from (rituals take minutes, no slot).
+      const type = row.spell.actionType
+      if (mode !== 'off' && how.kind !== 'ritual' && type !== 'other') {
+        if (!slotFree(useTurn.getState(), type)) useTurn.getState().flashSlot(type)
+        useTurn.getState().use(type)
+        rememberTurn(group.id, before)
+      }
+    }
     onDone(!!group)
   }
 

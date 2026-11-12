@@ -11,6 +11,7 @@ import { rememberCharacter } from '../../state/lastCharacter'
 import { useOfficial } from '../../state/official'
 import { HistoryDrawer } from '../history/HistoryDrawer'
 import { InventoryDrawer } from '../inventory/InventoryDrawer'
+import { EdgeHandle } from './SidePanel'
 import { SpellcastingDrawer } from '../spells/SpellcastingDrawer'
 import { groupSummary } from '../history/text'
 import { RuleRef } from '../rules/RuleRef'
@@ -89,10 +90,9 @@ export function SheetView({ character, content, store }: { character: Character;
   )
 }
 
-function TopBar({ onRest, onHistory, onInventory, onSpells }: { onRest: (kind: 'short' | 'long') => void; onHistory: () => void; onInventory: () => void; onSpells: () => void }) {
+function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => void; onHistory: () => void }) {
   const { t } = useTranslation()
-  const { character, content, store, sheet } = useSheet()
-  const edit = useEditMode((s) => s.on)
+  const { character, content, store } = useSheet()
   const last = undoable(store.history)
   const classes = character.classes.map((c) => ({ entry: c, cls: content.getTyped(c.classId, 'class'), sub: c.subclassId ? content.getTyped(c.subclassId, 'subclass') : undefined }))
   const button = 'rounded border border-border px-3 py-1.5 text-sm hover:bg-bg disabled:opacity-50 disabled:hover:bg-transparent'
@@ -154,14 +154,6 @@ function TopBar({ onRest, onHistory, onInventory, onSpells }: { onRest: (kind: '
           }}
         >
           ↶ {t('undo')}
-        </button>
-        {(sheet.spellcasting.any || edit) && (
-          <button className={`${button} hidden sm:inline-block`} onClick={onSpells}>
-            ✨ {t('spells.title')}
-          </button>
-        )}
-        <button className={`${button} hidden sm:inline-block`} onClick={onInventory}>
-          🎒 {t('inventory.title')}
         </button>
         <button className={`${button} hidden sm:inline-block`} onClick={onHistory}>
           📜 {t('sheet.buttons.history')}
@@ -252,10 +244,15 @@ function SheetLayout() {
   const [history, setHistory] = useState(false)
   const [inventory, setInventory] = useState(false)
   const [spells, setSpells] = useState(false)
+  const edit = useEditMode((s) => s.on)
 
   return (
-    <div className="mx-auto w-full max-w-[1920px] px-3 py-3">
-      <TopBar onRest={setRest} onHistory={() => setHistory(true)} onInventory={() => setInventory(true)} onSpells={() => setSpells(true)} />
+    // Side gutters on larger screens keep the edge handles off the content.
+    <div className="mx-auto w-full max-w-[1920px] px-3 py-3 sm:px-11">
+      <TopBar onRest={setRest} onHistory={() => setHistory(true)} />
+      {/* Side panels open from handles on the edges: spells on the left, inventory on the right. */}
+      {!spells && (sheet.spellcasting.any || edit) && <EdgeHandle side="left" label={`✨ ${t('spells.title')}`} onClick={() => setSpells(true)} />}
+      {!inventory && <EdgeHandle side="right" label={`🎒 ${t('inventory.title')}`} onClick={() => setInventory(true)} />}
       <EditBanner />
       <EntityEditHost />
 
@@ -267,7 +264,7 @@ function SheetLayout() {
         <div className="order-1 flex min-w-0 flex-col gap-3 xl:order-2 xl:min-h-0">
           <Vitals />
           <Reminders />
-          <ActionList />
+          <ActionList onOpenSpells={() => setSpells(true)} />
         </div>
         <div className="order-2 flex flex-col gap-3 xl:order-3 xl:min-h-0 xl:overflow-y-auto">
           <ResourcesPanel />

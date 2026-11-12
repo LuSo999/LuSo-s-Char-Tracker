@@ -28,9 +28,10 @@ export function ResourcesPanel() {
   const edit = useEditMode((s) => s.on)
   return (
     <Panel title={t('sheet.resources')} icon="🔋">
-      {sheet.resources.length === 0 && <p className="text-sm text-muted">{t('sheet.none')}</p>}
+      {sheet.resources.every((r) => r.key.startsWith('slot:') || r.key === 'pact') && <p className="text-sm text-muted">{t('sheet.none')}</p>}
       <ul className="space-y-1">
-        {sheet.resources.map((r) => {
+        {/* Spell slots are shown in the Magic tile and the Spellcasting panel. */}
+        {sheet.resources.filter((r) => !r.key.startsWith('slot:') && r.key !== 'pact').map((r) => {
           const recharge = r.resource.recharge
             .map((x) => `${rechargeLabel[x.on]}${x.amount === 'all' ? '' : ` (+${typeof x.amount === 'number' ? x.amount : '…'})`}`)
             .join(' / ')

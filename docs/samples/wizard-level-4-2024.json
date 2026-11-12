@@ -1,39 +1,128 @@
 {
   "name": "Test Wizard (level 4)",
   "edition": "2024",
-  "classes": [{ "classId": "wizard", "level": 4, "subclassId": "evoker" }],
+  "classes": [
+    {
+      "classId": "wizard",
+      "level": 4,
+      "subclassId": "evoker"
+    }
+  ],
   "speciesId": "elf",
   "subspeciesId": "elven-lineage-high-elf",
   "backgroundId": "sage",
-  "baseScores": { "str": 8, "dex": 14, "con": 14, "int": 15, "wis": 12, "cha": 10 },
-  "backgroundBonuses": { "int": 2, "con": 1 },
-  "choices": {
-    "wizard/skills": ["arcana", "investigation"],
-    "wizard-scholar/skill": ["arcana"],
-    "wizard-ability-score-improvement@wizard:4/feat": ["ability-score-improvement"],
-    "wizard-ability-score-improvement@wizard:4/feat=ability-score-improvement/asi": ["int+2"],
-    "sage/feat/cantrips": ["light", "minor-illusion"],
-    "sage/feat/spell": ["find-familiar"],
-    "sage/feat/ability": ["int"]
+  "baseScores": {
+    "str": 8,
+    "dex": 14,
+    "con": 14,
+    "int": 15,
+    "wis": 12,
+    "cha": 10
   },
-  "hp": { "current": 26 },
+  "backgroundBonuses": {
+    "int": 2,
+    "con": 1
+  },
+  "choices": {
+    "wizard/skills": [
+      "arcana",
+      "investigation"
+    ],
+    "wizard-scholar/skill": [
+      "arcana"
+    ],
+    "wizard-ability-score-improvement@wizard:4/feat": [
+      "ability-score-improvement"
+    ],
+    "wizard-ability-score-improvement@wizard:4/feat=ability-score-improvement/asi": [
+      "int+2"
+    ],
+    "sage/feat/cantrips": [
+      "light",
+      "minor-illusion"
+    ],
+    "sage/feat/spell": [
+      "find-familiar"
+    ],
+    "sage/feat/ability": [
+      "int"
+    ]
+  },
+  "hp": {
+    "current": 26
+  },
   "spells": {
     "wizard": {
       "known": [
-        "fire-bolt", "mage-hand", "ray-of-frost", "prestidigitation",
-        "magic-missile", "spell-shield", "sleep", "detect-magic", "mage-armor", "burning-hands", "identify", "thunderwave",
-        "misty-step", "hold-person", "scorching-ray", "web"
+        "fire-bolt",
+        "mage-hand",
+        "ray-of-frost",
+        "prestidigitation",
+        "magic-missile",
+        "spell-shield",
+        "sleep",
+        "detect-magic",
+        "mage-armor",
+        "burning-hands",
+        "identify",
+        "thunderwave",
+        "misty-step",
+        "hold-person",
+        "scorching-ray",
+        "web"
       ],
-      "prepared": ["magic-missile", "spell-shield", "sleep", "mage-armor", "misty-step", "hold-person", "scorching-ray"]
+      "prepared": [
+        "magic-missile",
+        "spell-shield",
+        "sleep",
+        "mage-armor",
+        "misty-step",
+        "hold-person",
+        "scorching-ray"
+      ]
     }
   },
   "inventory": [
-    { "uid": "staff", "itemId": "quarterstaff", "equipped": true },
-    { "uid": "dagger", "itemId": "dagger", "equipped": true },
-    { "uid": "book", "itemId": "spellbook" },
-    { "uid": "focus", "itemId": "crystal" },
-    { "uid": "pack", "itemId": "scholars-pack" },
-    { "uid": "robe", "itemId": "robe" }
+    {
+      "uid": "staff",
+      "itemId": "quarterstaff",
+      "equipped": true
+    },
+    {
+      "uid": "dagger",
+      "itemId": "dagger",
+      "equipped": true
+    },
+    {
+      "uid": "book",
+      "itemId": "spellbook"
+    },
+    {
+      "uid": "focus",
+      "itemId": "crystal"
+    },
+    {
+      "uid": "pack",
+      "itemId": "scholars-pack"
+    },
+    {
+      "uid": "robe",
+      "itemId": "robe"
+    }
   ],
-  "currency": { "cp": 0, "sp": 0, "ep": 0, "gp": 10, "pp": 0 }
+  "currency": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 10,
+    "pp": 0
+  },
+  "favoriteSpells": [
+    "fire-bolt",
+    "magic-missile",
+    "spell-shield",
+    "misty-step",
+    "hold-person",
+    "scorching-ray"
+  ]
 }

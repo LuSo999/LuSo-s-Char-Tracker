@@ -5,7 +5,7 @@ import type { Choice, Spell } from '../../content/schema'
 import { setResourceRemaining } from '../../engine/actions'
 import { selections, type ActiveEntity } from '../../engine/derive'
 import { addExtra } from '../../engine/extras'
-import { endConcentration, setChoice, setClassSpell } from '../../engine/spellActions'
+import { endConcentration, setChoice, setClassSpell, toggleFavoriteSpell } from '../../engine/spellActions'
 import { spellDice, type CasterState, type SpellRow } from '../../engine/spells'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots } from '../sheet/common'
@@ -13,6 +13,12 @@ import { useRun, useSheet } from '../sheet/context'
 import { useEditMode } from '../sheet/editMode'
 import { signed } from '../sheet/format'
 import { CastPrompt } from './CastPrompt'
+import { defaultSpellFilters, filterSpells, type SpellFilters } from './spellFilters'
+import { adjustHp, setHp } from '../../engine/actions'
+import { useSettings } from '../../state/settings'
+import { TurnBar } from '../sheet/ActionList'
+import { NumberAdjust } from '../sheet/NumberAdjust'
+import { SidePanel } from '../sheet/SidePanel'
 
 type TFn = TFunction
 
@@ -30,14 +36,24 @@ function SpellTags({ spell }: { spell: Spell }) {
 /** One castable spell with its numbers and the Cast button. */
 function SpellLine({ row }: { row: SpellRow }) {
   const { t } = useTranslation()
-  const { sheet, content } = useSheet()
+  const { character, sheet, content } = useSheet()
+  const run = useRun()
   const [casting, setCasting] = useState(false)
+  const fav = character.favoriteSpells.includes(row.spell.id)
   const s = row.spell
   const mod = sheet.mods[row.ability]
   const dice = spellDice(s, Math.max(1, s.level), sheet.characterLevel, mod)
   return (
     <li className={`py-1.5 ${row.ritualOnly ? 'opacity-70' : ''}`}>
       <div className="flex flex-wrap items-baseline gap-x-2">
+        <button
+          className={`text-lg leading-none ${fav ? 'text-amber-500' : 'text-muted opacity-40 hover:opacity-100'}`}
+          aria-pressed={fav}
+          title={t(fav ? 'spells.unfavorite' : 'spells.favorite')}
+          onClick={() => void run(toggleFavoriteSpell(character, s.id, s.name), { quiet: true })}
+        >
+          {fav ? '★' : '☆'}
+        </button>
         <RuleRef entity={s} content={content} className="font-semibold">
           {s.name}
         </RuleRef>
@@ -256,48 +272,188 @@ function AddDmSpell() {
   )
 }
 
-/** Spellcasting panel: slots, concentration, spells by level, managing the spell list. */
+function Chip({ on, onClick, children, title }: { on: boolean; onClick: () => void; children: React.ReactNode; title?: string }) {
+  return (
+    <button
+      title={title}
+      className={`rounded-full border px-2 py-0.5 text-xs ${on ? 'border-accent bg-accent text-accent-text' : 'border-border hover:bg-bg'}`}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  )
+}
+
+/** Filters for the spell list: text, level, action type, ★, castable now, concentration, ritual, kind, school, source, sorting. */
+function Filters({ f, set, rows }: { f: SpellFilters; set: (p: Partial<SpellFilters>) => void; rows: SpellRow[] }) {
+  const { t } = useTranslation()
+  const { sheet } = useSheet()
+  const levels = [...new Set(rows.map((r) => r.spell.level))].sort((a, b) => a - b)
+  const schools = [...new Set(rows.map((r) => r.spell.school))].sort()
+  const select = 'rounded border border-border bg-card px-1 py-0.5 text-xs'
+  const toggleLevel = (l: number) => set({ levels: f.levels.includes(l) ? f.levels.filter((x) => x !== l) : [...f.levels, l] })
+  return (
+    <div className="space-y-1.5">
+      <input className="w-full rounded border border-border bg-card px-2 py-1 text-sm" placeholder={t('spells.search')} value={f.query} onChange={(e) => set({ query: e.target.value })} />
+      <div className="flex flex-wrap gap-1">
+        <Chip on={f.levels.length === 0} onClick={() => set({ levels: [] })}>
+          {t('itemFilters.categories.all')}
+        </Chip>
+        {levels.map((l) => (
+          <Chip key={l} on={f.levels.includes(l)} onClick={() => toggleLevel(l)}>
+            {l === 0 ? t('spells.cantrips') : l}
+          </Chip>
+        ))}
+        <span className="mx-1 border-l border-border" />
+        {(['all', 'action', 'bonusAction', 'reaction', 'other'] as const).map((a) => (
+          <Chip key={a} on={f.actionType === a} onClick={() => set({ actionType: a })}>
+            {t(`actionFilter.${a}`)}
+          </Chip>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-1">
+        <Chip on={f.favorites} onClick={() => set({ favorites: !f.favorites })} title={t('spells.favoritesHint')}>
+          ★ {t('spells.favorites')}
+        </Chip>
+        <Chip on={f.castable} onClick={() => set({ castable: !f.castable })}>
+          ✨ {t('spells.castableNow')}
+        </Chip>
+        <Chip on={f.concentration === 'yes'} onClick={() => set({ concentration: f.concentration === 'yes' ? 'all' : 'yes' })}>
+          🔮 {t('spells.concentration')}
+        </Chip>
+        <Chip on={f.concentration === 'no'} onClick={() => set({ concentration: f.concentration === 'no' ? 'all' : 'no' })}>
+          {t('spells.noConcentration')}
+        </Chip>
+        <Chip on={f.ritual} onClick={() => set({ ritual: !f.ritual })}>
+          📿 {t('spells.ritual')}
+        </Chip>
+        <select className={select} value={f.kind} onChange={(e) => set({ kind: e.target.value as SpellFilters['kind'] })} aria-label={t('spells.kind')}>
+          <option value="all">{t('spells.kinds.all')}</option>
+          <option value="attack">🎯 {t('spells.kinds.attack')}</option>
+          <option value="save">🛡️ {t('spells.kinds.save')}</option>
+          <option value="damage">💥 {t('spells.kinds.damage')}</option>
+          <option value="heal">❤️ {t('spells.kinds.heal')}</option>
+        </select>
+        {schools.length > 1 && (
+          <select className={select} value={f.school} onChange={(e) => set({ school: e.target.value })} aria-label={t('spells.school')}>
+            <option value="">{t('spells.anySchool')}</option>
+            {schools.map((sc) => (
+              <option key={sc} value={sc}>
+                {sc[0].toUpperCase() + sc.slice(1)}
+              </option>
+            ))}
+          </select>
+        )}
+        {(sheet.spellcasting.casters.length > 1 || rows.some((r) => r.always)) && (
+          <select className={select} value={f.source} onChange={(e) => set({ source: e.target.value })} aria-label={t('spells.source')}>
+            <option value="">{t('spells.anySource')}</option>
+            {sheet.spellcasting.casters.map((c) => (
+              <option key={c.classId} value={`class:${c.classId}`}>
+                {c.name}
+              </option>
+            ))}
+            <option value="granted">★ {t('spells.granted')}</option>
+          </select>
+        )}
+        <select className={select} value={f.sort} onChange={(e) => set({ sort: e.target.value as SpellFilters['sort'] })} aria-label={t('itemFilters.sort')}>
+          <option value="level">↕ {t('spells.byLevel')}</option>
+          <option value="name">↕ {t('itemFilters.sortName')}</option>
+        </select>
+        {JSON.stringify(f) !== JSON.stringify(defaultSpellFilters) && (
+          <button className="text-xs text-muted underline" onClick={() => set(defaultSpellFilters)}>
+            {t('itemFilters.reset')}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** HP, concentration and the turn tracker, so the panel never needs closing during a turn. */
+function StatusStrip() {
+  const { t } = useTranslation()
+  const { character, sheet } = useSheet()
+  const run = useRun()
+  const mode = useSettings((s) => s.turnMode)
+  return (
+    <div className="mt-2 space-y-1.5">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="flex items-center gap-1">
+          ❤️
+          <NumberAdjust
+            label={t('sheet.hitPoints')}
+            value={character.hp.current}
+            valueClassName="font-semibold"
+            onSet={(v) => void run(setHp(character, sheet, v))}
+            onDelta={(d) => void run(adjustHp(character, sheet, d))}
+          />
+          <span className="text-muted">/ {sheet.hpMax.value}</span>
+          {character.hp.temp > 0 && <span className="text-xs text-sky-700 dark:text-sky-300">+{character.hp.temp}</span>}
+        </span>
+        {character.concentration ? (
+          <span className="ml-auto flex items-center gap-1 rounded border border-violet-500/60 bg-violet-500/10 px-2 py-0.5">
+            🔮 {character.concentration.name}
+            <button className="text-xs text-muted underline" onClick={() => void run(endConcentration(character))}>
+              {t('spells.endConcentration')}
+            </button>
+          </span>
+        ) : (
+          <span className="ml-auto text-xs text-muted">🔮 {t('spells.noConcentrationNow')}</span>
+        )}
+      </div>
+      {mode !== 'off' && <TurnBar />}
+    </div>
+  )
+}
+
+/** Spellcasting panel: everything for casting in one place (status, slots, filters, spells, managing the list). */
 export function SpellcastingDrawer({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation()
   const { character, sheet } = useSheet()
   const run = useRun()
   const edit = useEditMode((s) => s.on)
   const [manage, setManage] = useState<string>()
+  const [filters, setFilters] = useState<SpellFilters>(defaultSpellFilters)
+  const set = (p: Partial<SpellFilters>) => setFilters((f) => ({ ...f, ...p }))
   const sc = sheet.spellcasting
   const slotState = (key: string) => sheet.resources.find((r) => r.key === key)
   const granters = sheet.active.filter((ae) => (ae.entity.spells ?? []).length > 0)
-  const byLevel = new Map<number, SpellRow[]>()
-  for (const r of sc.rows) byLevel.set(r.spell.level, [...(byLevel.get(r.spell.level) ?? []), r])
+  const shown = filterSpells(sc.rows, filters, sheet, character.favoriteSpells)
+  const groups = new Map<number | 'all', SpellRow[]>()
+  for (const r of shown) {
+    const k = filters.sort === 'level' ? r.spell.level : 'all'
+    groups.set(k, [...(groups.get(k) ?? []), r])
+  }
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-start bg-black/40" onClick={onClose}>
-      <aside className="flex h-full w-full flex-col border-r border-border bg-card shadow-xl sm:max-w-lg" onClick={(e) => e.stopPropagation()} aria-label={t('spells.title')}>
-        <header className="border-b border-border p-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-heading text-xl font-semibold">✨ {t('spells.title')}</h2>
-            <button className="text-2xl leading-none text-muted" aria-label={t('close')} onClick={onClose}>
-              ×
-            </button>
-          </div>
+    <SidePanel
+      side="left"
+      title={`✨ ${t('spells.title')}`}
+      onClose={onClose}
+      header={
+        <>
+          <StatusStrip />
           {sc.casters.map((c) => (
             <div key={c.classId} className="mt-1 flex flex-wrap items-center gap-x-3 text-sm">
               <strong>{c.name}</strong>
               <span>{c.ability.toUpperCase()}</span>
               <span>DC {c.dc}</span>
-              <span>{signed(c.attack)} {t('spells.toHit')}</span>
+              <span>
+                {signed(c.attack)} {t('spells.toHit')}
+              </span>
               <button className="ml-auto rounded border border-border px-2 py-0.5 text-xs hover:bg-bg" onClick={() => setManage(manage === c.classId ? undefined : c.classId)}>
                 {manage === c.classId ? `✅ ${t('edit.done')}` : `📖 ${t('spells.manage')}`}
               </button>
             </div>
           ))}
           {(sc.slots.length > 0 || sc.pact) && (
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              {sc.slots.map((s) => {
-                const st = slotState(s.key)!
+            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              {sc.slots.map((sl) => {
+                const st = slotState(sl.key)!
                 return (
-                  <span key={s.key} className="flex items-center gap-1">
-                    <span className="text-xs text-muted">{s.level}.</span>
-                    <Dots remaining={st.remaining} max={st.max} onSet={(n) => void run(setResourceRemaining(character, sheet, s.key, n))} />
+                  <span key={sl.key} className="flex items-center gap-1">
+                    <span className="text-xs text-muted">{sl.level}.</span>
+                    <Dots remaining={st.remaining} max={st.max} onSet={(n) => void run(setResourceRemaining(character, sheet, sl.key, n))} />
                   </span>
                 )
               })}
@@ -309,39 +465,36 @@ export function SpellcastingDrawer({ onClose }: { onClose: () => void }) {
               )}
             </div>
           )}
-          {character.concentration && (
-            <div className="mt-2 flex items-center gap-2 rounded border border-violet-500/60 bg-violet-500/10 px-2 py-1 text-sm">
-              🔮 {t('spells.concentrating', { name: character.concentration.name })}
-              <button className="ml-auto rounded border border-border bg-card px-2 py-0.5 text-xs" onClick={() => void run(endConcentration(character))}>
-                {t('spells.endConcentration')}
-              </button>
+          {!manage && sc.rows.length > 0 && (
+            <div className="mt-2">
+              <Filters f={filters} set={set} rows={sc.rows} />
             </div>
           )}
-        </header>
-        <div className="flex-1 space-y-3 overflow-y-auto p-3">
-          {granters.map((ae) => (
-            <GrantChoices key={ae.grantKey} ae={ae} />
-          ))}
-          {manage ? (
-            <ManageSpells caster={sc.casters.find((c) => c.classId === manage)!} />
-          ) : (
-            [...byLevel.entries()]
-              .sort((a, b) => a[0] - b[0])
-              .map(([level, rows]) => (
-                <section key={level}>
-                  <h3 className="text-xs font-semibold uppercase text-muted">{levelName(t, level)}</h3>
-                  <ul className="divide-y divide-border">
-                    {rows.map((r) => (
-                      <SpellLine key={r.key} row={r} />
-                    ))}
-                  </ul>
-                </section>
-              ))
-          )}
-          {!manage && sc.rows.length === 0 && <p className="text-sm text-muted">{t('spells.none')}</p>}
-          {edit && <AddDmSpell />}
-        </div>
-      </aside>
-    </div>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        {granters.map((ae) => (
+          <GrantChoices key={ae.grantKey} ae={ae} />
+        ))}
+        {manage ? (
+          <ManageSpells caster={sc.casters.find((c) => c.classId === manage)!} />
+        ) : (
+          [...groups.entries()].map(([level, rows]) => (
+            <section key={String(level)}>
+              {level !== 'all' && <h3 className="text-xs font-semibold uppercase text-muted">{levelName(t, level)}</h3>}
+              <ul className="divide-y divide-border">
+                {rows.map((r) => (
+                  <SpellLine key={r.key} row={r} />
+                ))}
+              </ul>
+            </section>
+          ))
+        )}
+        {!manage && sc.rows.length > 0 && shown.length === 0 && <p className="text-sm text-muted">{t('inventory.noResults')}</p>}
+        {!manage && sc.rows.length === 0 && <p className="text-sm text-muted">{t('spells.none')}</p>}
+        {edit && <AddDmSpell />}
+      </div>
+    </SidePanel>
   )
 }

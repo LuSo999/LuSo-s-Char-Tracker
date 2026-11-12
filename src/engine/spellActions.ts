@@ -128,3 +128,10 @@ export function setChoice(char: Character, ae: ActiveEntity, choiceId: string, v
   if (JSON.stringify(before) === JSON.stringify(values)) return { ok: false, error: 'noChange' }
   return ok({ ...char, choices: { ...char.choices, [key]: values } }, [{ type: 'choice', params: { what: label }, before: before.join(', '), after: values.join(', ') }], 'spells', 'sheet')
 }
+
+/** ★ a spell: it shows up in the action list. */
+export function toggleFavoriteSpell(char: Character, spellId: string, name: string): ActionResult {
+  const on = !char.favoriteSpells.includes(spellId)
+  const favoriteSpells = on ? [...char.favoriteSpells, spellId] : char.favoriteSpells.filter((id) => id !== spellId)
+  return ok({ ...char, favoriteSpells }, [{ type: on ? 'favoriteOn' : 'favoriteOff', params: { name }, entity: spellId }], 'spells', 'sheet')
+}

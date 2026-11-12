@@ -55,6 +55,7 @@ export const sampleWizard: Omit<CharacterInput, 'id'> = {
     'sage/feat/ability': ['int'],
   },
   hp: { current: 32 },
+  favoriteSpells: ['fire-bolt', 'magic-missile', 'spell-shield', 'misty-step', 'fireball', 'counterspell'],
   spells: {
     wizard: {
       known: ['fire-bolt', 'mage-hand', 'ray-of-frost', 'prestidigitation', 'magic-missile', 'spell-shield', 'detect-magic', 'sleep', 'misty-step', 'hold-person', 'fireball', 'counterspell', 'identify'],

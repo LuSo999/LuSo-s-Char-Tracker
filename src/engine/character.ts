@@ -101,6 +101,8 @@ export const Character = z.object({
    * are granted by those entities and not stored here.
    */
   spells: z.record(z.string(), z.object({ known: z.array(z.string()).default([]), prepared: z.array(z.string()).default([]) })).default({}),
+  /** Spells marked ★: shown in the action list next to weapons and features. */
+  favoriteSpells: z.array(z.string()).default([]),
   /** The spell the character is concentrating on. */
   concentration: z.object({ spellId: z.string(), name: z.string() }).optional(),
   /** Ammunition fired since the last "Recover ammunition", per ammunition entry. */

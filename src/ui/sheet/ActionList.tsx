@@ -157,7 +157,7 @@ function activityRow(a: ActivityRow): Row {
   }
 }
 
-function TurnBar() {
+export function TurnBar() {
   const { t } = useTranslation()
   const turn = useTurn()
   const chip = (slot: Slot, label: string) => {
@@ -218,6 +218,46 @@ function AttackBanner() {
 
 type Problem = { kind: 'slot'; slot: Slot } | { kind: 'perTurn' } | { kind: 'perAttack' }
 type Choice = Slot | 'ignore' | 'newTurn' | 'cancel'
+
+/** Summary of spellcasting in the action panel; opens the Spellcasting panel. */
+function MagicTile({ onOpen }: { onOpen: () => void }) {
+  const { t } = useTranslation()
+  const { character, sheet } = useSheet()
+  const sc = sheet.spellcasting
+  const left = (key: string) => sheet.resources.find((r) => r.key === key)
+  const caster = sc.casters[0]
+  const favorites = sc.rows.filter((r) => character.favoriteSpells.includes(r.spell.id)).length
+  return (
+    <button
+      onClick={onOpen}
+      className="mt-2 flex w-full flex-wrap items-center gap-x-4 gap-y-1 rounded-card border-2 border-violet-500/50 bg-violet-500/10 px-3 py-2 text-left text-sm hover:bg-violet-500/20"
+    >
+      <span className="font-heading text-base font-semibold">✨ {t('spells.magic')}</span>
+      {caster && (
+        <span>
+          DC <strong>{caster.dc}</strong> · <strong>{signed(caster.attack)}</strong> {t('spells.toHit')}
+        </span>
+      )}
+      {sc.slots.map((s) => {
+        const st = left(s.key)!
+        return (
+          <span key={s.key} className="flex items-center gap-1 text-xs">
+            {s.level}. <Dots remaining={st.remaining} max={st.max} />
+          </span>
+        )
+      })}
+      {sc.pact && (
+        <span className="flex items-center gap-1 text-xs">
+          {t('spells.pactShort', { level: sc.pact.level })} <Dots remaining={left('pact')!.remaining} max={left('pact')!.max} />
+        </span>
+      )}
+      {character.concentration && <span className="text-violet-700 dark:text-violet-300">🔮 {character.concentration.name}</span>}
+      <span className="ml-auto text-xs text-muted">
+        ★ {t('spells.inActions', { count: favorites })} · {t('spells.open')} ›
+      </span>
+    </button>
+  )
+}
 
 /**
  * Strict mode: something isn't available. Weapon attacks can still be an
@@ -291,7 +331,7 @@ function RollPrompt({ row, onDone }: { row: ActivityRow; onDone: (roll?: number)
   )
 }
 
-export function ActionList() {
+export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
   const { t } = useTranslation()
   const { character, sheet, content } = useSheet()
   const run = useRun()
@@ -304,8 +344,10 @@ export function ActionList() {
   const rows = [
     ...sheet.attacks.map((a) => attackRow(a, content)),
     ...sheet.activities.map(activityRow),
-    // Prepared spells and cantrips (rituals only castable out of combat stay in the Spellcasting panel).
-    ...sheet.spellcasting.rows.filter((r) => !r.ritualOnly).map((r) => spellRow(r, sheet.characterLevel, sheet.mods[r.ability])),
+    // Only spells marked ★ in the Spellcasting panel; the rest live in that panel.
+    ...sheet.spellcasting.rows
+      .filter((r) => !r.ritualOnly && character.favoriteSpells.includes(r.spell.id))
+      .map((r) => spellRow(r, sheet.characterLevel, sheet.mods[r.ability])),
   ].sort((a, b) => a.order - b.order)
   const [casting, setCasting] = useState<string>()
   const visible = rows.filter((r) => filter === 'all' || r.actionType === filter)
@@ -469,6 +511,7 @@ export function ActionList() {
   return (
     <Panel title={t('sheet.actions')} icon="⚔️" className="flex min-h-0 flex-1 flex-col">
       {mode !== 'off' && <TurnBar />}
+      {sheet.spellcasting.any && onOpenSpells && <MagicTile onOpen={onOpenSpells} />}
       {mode !== 'off' && <AttackBanner />}
       <div className="my-2 flex flex-wrap gap-1" role="tablist">
         {filters.map((f) => (
@@ -563,10 +606,7 @@ export function ActionList() {
             {casting === r.key && r.spellRow && (
               <CastPrompt
                 row={r.spellRow}
-                onDone={(cast) => {
-                  setCasting(undefined)
-                  if (cast && mode !== 'off') for (const s of slotsOf(r)) turn.use(s)
-                }}
+                onDone={() => setCasting(undefined)}
               />
             )}
             {blocked?.key === r.key && <BlockedPrompt row={r} problem={blocked.problem} onChoose={(c) => void chooseBlocked(r, c)} />}

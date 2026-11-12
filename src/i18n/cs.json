@@ -352,7 +352,9 @@
       "spellUnprepared": "Odebráno z připravených: {{name}} ({{class}})",
       "spellLearned": "Naučeno: {{name}} ({{class}})",
       "spellForgotten": "Odebráno: {{name}} ({{class}})",
-      "choice": "{{what}}: {{before}} → {{after}}"
+      "choice": "{{what}}: {{before}} → {{after}}",
+      "favoriteOn": "★ {{name}}",
+      "favoriteOff": "☆ {{name}}"
     },
     "attackAction": "Attack action"
   },
@@ -522,6 +524,32 @@
     "concentrating": "Koncentrace: {{name}}",
     "endConcentration": "Ukončit koncentraci",
     "concentrationSave": "Koncentrace na {{name}}: Constitution save DC {{dc}}",
-    "none": "Zatím žádná kouzla. Vyber je ve „Spravovat kouzla“."
+    "none": "Zatím žádná kouzla. Vyber je ve „Spravovat kouzla“.",
+    "favorite": "Ukázat v seznamu akcí",
+    "unfavorite": "Odebrat ze seznamu akcí",
+    "favorites": "S hvězdičkou",
+    "favoritesHint": "Kouzla s hvězdičkou se ukazují v seznamu akcí",
+    "castableNow": "Seslatelná teď",
+    "concentration": "Koncentrace",
+    "noConcentration": "Bez koncentrace",
+    "ritual": "Rituál",
+    "kind": "Druh",
+    "kinds": {
+      "all": "Jakýkoli druh",
+      "attack": "Spell attack",
+      "save": "Saving throw",
+      "damage": "Damage",
+      "heal": "Léčení"
+    },
+    "school": "Škola",
+    "anySchool": "Jakákoli škola",
+    "source": "Původ",
+    "anySource": "Jakýkoli původ",
+    "granted": "Featy, species, DM",
+    "byLevel": "Level",
+    "noConcentrationNow": "bez koncentrace",
+    "magic": "Magie",
+    "inActions": "{{count}} v akcích",
+    "open": "Otevřít"
   }
 }

@@ -352,7 +352,9 @@
       "spellUnprepared": "Unprepared {{name}} ({{class}})",
       "spellLearned": "Learned {{name}} ({{class}})",
       "spellForgotten": "Removed {{name}} ({{class}})",
-      "choice": "{{what}}: {{before}} → {{after}}"
+      "choice": "{{what}}: {{before}} → {{after}}",
+      "favoriteOn": "★ {{name}}",
+      "favoriteOff": "☆ {{name}}"
     },
     "attackAction": "Attack action"
   },
@@ -522,6 +524,32 @@
     "concentrating": "Concentrating on {{name}}",
     "endConcentration": "End concentration",
     "concentrationSave": "Concentration on {{name}}: Constitution save DC {{dc}}",
-    "none": "No spells yet. Use “Manage spells” to choose them."
+    "none": "No spells yet. Use “Manage spells” to choose them.",
+    "favorite": "Show in the action list",
+    "unfavorite": "Remove from the action list",
+    "favorites": "Starred",
+    "favoritesHint": "Starred spells appear in the action list",
+    "castableNow": "Castable now",
+    "concentration": "Concentration",
+    "noConcentration": "No concentration",
+    "ritual": "Ritual",
+    "kind": "Kind",
+    "kinds": {
+      "all": "Any kind",
+      "attack": "Spell attack",
+      "save": "Saving throw",
+      "damage": "Damage",
+      "heal": "Healing"
+    },
+    "school": "School",
+    "anySchool": "Any school",
+    "source": "Source",
+    "anySource": "Any source",
+    "granted": "Feats, species, DM",
+    "byLevel": "Level",
+    "noConcentrationNow": "not concentrating",
+    "magic": "Magic",
+    "inActions": "{{count}} in actions",
+    "open": "Open"
   }
 }
