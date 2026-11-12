@@ -80,3 +80,16 @@ export function setItemLabel(char: Character, uid: string, label: string, origin
     { type: 'itemRenamed', before: e.label ?? original, after: v ?? original },
   ])
 }
+
+export function addReminder(char: Character, text: string): ActionResult {
+  const v = text.trim()
+  if (!v) return { ok: false, error: 'noChange' }
+  const uid = `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+  return ok({ ...char, reminders: [...char.reminders, { uid, text: v }] }, [{ type: 'reminderAdded', params: { text: v } }])
+}
+
+export function removeReminder(char: Character, uid: string): ActionResult {
+  const r = char.reminders.find((x) => x.uid === uid)
+  if (!r) return { ok: false, error: 'noChange' }
+  return ok({ ...char, reminders: char.reminders.filter((x) => x.uid !== uid) }, [{ type: 'reminderRemoved', params: { text: r.text } }])
+}

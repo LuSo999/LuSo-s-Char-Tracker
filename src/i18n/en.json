@@ -332,7 +332,9 @@
       "baseScore": "Base {{ability}} {{before}} → {{after}}",
       "itemRenamed": "Item renamed: {{before}} → {{after}}",
       "extraAdded": "Added: {{name}} {{note}}",
-      "extraRemoved": "Removed: {{name}}"
+      "extraRemoved": "Removed: {{name}}",
+      "reminderAdded": "Reminder added: {{text}}",
+      "reminderRemoved": "Reminder removed: {{text}}"
     },
     "attackAction": "Attack action"
   },
@@ -469,5 +471,8 @@
     "note": "Where it comes from (optional)",
     "notePlaceholder": "From the DM, backstory, homebrew…",
     "confirmRemove": "Remove {{name}} from the character?"
+  },
+  "reminders": {
+    "placeholder": "Own reminder, e.g. “Owes the Zhentarim 50 GP”"
   }
 }

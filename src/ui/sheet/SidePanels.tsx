@@ -6,6 +6,7 @@ import { setExhaustion, setResourceRemaining, toggleCondition, toggleEffect } fr
 import type { ActiveEntity, Sheet } from '../../engine/derive'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
+import { addReminder, removeReminder } from '../../engine/edits'
 import { removeExtra } from '../../engine/extras'
 import { AddFeatureDialog } from './AddFeatureDialog'
 import { useRun, useSheet } from './context'
@@ -248,12 +249,15 @@ function reminders(sheet: Sheet) {
   return sheet.active.flatMap((ae) => ae.entity.effects.filter((e) => e.note).map((e) => ({ note: e.note!, entity: ae.entity })))
 }
 
-/** Rules to keep in mind, shown right under the vitals so they are always in sight. */
+/** Rules to keep in mind, shown right under the vitals so they are always in sight. Edit mode adds own ones. */
 export function Reminders() {
   const { t } = useTranslation()
-  const { sheet, content } = useSheet()
+  const { character, sheet, content } = useSheet()
+  const run = useRun()
+  const edit = useEditMode((s) => s.on)
+  const [text, setText] = useState('')
   const notes = reminders(sheet)
-  if (!notes.length && !sheet.notes.length) return null
+  if (!notes.length && !sheet.notes.length && !character.reminders.length && !edit) return null
   return (
     <section aria-label={t('sheet.reminders')} className="rounded-card border border-amber-500/60 bg-amber-500/10 px-3 py-1.5 shadow-sm">
       <ul className="flex flex-wrap gap-x-5 gap-y-0.5 text-sm">
@@ -271,6 +275,38 @@ export function Reminders() {
             </RuleRef>
           </li>
         ))}
+        {character.reminders.map((r) => (
+          <li key={r.uid}>
+            <span aria-hidden>📌 </span>
+            {r.text}
+            {edit && (
+              <button className="ml-1 text-xs text-danger" aria-label={t('inventory.remove')} onClick={() => void run(removeReminder(character, r.uid))}>
+                ×
+              </button>
+            )}
+          </li>
+        ))}
+        {edit && (
+          <li className="min-w-60 flex-1">
+            <form
+              className="flex gap-1"
+              onSubmit={async (e) => {
+                e.preventDefault()
+                if (await run(addReminder(character, text))) setText('')
+              }}
+            >
+              <input
+                className="min-w-0 flex-1 rounded border border-dashed border-accent bg-card px-2 py-0.5 text-sm"
+                placeholder={`📌 ${t('reminders.placeholder')}`}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+              />
+              <button className="rounded border border-accent px-2 text-sm font-semibold text-accent disabled:opacity-40" disabled={!text.trim()} type="submit">
+                ➕
+              </button>
+            </form>
+          </li>
+        )}
       </ul>
     </section>
   )

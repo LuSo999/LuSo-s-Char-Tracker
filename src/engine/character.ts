@@ -122,6 +122,8 @@ export const Character = z.object({
       }),
     )
     .default([]),
+  /** The player's own reminders, shown next to the automatic ones under the vitals. */
+  reminders: z.array(z.object({ uid: z.string(), text: z.string() })).default([]),
   /** Manual overrides from edit mode, keyed by derived value path (e.g. "ac", "skill:stealth"). */
   overrides: z.record(z.string(), z.union([z.number(), z.string()])).default({}),
   settings: z

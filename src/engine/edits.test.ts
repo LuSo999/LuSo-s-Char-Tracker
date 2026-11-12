@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ActionResult } from './actions'
 import { computeSheet } from './derive'
-import { customize, resetAllOverrides, setBaseScore, setOverride } from './edits'
+import { addReminder, customize, removeReminder, resetAllOverrides, setBaseScore, setOverride } from './edits'
 import { srd, valdric } from './fixtures'
 
 const content = srd('2024')
@@ -60,5 +60,14 @@ describe('own names, summaries and links', () => {
     expect(content.get('fighter-second-wind')!.name).toBe('Second Wind')
     const reset = okR(customize(c, 'fighter-second-wind', 'Second Wind', { name: '', url: '' })).character
     expect(reset.customizations).toEqual({})
+  })
+})
+
+describe('own reminders', () => {
+  it('are added and removed, empty text is ignored', () => {
+    const c = okR(addReminder(valdric(), '  Owes the Zhentarim 50 GP ')).character
+    expect(c.reminders).toEqual([{ uid: expect.any(String), text: 'Owes the Zhentarim 50 GP' }])
+    expect(addReminder(c, '   ').ok).toBe(false)
+    expect(okR(removeReminder(c, c.reminders[0].uid)).character.reminders).toEqual([])
   })
 })

@@ -332,7 +332,9 @@
       "baseScore": "Základ {{ability}} {{before}} → {{after}}",
       "itemRenamed": "Předmět přejmenován: {{before}} → {{after}}",
       "extraAdded": "Přidáno: {{name}} {{note}}",
-      "extraRemoved": "Odebráno: {{name}}"
+      "extraRemoved": "Odebráno: {{name}}",
+      "reminderAdded": "Přidána připomínka: {{text}}",
+      "reminderRemoved": "Odebrána připomínka: {{text}}"
     },
     "attackAction": "Attack action"
   },
@@ -469,5 +471,8 @@
     "note": "Odkud to je (nepovinné)",
     "notePlaceholder": "Od DM, backstory, homebrew…",
     "confirmRemove": "Odebrat {{name}} z postavy?"
+  },
+  "reminders": {
+    "placeholder": "Vlastní připomínka, např. „Dlužím Zhentarimům 50 GP“"
   }
 }
