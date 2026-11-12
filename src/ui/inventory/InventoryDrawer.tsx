@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { setResourceRemaining } from '../../engine/actions'
 import {
-  ATTUNEMENT_SLOTS,
   adjustCoin,
   coins,
   removeItem,
@@ -88,7 +87,7 @@ function ItemRow({ r }: { r: ResolvedEntry }) {
           <button
             className={`${btn} ${e.attuned ? 'border-violet-600 bg-violet-600 text-white' : 'border-border hover:bg-bg'}`}
             onClick={async () => {
-              const group = await run(toggleAttune(character, content, e.uid))
+              const group = await run(toggleAttune(character, content, e.uid, sheet.attunementSlots))
               if (group && !e.attuned) fx('magic')
             }}
           >
@@ -160,7 +159,7 @@ export function InventoryDrawer({ onClose }: { onClose: () => void }) {
               </div>
             </div>
             <div>
-              🔗 {t('sheet.attunement')}: <strong className={attuned >= ATTUNEMENT_SLOTS ? 'text-violet-600' : ''}>{attuned}</strong>/{ATTUNEMENT_SLOTS}
+              🔗 {t('sheet.attunement')}: <strong className={attuned >= sheet.attunementSlots ? 'text-violet-600' : ''}>{attuned}</strong>/{sheet.attunementSlots}
             </div>
             <label className="col-span-2 flex items-center gap-2 text-xs text-muted">
               <input type="checkbox" checked={character.settings.trackAmmunition} onChange={(e) => void run(setAmmoTracking(character, e.target.checked))} />

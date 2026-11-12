@@ -169,7 +169,7 @@ function activityRow(a: ActivityRow): Row {
     entity: a.source.entity,
     actionType: a.actionType,
     // Maneuvers, Grapple/Shove and the like replace an attack; magic items and spell-like features are magic.
-    category: a.activity.costsAttack ? 'weapon' : a.activity.fx === 'magic' || (isItem && 'magic' in a.source.entity && a.source.entity.magic) ? 'magic' : 'other',
+    category: a.activity.costsAttack || a.activity.attack ? 'weapon' : a.activity.fx === 'magic' || (isItem && 'magic' in a.source.entity && a.source.entity.magic) ? 'magic' : 'other',
     details,
     uses: a.uses && { remaining: a.uses.remaining, max: a.uses.max },
     available: a.available,

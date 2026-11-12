@@ -191,6 +191,12 @@ export function performActivity(char: Character, sheet: Sheet, row: ActivityRow,
     next = withRemaining(next, sheet, cost.resourceKey, r.remaining - cost.amount)
     items.push({ type: 'resource', params: { name: r.name }, before: r.remaining, after: r.remaining - cost.amount })
   }
+  // Rage, Wild Shape…: the activity switches its state on.
+  const state = row.activity.toggle && `state:${row.activity.toggle}`
+  if (state && !next.toggles.includes(state)) {
+    next = { ...next, toggles: [...next.toggles, state] }
+    items.push({ type: 'toggleOn', params: { name: row.activity.toggle! } })
+  }
   if (roll !== undefined && row.activity.roll?.kind === 'heal') {
     const total = roll + (row.rollBonus ?? 0)
     const healed = heal(next, sheet, total, { name, entity: row.source.entity.id })
@@ -269,6 +275,8 @@ export function restItems(changes: RestChange[]): HistoryItem[] {
         return { type: 'exhaustion', before: c.before, after: c.after, entity: 'exhaustion' }
       case 'deathSaves':
         return { type: 'deathSavesReset' }
+      case 'stateEnded':
+        return { type: 'toggleOff', params: { name: c.name } }
     }
   })
 }

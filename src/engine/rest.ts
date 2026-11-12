@@ -14,6 +14,7 @@ export type RestChange =
   | { kind: 'hitDice'; die: number; before: number; after: number; total: number }
   | { kind: 'exhaustion'; before: number; after: number }
   | { kind: 'deathSaves' }
+  | { kind: 'stateEnded'; name: string }
 
 export type RestResult = { character: Character; changes: RestChange[] }
 
@@ -83,7 +84,17 @@ export function shortRest(char: Character, content: ContentIndex, hitDiceRolls: 
     changes.push({ kind: 'deathSaves' })
   }
   next = rechargeResources(next, sheet, 'shortRest', changes)
+  next = endStates(next, sheet, changes)
   return { character: next, changes }
+}
+
+/** Rests end states switched on by activities (Rage, Wild Shape…). */
+function endStates(char: Character, sheet: Sheet, changes: RestChange[]): Character {
+  const ended = sheet.toggles.filter((t) => t.state && t.on)
+  if (!ended.length) return char
+  for (const t of ended) changes.push({ kind: 'stateEnded', name: t.label })
+  const keys = new Set(ended.map((t) => t.key))
+  return { ...char, toggles: char.toggles.filter((k) => !keys.has(k)) }
 }
 
 /** Resources that come back at dawn by a dice roll (wands, staffs), for the rest dialog. */
@@ -128,6 +139,7 @@ export function longRest(char: Character, content: ContentIndex, opts: { dawn?: 
     deathSaves: { successes: 0, failures: 0 },
   }
   next = rechargeResources(next, sheet, 'longRest', changes)
+  next = endStates(next, sheet, changes)
   if (opts.dawn) next = rechargeResources(next, computeSheet(next, content), 'dawn', changes, opts.dawnRolls)
   return { character: next, changes }
 }

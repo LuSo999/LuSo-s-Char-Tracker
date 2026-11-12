@@ -3,6 +3,13 @@
 // the class-table numbers are additionally cross-checked against the source
 // data's level tables below. Mark anything uncertain with `verified: false`.
 import type { Edition } from '../src/content/schema.ts'
+import { barbarian } from './overlay/barbarian.ts'
+import type { ClassOverlay } from './overlay/common.ts'
+import { monk } from './overlay/monk.ts'
+import { rogue } from './overlay/rogue.ts'
+
+/** Per-class overlays (scripts/overlay/*.ts). */
+const classOverlays: ClassOverlay[] = [barbarian, monk, rogue]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = any
@@ -288,7 +295,8 @@ function coreCombat(edition: Edition): Raw {
 export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[] {
   const problems: string[] = []
   byId.set('core-combat', coreCombat(edition))
-  const patches = edition === '2014' ? overlay2014 : overlay2024
+  const patches = { ...(edition === '2014' ? overlay2014 : overlay2024), ...Object.assign({}, ...classOverlays.map((o) => o[edition])) }
+  for (const o of classOverlays) for (const [cls, column, table] of o.checks?.[edition] ?? []) checkTable(byId, cls, column, table, problems)
   for (const [id, patch] of Object.entries(patches)) {
     const e = byId.get(id)
     if (!e) {

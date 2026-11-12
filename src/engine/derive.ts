@@ -10,6 +10,7 @@ import {
   type Activity,
   type Armor,
   type Dice,
+  type Edition,
   type Effect,
   type Entity,
   type Resource,
@@ -60,7 +61,7 @@ export type ResourceState = {
   die?: number
 }
 
-export type Toggle = { key: string; label: string; source: ActiveEntity; on: boolean }
+export type Toggle = { key: string; label: string; source: ActiveEntity; on: boolean; /** Switched on by an activity (Rage), off by rests. */ state: boolean }
 
 export type AttackRow = {
   key: string
@@ -127,6 +128,10 @@ export type Sheet = {
   activities: ActivityRow[]
   resources: ResourceState[]
   toggles: Toggle[]
+  /** How many items can be attuned at once (3; target "attunementSlots", op max). */
+  attunementSlots: number
+  /** Effect notes that apply right now (shown in the reminders strip). */
+  reminders: { note: string; entity: Entity }[]
   active: ActiveEntity[]
   armorProficiencies: string[]
   weaponProficiencies: string[]
@@ -246,14 +251,38 @@ type EffectContext = {
   armor?: Armor
   shield: boolean
   weapon?: Weapon
+  /** Ability used by the attack being computed. */
+  ability?: Ability
+  /** The attack is an Unarmed Strike. */
+  unarmed?: boolean
   proficient?: boolean
   bloodied: boolean
+  edition: Edition
+  /** Reminders: conditions about a particular attack count as met. */
+  anyAttack?: boolean
 }
 
+/**
+ * Monk weapons. 2014 (SRD 5.1 Martial Arts): shortswords and simple melee
+ * weapons without Two-Handed or Heavy. 2024 (SRD 5.2.1): Simple melee weapons
+ * and Martial melee weapons with the Light property.
+ */
+export function isMonkWeapon(w: Weapon | undefined, edition: Edition): boolean {
+  if (!w || w.range !== 'melee') return false
+  const base = w.baseItem ?? w.id
+  if (edition === '2014') return base === 'shortsword' || (w.category === 'simple' && !w.properties.includes('two-handed') && !w.properties.includes('heavy'))
+  return w.category === 'simple' || w.properties.includes('light')
+}
+
+type When = Exclude<Effect['when'], undefined>
 function effectApplies(effect: Effect, ae: ActiveEntity, ctx: EffectContext, toggles: Set<string>): boolean {
-  const w = effect.when
-  if (!w) return true
+  return effect.when === undefined || whenHolds(effect.when, ae, ctx, toggles)
+}
+
+function whenHolds(w: When, ae: ActiveEntity, ctx: EffectContext, toggles: Set<string>): boolean {
+  if (Array.isArray(w)) return w.every((x) => whenHolds(x, ae, ctx, toggles))
   if (typeof w === 'object') return toggles.has(`${ae.grantKey}#${w.toggle}`)
+  if (ctx.anyAttack && ['rangedWeapon', 'meleeWeapon', 'weaponAttack', 'strengthAttack', 'martialArts', 'notProficient'].includes(w)) return true
   switch (w) {
     case 'wearingArmor':
       return ctx.armor !== undefined
@@ -277,6 +306,12 @@ function effectApplies(effect: Effect, ae: ActiveEntity, ctx: EffectContext, tog
       return ctx.bloodied
     case 'notProficient':
       return ctx.proficient === false
+    case 'strengthAttack':
+      return ctx.ability === 'str'
+    case 'notHeavyArmor':
+      return ctx.armor?.category !== 'heavy'
+    case 'martialArts':
+      return !!ctx.unarmed || isMonkWeapon(ctx.weapon, ctx.edition)
   }
 }
 
@@ -285,7 +320,14 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const active = collectActive(char, content)
   const characterLevel = char.classes.reduce((s, c) => s + c.level, 0)
   const pbComputed = proficiencyBonus(characterLevel)
+  // States switched on by activities (Raging) are shared by every effect that names them: one switch
+  // "state:<name>". Other toggles belong to their entity ("<grantKey>#<name>").
+  const stateNames = new Set(active.flatMap((ae) => ae.entity.activities.flatMap((a) => (a.toggle ? [a.toggle] : []))))
+  const togglesIn = (w: Effect['when']): string[] => (w === undefined ? [] : Array.isArray(w) ? w.flatMap(togglesIn) : typeof w === 'object' ? [w.toggle] : [])
   const toggleSet = new Set(char.toggles)
+  for (const ae of active) {
+    for (const e of ae.entity.effects) for (const name of togglesIn(e.when)) if (stateNames.has(name) && char.toggles.includes(`state:${name}`)) toggleSet.add(`${ae.grantKey}#${name}`)
+  }
   const notes: string[] = []
 
   const items = char.inventory.map((e) => resolveEntry(e, content)).filter((r): r is ResolvedEntry => r !== undefined)
@@ -294,7 +336,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const bodyArmorEntry = equippedItems.find((r) => r.armor && r.armor.category !== 'shield')
   const bodyArmor = bodyArmorEntry?.armor
   const shield = equippedItems.find((r) => r.armor?.category === 'shield')?.armor
-  const baseCtx: EffectContext = { armor: bodyArmor, shield: shield !== undefined, bloodied: false }
+  const baseCtx: EffectContext = { armor: bodyArmor, shield: shield !== undefined, bloodied: false, edition: char.edition }
 
   // Effects keyed by the entity they come from, so formulas use the right level.
   const allEffects = active.flatMap((ae) => ae.entity.effects.map((effect) => ({ effect, ae })))
@@ -423,7 +465,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const [, kind, id] = m
     const level = resolveScaled(effect.value, vars(ae)) || 1
     if (kind === 'skill') skillProf.set(id as Skill, Math.max(skillProf.get(id as Skill) ?? 0, level))
-    else if (kind === 'save') saveProf.add(id as Ability)
+    else if (kind === 'save') for (const a of id === 'all' ? abilities : [id as Ability]) saveProf.add(a)
     else if (kind === 'armor') armorProf.add(id)
     else if (kind === 'weapon') weaponProf.add(id)
   }
@@ -594,12 +636,19 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const offhandMod = applyEffects('offhandAbilityMod', 0, '', vars).value > 0
   const sizeName = content.require(char.speciesId, 'species').size
 
+  // Martial Arts (Monk): Dex for Unarmed Strikes and Monk weapons, and the Martial Arts die.
+  const martialArtsCtx: EffectContext = { ...baseCtx, unarmed: true }
+  const martialArts = applyEffects('martialArts', 0, '', vars, martialArtsCtx).value > 0
+  const martialDie = applyEffects('martialArtsDie', 0, '', vars, martialArtsCtx).value
+  const dieSize = (dice: string | undefined) => Number(/d(\d+)/.exec(dice ?? '')?.[1] ?? 0)
+
   function attackRow(key: string, name: string, w: Weapon | undefined, entry: InventoryEntry | undefined): AttackRow {
     const props = w?.properties ?? []
     const ranged = w?.range === 'ranged'
-    const ability: Ability = ranged ? 'dex' : props.includes('finesse') && mods.dex > mods.str ? 'dex' : 'str'
+    const monk = martialArts && (!w || isMonkWeapon(w, char.edition))
+    const ability: Ability = ranged ? 'dex' : (props.includes('finesse') || monk) && mods.dex > mods.str ? 'dex' : 'str'
     const proficient = w ? isProficient(w) : true
-    const ctx: EffectContext = { ...baseCtx, weapon: w ?? ({ range: 'melee' } as Weapon) }
+    const ctx: EffectContext = { ...baseCtx, weapon: w ?? ({ range: 'melee' } as Weapon), ability, unarmed: !w }
 
     // Ammunition in use: the chosen entry, or the first one of the right kind.
     const needsAmmo = !!w?.properties.includes('ammunition')
@@ -642,6 +691,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       if (char.edition === '2024' && (ranged ? scores.dex.value : scores.str.value) < 13) notes.push('heavyWeak')
     }
 
+    const baseDice = (twoHanded ? w?.versatileDamage : w?.damage?.dice) ?? '1'
+    const martialDice = monk && martialDie > dieSize(baseDice) ? `1d${martialDie}` : undefined
     return {
       key,
       name,
@@ -650,7 +701,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       ability,
       proficient,
       attack: override(`attack:${key}`, atk.value, atk.parts),
-      damageDice: (twoHanded ? w?.versatileDamage : w?.damage?.dice) ?? '1',
+      damageDice: martialDice ?? baseDice,
       damageBonus: override(`damage:${key}`, dmg.value, dmg.parts).value,
       damage: override(`damage:${key}`, dmg.value, dmg.parts),
       damageType: w?.damage?.type ?? 'bludgeoning',
@@ -677,7 +728,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   }
   // Unarmed Strike: 1 + Strength modifier bludgeoning in both editions.
   const unarmed = attackRow('unarmed', 'Unarmed Strike', undefined, undefined)
-  unarmed.damageDice = '1'
+  if (unarmed.damageDice === '1') unarmed.damageDice = '1'
   attacks.push(unarmed)
 
   // --- Activities -------------------------------------------------------------
@@ -718,12 +769,20 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   }
 
   // --- Toggles ------------------------------------------------------------------
+  // Switches for conditional effects; "state" ones (Raging) are switched on by an activity and off by rests.
   const toggles: Toggle[] = []
-  for (const { effect, ae } of allEffects) {
-    if (typeof effect.when !== 'object') continue
-    const key = `${ae.grantKey}#${effect.when.toggle}`
-    if (!toggles.some((t) => t.key === key)) toggles.push({ key, label: effect.when.toggle, source: ae, on: toggleSet.has(key) })
+  const addToggle = (ae: ActiveEntity, name: string) => {
+    const state = stateNames.has(name)
+    const key = state ? `state:${name}` : `${ae.grantKey}#${name}`
+    if (!toggles.some((t) => t.key === key)) toggles.push({ key, label: name, source: ae, on: char.toggles.includes(key), state })
   }
+  for (const ae of active) for (const a of ae.entity.activities) if (a.toggle) addToggle(ae, a.toggle)
+  for (const { effect, ae } of allEffects) for (const name of togglesIn(effect.when)) addToggle(ae, name)
+
+  // Reminders: effect notes whose conditions hold (a Rage note only while Raging).
+  const reminders = allEffects
+    .filter(({ effect, ae }) => effect.note && !ae.hidden && effectApplies(effect, ae, { ...baseCtx, anyAttack: true }, toggleSet))
+    .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
 
   // Carrying capacity: Strength × 15 (size-adjusted); Powerful Build counts as one size larger.
   const carrySize = applyEffects('carrySize', 0, '', vars).value
@@ -750,6 +809,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     activities,
     resources,
     toggles,
+    reminders,
+    attunementSlots: applyEffects('attunementSlots', 3, '', vars).value,
     active,
     armorProficiencies: [...armorProf],
     weaponProficiencies: [...weaponProf],

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { ContentIndex } from '../../content'
 import type { Entity, RechargeOn } from '../../content/schema'
 import { setExhaustion, setResourceRemaining, toggleCondition, toggleEffect } from '../../engine/actions'
-import type { ActiveEntity, Sheet } from '../../engine/derive'
+import type { ActiveEntity } from '../../engine/derive'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
 import { addReminder, removeReminder } from '../../engine/edits'
@@ -267,9 +267,6 @@ function FeatureName({ entity, content, editable = true }: { entity: Entity; con
 }
 
 /** Effects that are rules reminders rather than numbers (advantages, damage reduction). */
-function reminders(sheet: Sheet) {
-  return sheet.active.flatMap((ae) => ae.entity.effects.filter((e) => e.note).map((e) => ({ note: e.note!, entity: ae.entity })))
-}
 
 /** Rules to keep in mind, shown right under the vitals so they are always in sight. Edit mode adds own ones. */
 export function Reminders() {
@@ -278,11 +275,23 @@ export function Reminders() {
   const run = useRun()
   const edit = useEditMode((s) => s.on)
   const [text, setText] = useState('')
-  const notes = reminders(sheet)
-  if (!notes.length && !sheet.notes.length && !character.reminders.length && !edit) return null
+  const notes = sheet.reminders
+  const states = sheet.toggles.filter((tg) => tg.state && tg.on)
+  if (!states.length && !notes.length && !sheet.notes.length && !character.reminders.length && !edit) return null
   return (
     <section aria-label={t('sheet.reminders')} className="rounded-card border border-amber-500/60 bg-amber-500/10 px-3 py-1.5 shadow-sm">
-      <ul className="flex flex-wrap gap-x-5 gap-y-0.5 text-sm">
+      <ul className="flex flex-wrap items-center gap-x-5 gap-y-0.5 text-sm">
+        {states.map((tg) => (
+          <li key={tg.key}>
+            <button
+              className="rounded-full border border-accent bg-accent px-2.5 py-0.5 text-xs font-semibold text-accent-text hover:opacity-80"
+              title={t('sheet.endState', { name: tg.label })}
+              onClick={() => void run(toggleEffect(character, tg.key, tg.label))}
+            >
+              ⚡ {tg.label} ✕
+            </button>
+          </li>
+        ))}
         {sheet.notes.map((n) => (
           <li key={n} className="font-semibold text-danger">
             <span aria-hidden>⚠️ </span>

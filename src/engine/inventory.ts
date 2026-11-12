@@ -87,10 +87,11 @@ export function toggleEquip(char: Character, content: ContentIndex, uid: string)
   return ok(next, 'equip', items)
 }
 
-export function toggleAttune(char: Character, content: ContentIndex, uid: string): ActionResult {
+/** `slots`: attunement limit (3, or more from features such as the 2024 Thief's Use Magic Device). */
+export function toggleAttune(char: Character, content: ContentIndex, uid: string, slots = ATTUNEMENT_SLOTS): ActionResult {
   const e = char.inventory.find((x) => x.uid === uid)
   if (!e) return { ok: false, error: 'unknownItem' }
-  if (!e.attuned && char.inventory.filter((x) => x.attuned).length >= ATTUNEMENT_SLOTS) return { ok: false, error: 'attunementFull' }
+  if (!e.attuned && char.inventory.filter((x) => x.attuned).length >= slots) return { ok: false, error: 'attunementFull' }
   return ok(update(char, uid, { attuned: !e.attuned }), 'equip', [{ type: e.attuned ? 'unattuned' : 'attuned', params: { name: nameOf(char, content, uid) }, entity: e.itemId }])
 }
 

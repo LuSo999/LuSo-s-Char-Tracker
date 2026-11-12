@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
 import type { Item } from '../../content/schema'
-import { ATTUNEMENT_SLOTS } from '../../engine/inventory'
 import type { ResolvedEntry } from '../../engine/items'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
@@ -37,7 +36,7 @@ export function EquippedPanel({ onOpen }: { onOpen: () => void }) {
           {t('sheet.equipped')} <span className="normal-case">→</span>
         </button>
         <span className="text-xs text-muted">
-          <Term id="rule-attunement">🔗 {attuned}/{ATTUNEMENT_SLOTS}</Term> · ⚖️ {sheet.weight.total}/{sheet.weight.capacity} lb ·{' '}
+          <Term id="rule-attunement">🔗 {attuned}/{sheet.attunementSlots}</Term> · ⚖️ {sheet.weight.total}/{sheet.weight.capacity} lb ·{' '}
           {Object.entries(character.currency)
             .filter(([, v]) => v > 0)
             .map(([k, v]) => `${v} ${k.toUpperCase()}`)

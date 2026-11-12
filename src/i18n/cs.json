@@ -110,7 +110,8 @@
     "dying": "Umírá",
     "deathSaveRoll": "Hod death save (d20)",
     "roll": "Hodit",
-    "hpMax": "Maximum HP"
+    "hpMax": "Maximum HP",
+    "endState": "Ukončit {{name}}"
   },
   "settings": {
     "title": "Nastavení",

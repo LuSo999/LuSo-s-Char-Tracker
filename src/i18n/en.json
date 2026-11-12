@@ -110,7 +110,8 @@
     "dying": "Dying",
     "deathSaveRoll": "Death save roll (d20)",
     "roll": "Roll",
-    "hpMax": "Hit point maximum"
+    "hpMax": "Hit point maximum",
+    "endState": "End {{name}}"
   },
   "settings": {
     "title": "Settings",

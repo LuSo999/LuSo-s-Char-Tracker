@@ -73,7 +73,7 @@ export type Source = z.infer<typeof Source>
 
 /** Condition under which an effect applies. Automatic ones are evaluated by the
  * engine; `toggle` effects are applied only when the player switches them on. */
-export const EffectWhen = z.union([
+const WhenSingle = z.union([
   z.enum([
     'wearingArmor',
     'wearingHeavyArmor',
@@ -88,9 +88,17 @@ export const EffectWhen = z.union([
     'noArmorNoShield',
     /** Checks / skills that don't already add the proficiency bonus. */
     'notProficient',
+    /** Attack or damage roll that uses Strength (Rage). */
+    'strengthAttack',
+    /** Not wearing Heavy armor (Fast Movement). */
+    'notHeavyArmor',
+    /** Unarmed Strike or a Monk weapon (Martial Arts). */
+    'martialArts',
   ]),
   z.object({ toggle: z.string() }),
 ])
+/** One condition, or several that must all hold (e.g. Raging and a Strength attack). */
+export const EffectWhen = z.union([WhenSingle, z.array(WhenSingle)])
 export type EffectWhen = z.infer<typeof EffectWhen>
 
 /**
@@ -104,7 +112,11 @@ export type EffectWhen = z.infer<typeof EffectWhen>
  *   attacksPerAction (op "max"),
  *   unarmoredAc:<formula> (alternative AC base, op "set"),
  *   proficiency:<kind>:<id> (grant a proficiency; value 1 or 2 for expertise),
- *   advantage:<target> / disadvantage:<target> (shown as notes).
+ *   advantage:<target> / disadvantage:<target> (shown as notes),
+ *   martialArtsDie (die size of Unarmed Strikes and Monk weapons, op "max"),
+ *   martialArts (1 = Dex may replace Str for those attacks),
+ *   unarmedDamage (flat damage die size for Unarmed Strike, op "max"),
+ *   note (a reminder line in the notes; text in `note`).
  */
 export const Effect = z.object({
   target: z.string(),
@@ -160,6 +172,10 @@ export const Activity = z.object({
   perTurn: z.number().int().min(1).optional(),
   /** At most one activity of this group per attack (e.g. "maneuver"). */
   perAttack: z.string().optional(),
+  /** An attack or a rider on a hit (Flurry of Blows, Sneak Attack): listed with the attacks. */
+  attack: z.boolean().default(false),
+  /** Using it switches on this toggle of the same entity (Rage → "Raging"); rests switch it off. */
+  toggle: z.string().optional(),
 })
 export type Activity = z.infer<typeof Activity>
 

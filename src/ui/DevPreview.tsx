@@ -26,14 +26,31 @@ export default function DevPreview() {
       const usePrivate = official !== undefined && valdric !== undefined && !location.hash.includes('sample') && !location.hash.includes('wizard')
       const packs = usePrivate ? OfficialContent.parse((await official!()).default).packs : []
       const input = location.hash.includes('wizard') ? sampleWizard : usePrivate ? (await valdric!()).default : sampleChampion
-      const character = Character.parse({ id: 'dev', ...(input as object) })
+      let character = Character.parse({ id: 'dev', ...(input as object) })
+      // #/dev?class=barbarian&ed=2014 previews any SRD class (with its SRD subclass) in either edition.
+      const classId = /class=([a-z-]+)/.exec(location.hash)?.[1]
+      const edition = location.hash.includes('ed=2014') ? '2014' : '2024'
+      if (classId) {
+        const pack = edition === '2014' ? other : srd
+        const subclass = pack.entities.find((e) => e.type === 'subclass' && e.class === classId)
+        character = Character.parse({
+          id: 'dev', name: `Sample ${classId}`, edition, speciesId: 'human', backgroundId: edition === '2014' ? 'acolyte' : 'soldier',
+          classes: [{ classId, level: 1, subclassId: subclass?.id }],
+          baseScores: { str: 15, dex: 14, con: 14, int: 10, wis: 13, cha: 12 }, hp: { current: 60 },
+          inventory: [
+            { uid: 'w1', itemId: 'greataxe', quantity: 1, equipped: true },
+            { uid: 'w2', itemId: 'shortsword', quantity: 1, equipped: true },
+            { uid: 'w3', itemId: 'shortbow', quantity: 1, equipped: false },
+          ],
+        })
+      }
       // #/dev?level=5 previews a higher level (e.g. Extra Attack).
       const level = Number(/level=(\d+)/.exec(location.hash)?.[1])
       if (level) character.classes[0] = { ...character.classes[0], level }
-      setState({ character, packs: [srd, other, ...packs] })
+      setState({ character, packs: edition === '2014' && classId ? [other, srd, ...packs] : [srd, other, ...packs] })
     })()
   }, [])
-  const content = useMemo(() => state && new ContentIndex('2024', state.packs), [state])
+  const content = useMemo(() => state && new ContentIndex(state.character.edition, state.packs), [state])
   if (!state || !content) return <p className="p-4">Loading…</p>
   return <MemorySheet initial={state.character} content={content} />
 }
