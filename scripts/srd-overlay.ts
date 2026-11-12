@@ -344,6 +344,35 @@ function invocationPrerequisites2024(byId: Map<string, Raw>, problems: string[])
   }
 }
 
+/** 2024 species traits named by damage type: resistances and the Dragonborn Breath Weapon. */
+function species2024(byId: Map<string, Raw>) {
+  for (const e of byId.values()) {
+    const res = /^(?:lineage|draconic-damage)-resistance-(\w+)$/.exec(e.id)
+    if (res) e.effects = [{ target: `resistance:${res[1]}`, op: 'add', value: 1 }]
+    const bw = /^draconic-breath-weapon-(\w+)$/.exec(e.id)
+    if (bw) {
+      const type = bw[1].charAt(0).toUpperCase() + bw[1].slice(1)
+      e.resources = [{ id: 'breath-weapon', name: 'Breath Weapon', max: 'pb', recharge: longOnly }]
+      e.activities = [{
+        id: 'breath', name: `Breath Weapon (${type})`, actionType: 'action', costsAttack: true, cost: [{ resource: 'breath-weapon' }],
+        roll: { dice: { count: { byLevel: { 1: 1, 5: 2, 11: 3, 17: 4 }, per: 'characterLevel' }, die: 10 }, kind: 'damage' },
+        saveDc: '8 + con + pb', saveAbility: 'dex', fx: 'magic',
+        summary: `Replaces one attack: 15-ft Cone or 30-ft Line (5 ft wide); ${type} damage, half on a successful Dex save.`,
+      }]
+    }
+  }
+  // Every character knows Common plus two standard languages (SRD 5.2.1 "Languages").
+  byId.set('core-languages', {
+    id: 'core-languages', edition: '2024', type: 'feature', name: 'Languages', tags: ['core'], source: { book: 'srd-5.2' },
+    description: 'You know Common plus two languages from the Standard Languages table.',
+    effects: [{ target: 'proficiency:language:common', op: 'add', value: 1 }],
+    choices: [{
+      id: 'languages', label: 'Standard languages', kind: 'language', count: 2,
+      options: ['common-sign-language', 'draconic', 'dwarvish', 'elvish', 'giant', 'gnomish', 'goblin', 'halfling', 'orc'],
+    }],
+  })
+}
+
 export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[] {
   const problems: string[] = []
   byId.set('core-combat', coreCombat(edition))
@@ -377,6 +406,7 @@ export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[]
     }
     epicBoons(byId)
     invocationPrerequisites2024(byId, problems)
+    species2024(byId)
     for (const [id, a] of Object.entries(giantAncestry)) {
       // The trait shares its id with the subspecies in the source data.
       const e = byId.get(`${id}-trait`)
@@ -389,6 +419,18 @@ export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[]
     }
     checkTable(byId, 'fighter', 'second_wind_uses', { 1: 2, 4: 3, 10: 4 }, problems)
     checkTable(byId, 'fighter', 'weapon_mastery', { 1: 3, 4: 4, 10: 5, 16: 6 }, problems)
+  }
+  // Starting equipment must point at items that exist (category lists may name a few that don't).
+  for (const e of byId.values()) {
+    if (e.type !== 'class' && e.type !== 'background') continue
+    const exists = (id: string) => byId.get(id)?.type === 'item'
+    for (const it of e.startingItems ?? []) if (!exists(it.id)) problems.push(`starting item missing: ${e.id}: ${it.id}`)
+    for (const c of e.startingEquipment ?? []) {
+      for (const o of c.options) {
+        for (const it of o.items) if (!exists(it.id)) problems.push(`starting item missing: ${e.id}: ${it.id}`)
+        for (const p of o.picks) p.from = p.from.filter(exists)
+      }
+    }
   }
   return problems
 }

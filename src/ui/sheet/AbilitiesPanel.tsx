@@ -92,6 +92,9 @@ function Proficiencies({ sheet }: { sheet: Sheet }) {
     [t('sheet.prof.weapons'), sheet.weaponProficiencies.map(name)],
     [t('sheet.prof.tools'), sheet.toolProficiencies.map(name)],
     [t('sheet.prof.languages'), sheet.languages.map((l) => l.replace(/-/g, ' '))],
+    ...(Object.keys(sheet.senses).length ? [[t('sheet.prof.senses'), Object.entries(sheet.senses).map(([k, v]) => `${k} ${v} ft`)] as [string, string[]]] : []),
+    ...(sheet.resistances.length ? [[t('sheet.prof.resistances'), sheet.resistances]] as [string, string[]][] : []),
+    ...(sheet.saveNotes.length ? [[t('sheet.prof.saveNotes'), sheet.saveNotes.map((n) => n.note)]] as [string, string[]][] : []),
   ]
   return (
     <>
@@ -100,7 +103,7 @@ function Proficiencies({ sheet }: { sheet: Sheet }) {
         {rows.map(([label, list]) => (
           <div key={label}>
             <dt className="inline font-semibold">{label}: </dt>
-            <dd className="inline capitalize text-muted">{list.length ? list.join(', ') : '—'}</dd>
+            <dd className={`inline text-muted ${label === t('sheet.prof.saveNotes') ? '' : 'capitalize'}`}>{list.length ? list.join(label === t('sheet.prof.saveNotes') ? '; ' : ', ') : '—'}</dd>
           </div>
         ))}
       </dl>

@@ -117,7 +117,10 @@
       "armor": "Armor",
       "weapons": "Weapons",
       "tools": "Tools",
-      "languages": "Languages"
+      "languages": "Languages",
+      "senses": "Senses",
+      "resistances": "Resistances",
+      "saveNotes": "Saves"
     }
   },
   "settings": {
@@ -778,6 +781,65 @@
     "change": {
       "never": "The rules don't let this choice change once made. Change it anyway?",
       "levelUp": "This can change only when you gain a level (in Level up). Change it now anyway?"
-    }
+    },
+    "toTarget": "to level {{level}}"
+  },
+  "create": {
+    "new": "New character",
+    "title": "New character",
+    "steps": {
+      "basics": "Edition & level",
+      "class": "Class",
+      "species": "Species",
+      "background": "Background",
+      "abilities": "Ability scores",
+      "choices": "Skills & choices",
+      "equipment": "Equipment",
+      "details": "Name & summary"
+    },
+    "edition": "Edition",
+    "editionHint": {
+      "2024": "D&D 5.5e (2024 rules, SRD 5.2.1).",
+      "2014": "D&D 5e (2014 rules, SRD 5.1)."
+    },
+    "startLevel": "Starting level",
+    "higherLevelHint": "You create the character at level 1; then Level up runs for each level up to {{level}} (HP average pre-filled).",
+    "saves": "saves",
+    "subspecies": "{{species}}: choose one",
+    "bgBonuses": "Ability score increases",
+    "bgBonusesHint": "+2 to one and +1 to another, or +1 to all three.",
+    "bgBonusesInvalid": "Choose +2/+1 or +1/+1/+1.",
+    "method": {
+      "standard": "Standard array",
+      "pointBuy": "Point buy",
+      "roll": "Roll 4d6"
+    },
+    "methodHint": {
+      "standard": "Assign 15, 14, 13, 12, 10, 8 to your abilities.",
+      "pointBuy": "27 points; each score from 8 to 15 (14 costs 7, 15 costs 9).",
+      "roll": "Roll four d6 and drop the lowest, six times; or enter your rolls from the table."
+    },
+    "roll4d6": "Roll 6 × 4d6",
+    "orEnter": "or type the rolled scores below",
+    "suggest": "Suggested for your class",
+    "points": "Points {{spent}} / {{budget}}",
+    "base": "Base",
+    "final": "With bonuses",
+    "mod": "Mod",
+    "choicesHint": "Skills, languages, feats and spells your class, species and background let you choose. You can finish them later from the ⚠️ button.",
+    "goldInstead2014": "Instead of the equipment, start with gold (amount from your DM / the Player's Handbook):",
+    "goldInstead2024": "Instead of the equipment, start with gold:",
+    "youGet": "You get",
+    "always": "Always",
+    "higherGear2024": "Higher starting level: the DM may add money and magic items (SRD 5.2.1 table: level 5–10 +500 GP + 1d10 × 25 GP, 11–16 +5,000 GP + 1d10 × 250 GP…). Add them in the inventory.",
+    "higherGear2014": "Higher starting level: extra money and magic items are up to your DM; add them in the inventory.",
+    "name": "Name",
+    "notes": "Notes",
+    "notesHint": "Alignment, appearance, backstory…",
+    "summary": "Summary",
+    "thenLevelUp": "After saving, Level up runs up to level {{level}}.",
+    "openChoices": "{{count}} choices still open (can be finished later).",
+    "create": "Create character",
+    "createAndLevel": "Create and level up to {{level}}"
   }
 }

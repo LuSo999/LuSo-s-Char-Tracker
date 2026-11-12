@@ -16,7 +16,7 @@ import { glossary } from './rules-glossary.ts'
 const SOURCE_REPO = '5e-bits/5e-srd-api'
 const SOURCE_COMMIT = 'dff09cc6f6764734d20fdba65a07a041613697ca'
 const FILES = [
-  'Classes', 'Subclasses', 'Features', 'Levels', 'Feats', 'Traits', 'Backgrounds', 'Equipment',
+  'Classes', 'Subclasses', 'Features', 'Levels', 'Feats', 'Traits', 'Backgrounds', 'Equipment', 'Equipment-Categories',
   'Magic-Items', 'Spells', 'Conditions', 'Proficiencies', 'Weapon-Properties', 'Skills',
 ]
 const EDITION_FILES: Record<Edition, string[]> = {
@@ -131,6 +131,44 @@ function splitProficiencies(list: Raw[], proficiencyType: Map<string, string>) {
   }
   return out
 }
+
+/** A "choose N languages" option: from a list, or any (resource_list). */
+function languageChoice(opts: Raw, label: string): Raw {
+  const ids = opts.from?.option_set_type === 'options_array' ? opts.from.options.map((o: Raw) => o.item.index) : undefined
+  return { id: 'languages', label, kind: 'language', count: opts.choose, ...(ids ? { options: ids } : {}) }
+}
+
+/** 5e-bits starting equipment → this app's EquipmentChoice list. */
+function equipmentChoices(groups: Raw[] | undefined, categories: Map<string, string[]>): Raw[] {
+  const pickFrom = (choice: Raw) => {
+    const from = choice.from
+    const ids: string[] =
+      from.option_set_type === 'equipment_category'
+        ? (categories.get(from.equipment_category.index) ?? [])
+        : (from.options ?? []).map((o: Raw) => o.of?.index ?? o.item?.index).filter(Boolean)
+    return { label: choice.desc ?? from.equipment_category?.name ?? 'Item', from: ids, count: choice.choose ?? 1 }
+  }
+  const option = (o: Raw): Raw => {
+    const out = { items: [] as Raw[], picks: [] as Raw[], gp: 0 }
+    const add = (x: Raw) => {
+      // A reference to a category ("Holy Symbol") lets the player pick one of its items.
+      if (x.option_type === 'counted_reference' && categories.has(x.of.index)) out.picks.push({ label: x.of.name, from: categories.get(x.of.index), count: x.count ?? 1 })
+      else if (x.option_type === 'counted_reference') out.items.push({ id: x.of.index, count: x.count ?? 1 })
+      else if (x.option_type === 'money') out.gp += x.unit === 'gp' ? x.count : x.unit === 'sp' ? x.count / 10 : x.count / 100
+      else if (x.option_type === 'choice') out.picks.push(pickFrom(x.choice))
+      else if (x.option_type === 'multiple') x.items.forEach(add)
+    }
+    add(o)
+    return out
+  }
+  return (groups ?? []).map((g: Raw) =>
+    g.from.option_set_type === 'options_array'
+      ? { label: g.desc ?? '', options: g.from.options.map(option) }
+      : { label: g.desc ?? '', options: [{ items: [], picks: [pickFrom(g)], gp: 0 }] },
+  )
+}
+
+const fixedItems = (list: Raw[] | undefined) => (list ?? []).map((x: Raw) => ({ id: x.equipment.index, count: x.quantity ?? 1 }))
 
 function skillOptions(choice: Raw): string[] {
   const opts: Raw[] = choice?.from?.options ?? []
@@ -320,6 +358,7 @@ async function build(edition: Edition) {
     return { id: x.index, edition, name: x.name, description: summarize(text), text: text || undefined, source }
   }
   const proficiencyType = new Map<string, string>(files.Proficiencies.map((p) => [p.index, p.type]))
+  const categories = new Map<string, string[]>(files['Equipment-Categories'].map((c) => [c.index, (c.equipment ?? []).map((e: Raw) => e.index)]))
 
   // Classes and their level tables.
   const levels = files.Levels
@@ -379,6 +418,8 @@ async function build(edition: Edition) {
           }),
       ),
       choices,
+      startingItems: fixedItems(c.starting_equipment),
+      startingEquipment: equipmentChoices(c.starting_equipment_options, categories),
     })
   }
 
@@ -425,10 +466,44 @@ async function build(edition: Edition) {
   }
 
   for (const t of files.Traits) {
-    const effects = (t.proficiencies ?? [])
+    const effects: Raw[] = (t.proficiencies ?? [])
       .filter((p: Raw) => p.index.startsWith('skill-'))
       .map((p: Raw) => ({ target: `proficiency:skill:${p.index.replace(/^skill-/, '')}`, op: 'add', value: 1 }))
-    entities.push({ ...base(t), type: 'trait', effects })
+    // Weapon, armor and tool proficiencies (Dwarven Combat Training, Elf Weapon Training, Tinker).
+    const split = splitProficiencies((t.proficiencies ?? []).filter((p: Raw) => !p.index.startsWith('skill-')), proficiencyType)
+    for (const [kind, list] of [['weapon', split.weapons], ['armor', split.armor], ['tool', split.tools]] as const) {
+      for (const id of list) effects.push({ target: `proficiency:${kind}:${id}`, op: 'add', value: 1 })
+    }
+    const choices: Raw[] = []
+    for (const pc of t.proficiency_choices ? [t.proficiency_choices] : []) {
+      const ids: string[] = (pc.from?.options ?? []).map((o: Raw) => o.item?.index).filter(Boolean)
+      if (ids.every((i) => i.startsWith('skill-'))) {
+        choices.push({ id: 'skills', label: t.name, kind: 'skill', count: pc.choose, ...(ids.length < 18 ? { options: ids.map((i) => i.replace(/^skill-/, '')) } : {}) })
+      } else {
+        choices.push({ id: 'tool', label: t.name, kind: 'tool', count: pc.choose, options: ids.map((i) => i.replace(/^tool-/, '')) })
+      }
+    }
+    if (t.language_options) choices.push(languageChoice(t.language_options, t.name))
+    const ts = t.trait_specific ?? {}
+    if (ts.subtrait_options) {
+      choices.push({ id: 'option', label: t.name, kind: 'entity', count: ts.subtrait_options.choose, from: { ids: ts.subtrait_options.from.options.map((o: Raw) => o.item.index) } })
+    }
+    const activities: Raw[] = []
+    if (ts.damage_type) effects.push({ target: `resistance:${ts.damage_type.index}`, op: 'add', value: 1 })
+    if (ts.breath_weapon) {
+      // 2014 Dragonborn: the ancestry sets the area, save and damage type; uses come from the Breath Weapon trait.
+      const bw = ts.breath_weapon
+      const area = `${bw.area_of_effect.size}-ft ${bw.area_of_effect.type === 'line' ? '5-ft-wide line' : bw.area_of_effect.type}`
+      const dmg = bw.damage?.[0]
+      activities.push({
+        id: 'breath', name: `Breath Weapon (${ts.damage_type?.name ?? dmg?.damage_type?.name})`, actionType: 'action', cost: [{ resource: 'breath-weapon' }],
+        roll: { dice: { count: { byLevel: { 1: 2, 6: 3, 11: 4, 16: 5 }, per: 'characterLevel' }, die: 6 }, kind: 'damage' },
+        saveDc: '8 + con + pb', saveAbility: abilityOf(bw.dc.dc_type.index), fx: 'magic',
+        summary: `${area}; half damage on a successful save.`,
+      })
+    }
+    const resources = t.index === 'breath-weapon' ? [{ id: 'breath-weapon', name: 'Breath Weapon', max: 1, recharge: [{ on: 'shortRest', amount: 'all' }, { on: 'longRest', amount: 'all' }] }] : []
+    entities.push({ ...base(t), type: 'trait', effects, choices, activities, resources })
   }
 
   if (edition === '2014') {
@@ -443,6 +518,7 @@ async function build(edition: Edition) {
       }
       const skillChoice = (r.starting_proficiency_options ? [r.starting_proficiency_options] : []).find((pc: Raw) => skillOptions(pc).length)
       if (skillChoice) choices.push({ id: 'skills', label: 'Skill proficiencies', kind: 'skill', count: skillChoice.choose, options: skillOptions(skillChoice) })
+      if (r.language_options) choices.push(languageChoice(r.language_options, 'Extra language'))
       entities.push({
         ...base(r),
         text: [r.age, r.size_description, r.language_desc].filter(Boolean).join('\n\n') || undefined,
@@ -506,6 +582,16 @@ async function build(edition: Edition) {
       abilityOptions: (b.ability_scores ?? []).map((a: Raw) => abilityOf(a.index)),
       feat: b.feat?.index,
       features,
+      startingItems: fixedItems(b.starting_equipment),
+      startingGold: b.starting_gold?.unit === 'gp' ? b.starting_gold.quantity : 0,
+      startingEquipment: equipmentChoices(b.starting_equipment_options ?? b.equipment_options, categories),
+      choices: [
+        ...(b.language_options ? [languageChoice(b.language_options, 'Languages')] : []),
+        ...(b.proficiency_choices ?? []).map((pc: Raw) => ({
+          id: 'tool', label: pc.desc?.replace(/ \(see.*\)/, '') ?? 'Tool', kind: 'tool', count: pc.choose,
+          options: pc.from.options.map((o: Raw) => o.item.index.replace(/^tool-/, '')),
+        })),
+      ],
     })
   }
 

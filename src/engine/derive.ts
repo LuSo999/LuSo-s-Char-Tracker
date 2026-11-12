@@ -140,6 +140,12 @@ export type Sheet = {
   armorProficiencies: string[]
   weaponProficiencies: string[]
   toolProficiencies: string[]
+  /** Darkvision etc. in feet. */
+  senses: Record<string, number>
+  /** Damage types the character resists. */
+  resistances: string[]
+  /** Advantages on particular saves (against Poisoned, Charmed…). */
+  saveNotes: { note: string; entity: Entity }[]
   languages: string[]
   weaponMasteries: string[]
   notes: string[]
@@ -812,9 +818,25 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   for (const { effect, ae } of allEffects) for (const name of togglesIn(effect.when)) addToggle(ae, name)
 
   // Reminders: effect notes whose conditions hold (a Rage note only while Raging).
+  // Save advantages are listed with the saving throws, not in the reminders strip.
+  const isSaveNote = (target: string) => /^(advantage|disadvantage):save:/.test(target)
   const reminders = allEffects
-    .filter(({ effect, ae }) => effect.note && !ae.hidden && effectApplies(effect, ae, { ...baseCtx, anyAttack: true }, toggleSet))
+    .filter(({ effect, ae }) => effect.note && !isSaveNote(effect.target) && !ae.hidden && effectApplies(effect, ae, { ...baseCtx, anyAttack: true }, toggleSet))
     .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
+  const saveNotes = allEffects
+    .filter(({ effect, ae }) => effect.note && isSaveNote(effect.target) && effectApplies(effect, ae, baseCtx, toggleSet))
+    .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
+
+  // Senses ("sense:darkvision", op max) and damage resistances ("resistance:fire").
+  const senses: Record<string, number> = {}
+  const resistances = new Set<string>()
+  for (const { effect, ae } of allEffects) {
+    if (!effectApplies(effect, ae, baseCtx, toggleSet)) continue
+    const sense = /^sense:(\w+)$/.exec(effect.target)
+    if (sense) senses[sense[1]] = Math.max(senses[sense[1]] ?? 0, resolveScaled(effect.value, vars(ae)))
+    const res = /^resistance:(\w+)$/.exec(effect.target)
+    if (res) resistances.add(res[1])
+  }
 
   // Carrying capacity: Strength × 15 (size-adjusted); Powerful Build counts as one size larger.
   const carrySize = applyEffects('carrySize', 0, '', vars).value
@@ -847,6 +869,9 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     armorProficiencies: [...armorProf],
     weaponProficiencies: [...weaponProf],
     toolProficiencies: [...toolProf],
+    senses,
+    resistances: [...resistances],
+    saveNotes,
     languages: [...languageSet],
     weaponMasteries,
     notes,

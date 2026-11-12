@@ -321,6 +321,25 @@ export const ClassLevel = z.object({
   features: z.array(z.string()).default([]),
 })
 
+/**
+ * Starting equipment: each choice offers options (A, B, …); an option gives
+ * items, lets the player pick some from a category, and/or gives coins.
+ */
+export const EquipmentOption = z.object({
+  items: z.array(z.object({ id: z.string(), count: z.number().int().default(1) })).default([]),
+  picks: z.array(z.object({ label: z.string(), from: z.array(z.string()), count: z.number().int().default(1) })).default([]),
+  gp: z.number().default(0),
+})
+export type EquipmentOption = z.infer<typeof EquipmentOption>
+export const EquipmentChoice = z.object({ label: z.string(), options: z.array(EquipmentOption) })
+export type EquipmentChoice = z.infer<typeof EquipmentChoice>
+const startingEquipment = {
+  /** Always given (2014: the Wizard's spellbook, a background's clothes and pouch). */
+  startingItems: z.array(z.object({ id: z.string(), count: z.number().int().default(1) })).default([]),
+  startingGold: z.number().default(0),
+  startingEquipment: z.array(EquipmentChoice).default([]),
+}
+
 export const SwapRule = z.enum(['none', 'levelUp', 'longRestOne', 'longRestAll'])
 export type SwapRule = z.infer<typeof SwapRule>
 
@@ -376,6 +395,7 @@ export const Class = z.object({
         .default({ cantrips: 'none', spells: 'longRestAll' }),
     })
     .optional(),
+  ...startingEquipment,
   /** Per class level: cantrips known, spells known/prepared, slots of levels 1–9 (Pact Magic: slots of one level). */
   spellTable: z.record(z.string(), z.object({ cantrips: z.number(), known: z.number().optional(), prepared: z.number().optional(), slots: z.array(z.number()) })).default({}),
 })
@@ -432,6 +452,7 @@ export const Background = z.object({
   feat: z.string().optional(),
   /** Fixed selections of the origin feat's choices (Sage: Magic Initiate from the Wizard list). */
   featPresets: z.record(z.string(), z.array(z.string())).optional(),
+  ...startingEquipment,
   features: z.array(z.string()).default([]),
 })
 export type Background = z.infer<typeof Background>

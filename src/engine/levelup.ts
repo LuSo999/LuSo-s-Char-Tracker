@@ -3,7 +3,7 @@ import type { ContentIndex } from '../content'
 import type { Ability, Choice, Class, Entity, Prerequisite } from '../content/schema'
 import type { ActionResult, HistoryItem } from './actions'
 import type { Character } from './character'
-import { choiceKey, collectActive, computeSheet, type ActiveEntity, type Sheet } from './derive'
+import { choiceKey, collectActive, computeSheet, selections, type ActiveEntity, type Sheet } from './derive'
 import { resolveScaled } from './formula'
 
 export const MAX_LEVEL = 20
@@ -231,9 +231,11 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
     case 'language': {
       // Stored like species languages: "deep-speech"; already known ones are blocked.
       const known = new Set(sheet.languages)
+      const slug = (l: string) => l.toLowerCase().replace(/[^a-z]+/g, '-')
+      const names = new Map(languages[char.edition].map((l) => [slug(l), l]))
       return (choice.options ?? languages[char.edition]).map((l) => {
-        const id = l.toLowerCase().replace(/[^a-z]+/g, '-')
-        return { id, label: l, blocked: known.has(id) && !chosen.has(id) ? 'taken' : undefined }
+        const id = slug(l)
+        return { id, label: names.get(id) ?? l, blocked: known.has(id) && !chosen.has(id) ? 'taken' : undefined }
       })
     }
     case 'tool':
@@ -246,7 +248,8 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
       // No fixed level (Magical Secrets / Discoveries): a cantrip or a level the class has slots for.
       const maxLevel = sheet.spellcasting.casters.find((c) => c.classId === ae.classId)?.maxSpellLevel ?? 9
       const levelOk = (l: number) => (choice.spellLevel === undefined ? l <= maxLevel : l === choice.spellLevel)
-      const lists = choice.classesFromChoice ? (char.choices[choiceKey(ae.grantKey, choice.classesFromChoice)] ?? []) : (choice.spellClasses ?? [])
+      // The list may be fixed by a preset (2024 Sage: Magic Initiate from the Wizard list).
+      const lists = choice.classesFromChoice ? selections(char, ae, choice.classesFromChoice) : (choice.spellClasses ?? [])
       const known = choice.knownOnly ? knownSpells(char, sheet) : undefined
       return content
         .all('spell')

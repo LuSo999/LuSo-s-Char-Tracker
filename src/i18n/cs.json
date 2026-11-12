@@ -117,7 +117,10 @@
       "armor": "Zbroje",
       "weapons": "Zbraně",
       "tools": "Nástroje",
-      "languages": "Jazyky"
+      "languages": "Jazyky",
+      "senses": "Smysly",
+      "resistances": "Odolnosti",
+      "saveNotes": "Záchrany"
     }
   },
   "settings": {
@@ -778,6 +781,65 @@
     "change": {
       "never": "Tuhle volbu pravidla po výběru měnit nedovolují. Přesto změnit?",
       "levelUp": "Tohle jde měnit jen při získání levelu (v Level upu). Přesto změnit teď?"
-    }
+    },
+    "toTarget": "cíl: level {{level}}"
+  },
+  "create": {
+    "new": "Nová postava",
+    "title": "Nová postava",
+    "steps": {
+      "basics": "Edice a level",
+      "class": "Class",
+      "species": "Species",
+      "background": "Background",
+      "abilities": "Ability scores",
+      "choices": "Skills a volby",
+      "equipment": "Vybavení",
+      "details": "Jméno a souhrn"
+    },
+    "edition": "Edice",
+    "editionHint": {
+      "2024": "D&D 5.5e (pravidla 2024, SRD 5.2.1).",
+      "2014": "D&D 5e (pravidla 2014, SRD 5.1)."
+    },
+    "startLevel": "Startovní level",
+    "higherLevelHint": "Postava se vytvoří na levelu 1 a pak proběhne Level up pro každý level až do {{level}} (HP předvyplněné průměrem).",
+    "saves": "záchrany",
+    "subspecies": "{{species}}: vyber jednu možnost",
+    "bgBonuses": "Zvýšení ability scores",
+    "bgBonusesHint": "+2 jedné a +1 druhé, nebo +1 všem třem.",
+    "bgBonusesInvalid": "Vyber +2/+1 nebo +1/+1/+1.",
+    "method": {
+      "standard": "Standard array",
+      "pointBuy": "Point buy",
+      "roll": "Hod 4d6"
+    },
+    "methodHint": {
+      "standard": "Rozděl 15, 14, 13, 12, 10, 8 mezi vlastnosti.",
+      "pointBuy": "27 bodů; každé skóre 8 až 15 (14 stojí 7, 15 stojí 9).",
+      "roll": "Šestkrát hoď 4d6 a škrtni nejnižší; nebo zadej hody od stolu."
+    },
+    "roll4d6": "Hodit 6 × 4d6",
+    "orEnter": "nebo zadej hozená skóre níže",
+    "suggest": "Doporučené pro tvou class",
+    "points": "Body {{spent}} / {{budget}}",
+    "base": "Základ",
+    "final": "S bonusy",
+    "mod": "Mod",
+    "choicesHint": "Skills, jazyky, featy a kouzla, které ti dává class, species a background. Dokončit je jde i později tlačítkem ⚠️.",
+    "goldInstead2014": "Místo vybavení začít se zlatem (částka od DM / z Player's Handbooku):",
+    "goldInstead2024": "Místo vybavení začít se zlatem:",
+    "youGet": "Dostaneš",
+    "always": "Vždy",
+    "higherGear2024": "Vyšší startovní level: DM může přidat peníze a magické předměty (tabulka SRD 5.2.1: level 5–10 +500 GP + 1d10 × 25 GP, 11–16 +5 000 GP + 1d10 × 250 GP…). Přidej je v inventáři.",
+    "higherGear2014": "Vyšší startovní level: peníze a magické předměty navíc určuje DM; přidej je v inventáři.",
+    "name": "Jméno",
+    "notes": "Poznámky",
+    "notesHint": "Přesvědčení (alignment), vzhled, příběh…",
+    "summary": "Souhrn",
+    "thenLevelUp": "Po uložení proběhne Level up až na level {{level}}.",
+    "openChoices": "Otevřených voleb: {{count}} (jde dokončit později).",
+    "create": "Vytvořit postavu",
+    "createAndLevel": "Vytvořit a levelovat na {{level}}"
   }
 }

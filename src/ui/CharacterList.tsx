@@ -72,7 +72,10 @@ export function CharacterList({ uid }: { uid: string }) {
           ))}
         </ul>
         <div className="mt-4 flex flex-wrap gap-2">
-          <button className="rounded bg-accent px-4 py-2 font-medium text-accent-text hover:opacity-90" onClick={() => void addCharacter(uid, sampleChampion)}>
+          <Link to="/new" className="rounded bg-accent px-4 py-2 font-medium text-accent-text hover:opacity-90">
+            ➕ {t('create.new')}
+          </Link>
+          <button className="rounded border border-border px-4 py-2 hover:bg-bg" onClick={() => void addCharacter(uid, sampleChampion)}>
             {t('characters.addSample')}
           </button>
           <button className="rounded border border-border px-4 py-2 hover:bg-bg" onClick={() => fileInput.current?.click()}>

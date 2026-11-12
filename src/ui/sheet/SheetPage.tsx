@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import type { ContentIndex } from '../../content'
 import type { Character } from '../../engine/character'
 import { computeSheet } from '../../engine/derive'
@@ -185,6 +185,14 @@ function TopBar({
   )
 }
 
+/** Opens the next Level up of a new higher-level character once the previous one is saved. */
+function LevelQueue({ active, onNext }: { active: boolean; onNext: () => void }) {
+  useEffect(() => {
+    if (active) onNext()
+  }, [active, onNext])
+  return null
+}
+
 function EditToggle({ className }: { className: string }) {
   const { t } = useTranslation()
   const { on, toggle } = useEditMode()
@@ -263,7 +271,11 @@ function SheetLayout() {
   const [history, setHistory] = useState(false)
   const [inventory, setInventory] = useState(false)
   const [spells, setSpells] = useState(false)
-  const [levelUp, setLevelUp] = useState(false)
+  // A new character started above level 1: Level up opens until it gets there.
+  const location = useLocation()
+  const levelTo = (location.state as { levelTo?: number } | null)?.levelTo ?? 0
+  const [levelUp, setLevelUp] = useState(() => levelTo > sheet.characterLevel)
+  const [queueStopped, setQueueStopped] = useState(false)
   const [choices, setChoices] = useState(false)
   const edit = useEditMode((s) => s.on)
 
@@ -300,7 +312,16 @@ function SheetLayout() {
       <p className="mt-3 text-center text-xs text-muted">{t('rules.ctrlHint')}</p>
 
       {rest && <RestDialog kind={rest} onClose={() => setRest(undefined)} />}
-      {levelUp && <LevelUpDialog onClose={() => setLevelUp(false)} />}
+      {levelUp && (
+        <LevelUpDialog
+          target={queueStopped ? undefined : levelTo || undefined}
+          onClose={(done) => {
+            setLevelUp(false)
+            if (!done) setQueueStopped(true)
+          }}
+        />
+      )}
+      <LevelQueue active={!queueStopped && !levelUp && levelTo > sheet.characterLevel} onNext={() => setLevelUp(true)} />
       {choices && <ChoicesDialog onClose={() => setChoices(false)} />}
       {history && <HistoryDrawer onClose={() => setHistory(false)} />}
       {inventory && <InventoryDrawer onClose={() => setInventory(false)} />}

@@ -13,7 +13,7 @@ import { Dialog } from '../sheet/RestDialog'
 import { PendingCard } from './ChoiceCards'
 import { useDecisions } from './useDecisions'
 
-function DecisionList(opts: { also?: (p: Pending) => boolean; all?: boolean }) {
+export function DecisionList(opts: { also?: (p: Pending) => boolean; all?: boolean }) {
   const { t } = useTranslation()
   const { list, open } = useDecisions(opts)
   if (!list.length) return <p className="text-sm text-muted">{t('levelUp.nothingToChoose')}</p>
@@ -76,7 +76,8 @@ type Step = 'class' | 'hp' | 'choices' | 'summary'
  * Level up step by step: class (or a new one), Hit Points, new features and
  * every choice, then a summary. One history entry; Undo takes it all back.
  */
-export function LevelUpDialog({ onClose }: { onClose: () => void }) {
+export function LevelUpDialog({ onClose: close, target }: { onClose: (done?: boolean) => void; target?: number }) {
+  const onClose = () => close(false)
   const { t } = useTranslation()
   const { character, sheet, content } = useSheet()
   const run = useRun()
@@ -105,7 +106,7 @@ export function LevelUpDialog({ onClose }: { onClose: () => void }) {
   async function confirm() {
     if (!draft) return
     await run({ ok: true, character: draft.character, items: draft.items, groupType: 'levelUp', kind: 'sheet' })
-    onClose()
+    close(true)
   }
 
   async function undoLast() {
@@ -120,7 +121,7 @@ export function LevelUpDialog({ onClose }: { onClose: () => void }) {
   const lastEntry = character.classes.find((c) => c.classId === lastClass)
 
   return (
-    <Dialog title={`⬆️ ${t('levelUp.title', { level: sheet.characterLevel + 1 })}`} onClose={onClose} wide>
+    <Dialog title={`⬆️ ${t('levelUp.title', { level: sheet.characterLevel + 1 })}${target ? ` (${t('levelUp.toTarget', { level: target })})` : ''}`} onClose={onClose} wide>
       <ol className="mb-4 flex flex-wrap gap-1 text-xs">
         {steps.map((s, i) => (
           <li key={s} className={`rounded-full border px-2 py-0.5 ${s === step ? 'border-accent bg-accent text-accent-text' : 'border-border text-muted'}`}>

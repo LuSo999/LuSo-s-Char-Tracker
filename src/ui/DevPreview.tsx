@@ -9,6 +9,8 @@ import { Character } from '../engine/character'
 import { useMemoryStore } from '../state/history'
 import { useSettings } from '../state/settings'
 import { SheetView } from './sheet/SheetPage'
+import { useNavigate } from 'react-router'
+import { CreatePage } from './create/CreatePage'
 
 const privateFiles: Partial<Record<string, () => Promise<{ default: unknown }>>> = import.meta.glob<{ default: unknown }>('../../private/{official-content,valdric}.json')
 
@@ -51,6 +53,23 @@ export default function DevPreview() {
     })()
   }, [])
   const content = useMemo(() => state && new ContentIndex(state.character.edition, state.packs), [state])
+  // #/dev/new tries character creation; the result opens as a sheet in memory.
+  const navigate = useNavigate()
+  const [created, setCreated] = useState<{ character: Character; levelTo: number }>()
+  const createdContent = useMemo(() => created && state && new ContentIndex(created.character.edition, created.character.edition === '2014' ? [...state.packs].reverse() : state.packs), [created, state])
+  if (location.hash.startsWith('#/dev/new') && !created) {
+    return (
+      <CreatePage
+        uid="dev"
+        onCreate={(character, levelTo) => {
+          setCreated({ character: { ...character, id: 'dev' }, levelTo })
+          // The sheet reads the levels still to gain from the location state, as after a real creation.
+          navigate('/dev/created', { state: levelTo > 1 ? { levelTo } : undefined })
+        }}
+      />
+    )
+  }
+  if (created && createdContent) return <MemorySheet initial={created.character} content={createdContent} />
   if (!state || !content) return <p className="p-4">Loading…</p>
   return <MemorySheet initial={state.character} content={content} />
 }

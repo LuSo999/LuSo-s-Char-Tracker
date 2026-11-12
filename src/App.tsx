@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HashRouter, Navigate, Route, Routes } from 'react-router'
+import { CreatePage } from './ui/create/CreatePage'
 import { ADMIN_UIDS } from './config'
 import { isFirebaseConfigured } from './firebase/config'
 import { useAuth } from './state/auth'
@@ -70,6 +71,7 @@ function Main() {
     <Routes>
       <Route path="/" element={<CharacterList uid={uid} />} />
       <Route path="/c/:id" element={<SheetPage uid={uid} />} />
+      <Route path="/new" element={<CreatePage uid={uid} />} />
       <Route path="/settings" element={<SettingsPage uid={uid} />} />
       {ADMIN_UIDS.includes(uid) && <Route path="/admin" element={<AdminPage />} />}
       {ADMIN_UIDS.includes(uid) && <Route path="/feedback" element={<FeedbackPage />} />}
