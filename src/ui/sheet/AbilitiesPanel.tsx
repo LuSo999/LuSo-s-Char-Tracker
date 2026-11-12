@@ -3,6 +3,11 @@ import type { ContentIndex } from '../../content'
 import { abilities, skills, type Skill } from '../../content/schema'
 import type { Sheet } from '../../engine/derive'
 import { Panel } from './common'
+import { useState } from 'react'
+import { setBaseScore } from '../../engine/edits'
+import { useRun, useSheet } from './context'
+import { Editable } from './Editable'
+import { useEditMode } from './editMode'
 import { breakdown, signed } from './format'
 
 const abilityNames = { str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' }
@@ -25,15 +30,17 @@ export function AbilitiesPanel({ sheet }: { sheet: Sheet; content: ContentIndex 
             <div key={a} className="rounded border border-border px-1 py-0.5 text-center">
               <div title={breakdown(sheet.scores[a])}>
                 <div className="text-[11px] font-semibold uppercase leading-4 text-muted">
-                  {a} <span className={`tabular-nums ${sheet.scores[a].overridden ? 'text-accent' : ''}`}>{sheet.scores[a].value}</span>
+                  {a} <Editable value={sheet.scores[a]} overrideKey={`score:${a}`} label={abilityNames[a]} className="tabular-nums" />
                 </div>
+                <BaseScore ability={a} />
                 <div className="text-xl font-semibold leading-6 tabular-nums">{signed(sheet.mods[a])}</div>
               </div>
               <div
                 className={`border-t border-border text-[11px] leading-4 ${save.proficient ? 'font-semibold' : 'text-muted'}`}
                 title={`${t('sheet.savingThrow')} (${abilityNames[a]})\n${breakdown(save)}`}
               >
-                <ProfDot level={save.proficient ? 1 : 0} /> {t('sheet.save')} <span className="tabular-nums">{signed(save.value)}</span>
+                <ProfDot level={save.proficient ? 1 : 0} /> {t('sheet.save')}{' '}
+                <Editable value={save} overrideKey={`save:${a}`} label={`${t('sheet.savingThrow')} (${abilityNames[a]})`} format={signed} className="tabular-nums" />
               </div>
             </div>
           )
@@ -42,10 +49,16 @@ export function AbilitiesPanel({ sheet }: { sheet: Sheet; content: ContentIndex 
 
       <div className="mt-2 flex justify-between text-sm">
         <span title={breakdown(sheet.pb)}>
-          {t('sheet.proficiencyBonus')} <strong>{signed(sheet.pb.value)}</strong>
+          {t('sheet.proficiencyBonus')}{' '}
+          <strong>
+            <Editable value={sheet.pb} overrideKey="pb" label={t('sheet.proficiencyBonus')} format={signed} />
+          </strong>
         </span>
         <span title={breakdown(sheet.passivePerception)}>
-          {t('sheet.passivePerception')} <strong>{sheet.passivePerception.value}</strong>
+          {t('sheet.passivePerception')}{' '}
+          <strong>
+            <Editable value={sheet.passivePerception} overrideKey="passive:perception" label={t('sheet.passivePerception')} />
+          </strong>
         </span>
       </div>
 
@@ -58,12 +71,47 @@ export function AbilitiesPanel({ sheet }: { sheet: Sheet; content: ContentIndex 
               <span>
                 <ProfDot level={v.proficiency} /> {skillName(s)} <span className="text-[10px] uppercase opacity-70">{skills[s]}</span>
               </span>
-              <span className="tabular-nums">{signed(v.value)}</span>
+              <Editable value={v} overrideKey={`skill:${s}`} label={skillName(s)} format={signed} className="tabular-nums" />
             </li>
           )
         })}
       </ul>
     </Panel>
+  )
+}
+
+/** Edit mode: the score before bonuses (rolled, point buy or standard array). */
+function BaseScore({ ability }: { ability: (typeof abilities)[number] }) {
+  const { t } = useTranslation()
+  const { character } = useSheet()
+  const run = useRun()
+  const edit = useEditMode((s) => s.on)
+  const [draft, setDraft] = useState<string>()
+  if (!edit) return null
+  const base = character.baseScores[ability]
+  if (draft !== undefined) {
+    return (
+      <input
+        autoFocus
+        onFocus={(e) => e.target.select()}
+        inputMode="numeric"
+        aria-label={t('edit.baseScore')}
+        className="w-10 rounded border border-accent bg-card text-center text-[11px]"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value.replace(/\D/g, ''))}
+        onBlur={() => {
+          const n = Number.parseInt(draft, 10)
+          if (Number.isFinite(n)) void run(setBaseScore(character, ability, n))
+          setDraft(undefined)
+        }}
+        onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+      />
+    )
+  }
+  return (
+    <button className="text-[10px] text-muted underline decoration-dashed" title={t('edit.baseScoreHint')} onClick={() => setDraft(String(base))}>
+      {t('edit.base')} {base}
+    </button>
   )
 }
 

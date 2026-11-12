@@ -49,6 +49,9 @@ export type ResourceState = {
   resource: Resource
   source: ActiveEntity
   max: number
+  /** Maximum before a manual override. */
+  maxComputed: number
+  maxOverridden: boolean
   used: number
   remaining: number
   die?: number
@@ -65,7 +68,9 @@ export type AttackRow = {
   proficient: boolean
   attack: Value
   damageDice: string
+  /** Damage bonus (same as damage.value); `damage` carries the breakdown and override state. */
   damageBonus: number
+  damage: Value
   damageType: string
   critRange: number
   reach?: number
@@ -98,6 +103,8 @@ export type ActivityRow = {
   rollDice?: string
   rollBonus?: number
   saveDc?: number
+  /** Save DC with breakdown/override state (key "dc:<activity key>"). */
+  dc?: Value
 }
 
 export type Sheet = {
@@ -538,7 +545,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       if (max <= 0) continue
       const used = Math.min(max, ae.item && ae.entity.type === 'item' && resource === ae.entity.charges ? ae.item.chargesUsed : (char.resourcesUsed[key] ?? 0))
       const die = resource.die === undefined ? undefined : resolveScaled(resource.die, vars(ae))
-      resources.push({ key, resource, source: ae, max, used, remaining: max - used, die })
+      resources.push({ key, resource, source: ae, max, maxComputed, maxOverridden: typeof ov === 'number', used, remaining: max - used, die })
     }
   }
 
@@ -611,7 +618,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       proficient,
       attack: override(`attack:${key}`, atk.value, atk.parts),
       damageDice: (twoHanded ? w?.versatileDamage : w?.damage?.dice) ?? '1',
-      damageBonus: dmg.value,
+      damageBonus: override(`damage:${key}`, dmg.value, dmg.parts).value,
+      damage: override(`damage:${key}`, dmg.value, dmg.parts),
       damageType: w?.damage?.type ?? 'bludgeoning',
       critRange: crit.value,
       reach: ranged ? undefined : props.includes('reach') ? 10 : 5,
@@ -667,7 +675,11 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
         available,
         rollDice: resolveDice(activity.roll?.dice, v),
         rollBonus: activity.roll?.bonus === undefined ? undefined : resolveScaled(activity.roll.bonus, v),
-        saveDc: activity.saveDc === undefined ? undefined : resolveScaled(activity.saveDc, v),
+        ...(() => {
+          if (activity.saveDc === undefined) return {}
+          const dc = override(`dc:${ae.grantKey}:${activity.id}`, resolveScaled(activity.saveDc, v), [{ label: String(activity.saveDc), value: resolveScaled(activity.saveDc, v) }])
+          return { saveDc: dc.value, dc }
+        })(),
       })
     }
   }

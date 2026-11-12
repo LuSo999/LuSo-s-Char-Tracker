@@ -7,6 +7,8 @@ import type { ActiveEntity, Sheet } from '../../engine/derive'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
 import { useRun, useSheet } from './context'
+import { Editable } from './Editable'
+import { useEditMode } from './editMode'
 
 const rechargeLabel: Record<RechargeOn, string> = {
   shortRest: 'Short',
@@ -19,6 +21,7 @@ export function ResourcesPanel() {
   const { t } = useTranslation()
   const { character, sheet, content } = useSheet()
   const run = useRun()
+  const edit = useEditMode((s) => s.on)
   return (
     <Panel title={t('sheet.resources')} icon="🔋">
       {sheet.resources.length === 0 && <p className="text-sm text-muted">{t('sheet.none')}</p>}
@@ -30,13 +33,25 @@ export function ResourcesPanel() {
           return (
             <li key={r.key} className="flex items-center justify-between gap-2">
               <span className="min-w-0">
-                <RuleRef entity={r.source.entity} content={content} className="text-sm font-semibold">
+                <RuleRef entity={r.source.entity} content={content} className="text-sm font-semibold" editable>
                   {r.resource.name}
                   {r.die ? <span className="ml-1 font-normal text-muted">d{r.die}</span> : null}
                 </RuleRef>
                 {recharge && <span className="ml-1.5 text-xs text-muted">↻ {recharge}</span>}
               </span>
-              <Dots remaining={r.remaining} max={r.max} onSet={(n) => void run(setResourceRemaining(character, sheet, r.key, n))} />
+              <span className="flex items-center gap-1.5">
+                <Dots remaining={r.remaining} max={r.max} onSet={(n) => void run(setResourceRemaining(character, sheet, r.key, n))} />
+                {(edit || r.maxOverridden) && (
+                  <span className="text-xs text-muted">
+                    max{' '}
+                    <Editable
+                      value={{ value: r.max, computed: r.maxComputed, overridden: r.maxOverridden, parts: [] }}
+                      overrideKey={`resource:${r.key}:max`}
+                      label={`${r.resource.name}: max`}
+                    />
+                  </span>
+                )}
+              </span>
             </li>
           )
         })}
@@ -190,7 +205,7 @@ export function FeaturesPanel() {
 
 function FeatureName({ entity, content }: { entity: Entity; content: ContentIndex }) {
   return (
-    <RuleRef entity={entity} content={content}>
+    <RuleRef entity={entity} content={content} editable>
       {entity.name.replace(/^Giant Ancestry: /, '')}
       {entity.isNew && <sup className="ml-0.5 text-[9px] font-semibold uppercase text-accent">new</sup>}
       {!entity.verified && <sup className="ml-0.5 text-danger">?</sup>}

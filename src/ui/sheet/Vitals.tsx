@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { adjustHp, rollDeathSave, setDeathSaves, setHp, setTempHp } from '../../engine/actions'
 import { useRun, useSheet } from './context'
+import { Editable } from './Editable'
 import { breakdown, signed } from './format'
 import { NumberAdjust } from './NumberAdjust'
 
@@ -53,17 +54,17 @@ export function Vitals() {
             onSet={(v) => void run(setHp(character, sheet, v))}
             onDelta={(d) => void run(adjustHp(character, sheet, d))}
           />
-          <span className="text-base text-muted" title={breakdown(sheet.hpMax)}>
-            / {max}
+          <span className="text-base text-muted">
+            / <Editable value={sheet.hpMax} overrideKey="hpMax" label={t('sheet.hpMax')} />
           </span>
         </div>
         <div className="mt-1 h-1.5 overflow-hidden rounded bg-border">
           <div className={`h-full ${bloodied ? 'bg-danger' : 'bg-emerald-600'}`} style={{ width: `${pct}%` }} />
         </div>
       </div>
-      <Stat icon="🛡️" label="AC" value={sheet.ac.value} title={breakdown(sheet.ac)} accent={sheet.ac.overridden} />
-      <Stat icon="⚡" label={t('sheet.initiative')} value={signed(sheet.initiative.value)} title={breakdown(sheet.initiative)} />
-      <Stat icon="👣" label={t('sheet.speed')} value={`${sheet.speed.value} ft`} title={breakdown(sheet.speed)} />
+      <Stat icon="🛡️" label="AC" value={<Editable value={sheet.ac} overrideKey="ac" label="AC" />} />
+      <Stat icon="⚡" label={t('sheet.initiative')} value={<Editable value={sheet.initiative} overrideKey="initiative" label={t('sheet.initiative')} format={signed} />} />
+      <Stat icon="👣" label={t('sheet.speed')} value={<Editable value={sheet.speed} overrideKey="speed" label={t('sheet.speed')} format={(n) => `${n} ft`} />} />
       <DeathSaves />
     </div>
   )

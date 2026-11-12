@@ -3,6 +3,7 @@ import type { ContentIndex } from '../../content'
 import { ruleLink } from '../../content/links'
 import type { Entity } from '../../content/schema'
 import { useSettings } from '../../state/settings'
+import { useEditMode } from '../sheet/editMode'
 import { usePreview } from './preview'
 
 const LONG_PRESS_MS = 500
@@ -17,13 +18,17 @@ export function RuleRef({
   content,
   children,
   className = '',
+  editable = false,
 }: {
   entity: Entity | undefined
   content: ContentIndex
   children: React.ReactNode
   className?: string
+  /** In edit mode a click opens the name / summary / link editor. */
+  editable?: boolean
 }) {
   const modifier = usePreview((s) => s.modifier)
+  const editMode = useEditMode((s) => s.on) && editable
   const site = useSettings((s) => s.linkSite)
   const pressTimer = useRef<number | undefined>(undefined)
   const longPressed = useRef(false)
@@ -36,7 +41,8 @@ export function RuleRef({
 
   return (
     <span
-      className={`${className} ${modifier ? 'cursor-help rounded underline decoration-accent decoration-2 underline-offset-2' : ''}`}
+      className={`${className} ${modifier ? 'cursor-help rounded underline decoration-accent decoration-2 underline-offset-2' : ''} ${editMode && !modifier ? 'cursor-text rounded border-b border-dashed border-accent' : ''} ${content.isCustomized(entity.id) ? 'italic' : ''}`}
+      title={editMode ? '✏️' : undefined}
       onMouseEnter={show}
       onMouseMove={show}
       onMouseLeave={() => usePreview.setState({ hover: undefined })}
@@ -45,6 +51,12 @@ export function RuleRef({
           longPressed.current = false
           e.preventDefault()
           e.stopPropagation()
+          return
+        }
+        if (editMode && !(e.ctrlKey || e.metaKey)) {
+          e.preventDefault()
+          e.stopPropagation()
+          useEditMode.setState({ editing: entity })
           return
         }
         if (!(e.ctrlKey || e.metaKey)) return

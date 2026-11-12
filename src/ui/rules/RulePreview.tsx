@@ -47,10 +47,12 @@ function PreviewBody({ target }: { target: PreviewTarget }) {
         <span className="text-xs text-muted">{typeLabel(entity)}</span>
         {entity.isNew && <span className="rounded bg-accent px-1.5 text-[10px] font-semibold uppercase text-accent-text">new</span>}
         {!entity.verified && <span className="rounded border border-danger px-1.5 text-[10px] text-danger">{t('rules.unverified')}</span>}
+        {content.isCustomized(entity.id) && <span className="rounded border border-accent px-1.5 text-[10px] text-accent">✎ {t('rules.customized')}</span>}
       </div>
       <div className="mt-2">
         <RuleText text={entity.text ?? entity.description} />
       </div>
+      {/search[:?/]/.test(ruleLink(entity, content, site[entity.edition])) && <p className="mt-2 text-xs text-muted">🔎 {t('rules.noDirectLink')}</p>}
       <p className="mt-3 border-t border-border pt-2 text-xs text-muted">
         {pack?.name ?? entity.source.book} · {t('rules.openHint', { site: entity.source.url ? new URL(entity.source.url).host : linkSiteLabels[site[entity.edition]][entity.edition] })}
       </p>

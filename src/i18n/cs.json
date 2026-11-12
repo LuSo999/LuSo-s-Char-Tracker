@@ -35,7 +35,9 @@
     "unverified": "neověřeno",
     "openHint": "Ctrl+klik otevře {{site}}",
     "open": "Otevřít pravidla",
-    "ctrlHint": "Podrž Ctrl (na Macu Cmd) a najeď na cokoli z pravidel pro náhled; Ctrl+klik otevře stránku s pravidly. Na telefonu podrž prst."
+    "ctrlHint": "Podrž Ctrl (na Macu Cmd) a najeď na cokoli z pravidel pro náhled; Ctrl+klik otevře stránku s pravidly. Na telefonu podrž prst.",
+    "customized": "upraveno",
+    "noDirectLink": "Bez přímé stránky: Ctrl+klik otevře hledání. V edit módu můžeš doplnit odkaz."
   },
   "actionFilter": {
     "all": "Vše",
@@ -104,7 +106,8 @@
     "stable": "Stable",
     "dying": "Umírá",
     "deathSaveRoll": "Hod death save (d20)",
-    "roll": "Hodit"
+    "roll": "Hodit",
+    "hpMax": "Maximum HP"
   },
   "settings": {
     "title": "Nastavení",
@@ -267,7 +270,8 @@
       "money": "Peníze",
       "recover": "Po boji",
       "reload": "Přebití",
-      "settings": "Nastavení"
+      "settings": "Nastavení",
+      "edit": "Ruční úprava"
     },
     "items": {
       "damage": "Zranění {{amount}}: HP {{before}} → {{after}}",
@@ -313,7 +317,15 @@
       "pickedUp": "Zvednuto {{count}}: {{name}}",
       "reloaded": "Přebito: {{name}}",
       "loaded": "{{name}} náboje {{before}} → {{after}}",
-      "thrownAttack": "Hod: {{name}}"
+      "thrownAttack": "Hod: {{name}}",
+      "override": "{{what}}: {{before}} → {{after}} (ručně)",
+      "overrideReset": "{{what}}: zpět na spočítané {{after}}",
+      "overridesReset": "Vráceno všech {{count}} ručních hodnot",
+      "customized": "{{what}} – {{field}}: {{before}} → {{after}}",
+      "customReset": "{{what}} – {{field}}: zpět na původní",
+      "renamed": "Postava přejmenována: {{before}} → {{after}}",
+      "baseScore": "Základ {{ability}} {{before}} → {{after}}",
+      "itemRenamed": "Předmět přejmenován: {{before}} → {{after}}"
     },
     "attackAction": "Attack action"
   },
@@ -396,5 +408,33 @@
     "thisEdition": "Tato edice",
     "bothEditions": "Obě edice",
     "foreignHint": "Předmět z druhé edice: funguje podle pravidel své edice."
+  },
+  "edit": {
+    "banner": "Edit mód: klikni na libovolnou hodnotu nebo název a změň ji. Změněné hodnoty mají ✎, ↺ vrátí spočítanou hodnotu.",
+    "done": "Hotovo",
+    "overridden": "změněno ručně",
+    "overriddenHint": "Změněno ručně (spočítáno {{computed}})",
+    "clickToOverride": "Klikni a napiš vlastní hodnotu",
+    "reset": "Zpět na spočítanou hodnotu ({{computed}})",
+    "resetOverrides": "Vrátit všechny ručně změněné hodnoty ({{count}})",
+    "confirmResetAll": "Vrátit všech {{count}} ručně změněných hodnot na spočítané?",
+    "name": "Název",
+    "description": "Popis (ukáže se v náhledu)",
+    "link": "Odkaz (Ctrl+klik)",
+    "emptyResets": "Prázdné pole = původní hodnota.",
+    "resetAll": "Vrátit původní",
+    "save": "Uložit",
+    "base": "základ",
+    "baseScore": "Základní hodnota",
+    "baseScoreHint": "Hodnota před bonusy (hozená, point buy nebo standard array)",
+    "attackBonus": "bonus k útoku",
+    "damageBonus": "bonus k damage",
+    "renameItem": "Vlastní název předmětu",
+    "renameItemPrompt": "Vlastní název (prázdné = {{original}})",
+    "fieldNames": {
+      "name": "název",
+      "description": "popis",
+      "url": "odkaz"
+    }
   }
 }

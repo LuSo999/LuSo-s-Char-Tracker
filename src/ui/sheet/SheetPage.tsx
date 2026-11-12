@@ -16,7 +16,10 @@ import { RuleRef } from '../rules/RuleRef'
 import { toast } from '../toast'
 import { AbilitiesPanel } from './AbilitiesPanel'
 import { ActionList } from './ActionList'
-import { SheetContext, undoGroup, useSheet } from './context'
+import { SheetContext, undoGroup, useRun, useSheet } from './context'
+import { useEditMode } from './editMode'
+import { EntityEditHost } from './EntityEditDialog'
+import { resetAllOverrides, setName } from '../../engine/edits'
 import { EquippedPanel } from './EquippedPanel'
 import { RestDialog } from './RestDialog'
 import { ConditionsPanel, FeaturesPanel, Reminders, ResourcesPanel } from './SidePanels'
@@ -57,16 +60,21 @@ function Message({ text }: { text: string }) {
 export function SheetView({ character, content, store }: { character: Character; content: ContentIndex; store: CharacterStore }) {
   const { t } = useTranslation()
   const official = useOfficial()
+  // The character's own names, summaries and links apply everywhere on the sheet.
+  const view = useMemo(() => content.withCustomizations(character.customizations), [content, character.customizations])
   const result = useMemo(() => {
     try {
-      return { sheet: computeSheet(character, content) }
+      return { sheet: computeSheet(character, view) }
     } catch (e) {
       return { error: e instanceof Error ? e.message : String(e) }
     }
-  }, [character, content])
+  }, [character, view])
 
-  // A new character starts a fresh turn tracker.
-  useEffect(() => useTurn.getState().newTurn(), [character.id])
+  // A new character starts a fresh turn tracker, outside edit mode.
+  useEffect(() => {
+    useTurn.getState().newTurn()
+    useEditMode.setState({ on: false, editing: undefined })
+  }, [character.id])
 
   if (!result.sheet) {
     const hint = official.status === 'noAccess' ? t('content.noAccess') : official.status === 'empty' ? t('content.empty') : ''
@@ -74,7 +82,7 @@ export function SheetView({ character, content, store }: { character: Character;
   }
 
   return (
-    <SheetContext.Provider value={{ character, sheet: result.sheet, content, store }}>
+    <SheetContext.Provider value={{ character, sheet: result.sheet, content: view, baseContent: content, store }}>
       <SheetLayout />
     </SheetContext.Provider>
   )
@@ -90,18 +98,18 @@ function TopBar({ onRest, onHistory, onInventory }: { onRest: (kind: 'short' | '
   return (
     <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-card border border-border bg-card px-4 py-1.5 shadow-sm">
       <div className="min-w-0">
-        <h1 className="truncate font-heading text-2xl font-semibold">{character.name}</h1>
+        <CharacterName />
         <div className="text-sm text-muted">
           {classes.map(({ entry, cls, sub }, i) => (
             <span key={entry.classId}>
               {i > 0 && ' / '}
-              <RuleRef entity={cls} content={content}>
+              <RuleRef entity={cls} content={content} editable>
                 {cls?.name ?? entry.classId} {entry.level}
               </RuleRef>
               {sub && (
                 <>
                   {' · '}
-                  <RuleRef entity={sub} content={content}>
+                  <RuleRef entity={sub} content={content} editable>
                     {sub.name}
                   </RuleRef>
                 </>
@@ -109,11 +117,11 @@ function TopBar({ onRest, onHistory, onInventory }: { onRest: (kind: 'short' | '
             </span>
           ))}
           {' · '}
-          <RuleRef entity={content.get(character.speciesId)} content={content}>
+          <RuleRef entity={content.get(character.speciesId)} content={content} editable>
             {content.get(character.speciesId)?.name}
           </RuleRef>
           {' · '}
-          <RuleRef entity={content.get(character.backgroundId)} content={content}>
+          <RuleRef entity={content.get(character.backgroundId)} content={content} editable>
             {content.get(character.backgroundId)?.name}
           </RuleRef>
         </div>
@@ -129,11 +137,10 @@ function TopBar({ onRest, onHistory, onInventory }: { onRest: (kind: 'short' | '
           🌙 {t('sheet.buttons.longRest')}
         </button>
         {/* Wired up in later milestones; visible now so the layout is final. */}
-        {([['levelUp', '⬆️'], ['editMode', '✏️']] as const).map(([k, icon]) => (
-          <button key={k} disabled className={button} title={t('sheet.comingSoon')}>
-            {icon} {t(`sheet.buttons.${k}`)}
-          </button>
-        ))}
+        <button disabled className={button} title={t('sheet.comingSoon')}>
+          ⬆️ {t('sheet.buttons.levelUp')}
+        </button>
+        <EditToggle className={button} />
         <button
           className={button}
           disabled={!last}
@@ -160,6 +167,77 @@ function TopBar({ onRest, onHistory, onInventory }: { onRest: (kind: 'short' | '
   )
 }
 
+function EditToggle({ className }: { className: string }) {
+  const { t } = useTranslation()
+  const { on, toggle } = useEditMode()
+  return (
+    <button className={`${className} ${on ? 'border-accent bg-accent text-accent-text hover:bg-accent' : ''}`} onClick={toggle} aria-pressed={on}>
+      {on ? `✅ ${t('edit.done')}` : `✏️ ${t('sheet.buttons.editMode')}`}
+    </button>
+  )
+}
+
+function CharacterName() {
+  const { character } = useSheet()
+  const run = useRun()
+  const edit = useEditMode((s) => s.on)
+  const [draft, setDraft] = useState<string>()
+  if (edit && draft !== undefined) {
+    return (
+      <input
+        autoFocus
+        className="rounded border border-accent bg-card px-1 font-heading text-2xl font-semibold"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          void run(setName(character, draft))
+          setDraft(undefined)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+          if (e.key === 'Escape') setDraft(undefined)
+        }}
+      />
+    )
+  }
+  return (
+    <h1
+      className={`truncate font-heading text-2xl font-semibold ${edit ? 'cursor-text rounded border-b border-dashed border-accent' : ''}`}
+      onClick={() => edit && setDraft(character.name)}
+    >
+      {character.name}
+    </h1>
+  )
+}
+
+/** Shown while editing: what edit mode does, and a quick way to drop all overrides. */
+function EditBanner() {
+  const { t } = useTranslation()
+  const { character } = useSheet()
+  const run = useRun()
+  const { on, toggle } = useEditMode()
+  if (!on) return null
+  const count = Object.keys(character.overrides).length
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-3 rounded-card border-2 border-dashed border-accent bg-accent/10 px-4 py-2 text-sm">
+      <span className="font-semibold">✏️ {t('edit.banner')}</span>
+      {count > 0 && (
+        <button
+          className="rounded border border-border bg-card px-2 py-0.5 hover:bg-bg"
+          onClick={() => {
+            if (confirm(t('edit.confirmResetAll', { count }))) void run(resetAllOverrides(character))
+          }}
+        >
+          ↺ {t('edit.resetOverrides', { count })}
+        </button>
+      )}
+      <button className="ml-auto rounded bg-accent px-3 py-0.5 font-semibold text-accent-text" onClick={toggle}>
+        ✅ {t('edit.done')}
+      </button>
+    </div>
+  )
+}
+
 function SheetLayout() {
   const { t } = useTranslation()
   const { sheet, content } = useSheet()
@@ -170,6 +248,8 @@ function SheetLayout() {
   return (
     <div className="mx-auto w-full max-w-[1920px] px-3 py-3">
       <TopBar onRest={setRest} onHistory={() => setHistory(true)} onInventory={() => setInventory(true)} />
+      <EditBanner />
+      <EntityEditHost />
 
       {/* On large screens the columns fill the viewport and scroll inside, so nothing important needs page scrolling. */}
       <div className="grid grid-cols-1 gap-3 xl:h-[calc(100vh-15.5rem)] xl:min-h-[34rem] xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)_minmax(260px,340px)]">

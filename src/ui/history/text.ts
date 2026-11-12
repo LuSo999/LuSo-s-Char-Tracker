@@ -4,7 +4,13 @@ import type { HistoryGroup } from '../../engine/history'
 
 /** History is stored as data and rendered in the current language. */
 export function itemText(t: TFunction, item: HistoryItem): string {
-  const params = { ...item.params, before: item.before, after: item.after }
+  const short = (v: unknown) => (typeof v === 'string' && v.length > 60 ? `${v.slice(0, 57)}…` : v)
+  const params = {
+    ...item.params,
+    ...(item.params?.field ? { field: t(`edit.fieldNames.${item.params.field}`) } : {}),
+    before: short(item.before),
+    after: short(item.after),
+  }
   if (item.type === 'undo') return t('history.items.undo', { what: t(`history.groups.${item.params?.what}`) })
   const text = t(`history.items.${item.type}`, { ...params, defaultValue: item.type })
   if (item.before !== undefined && item.after !== undefined && !text.includes(String(item.after))) return `${text} ${item.before} → ${item.after}`

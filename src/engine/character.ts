@@ -99,6 +99,13 @@ export const Character = z.object({
   ammoSpent: z.record(z.string(), z.number().int().min(0)).default({}),
   /** Thrown weapons lying on the battlefield, per weapon entry. */
   thrownOut: z.record(z.string(), z.number().int().min(0)).default({}),
+  /**
+   * Edit-mode text changes to rules content for this character only, by
+   * entity id: own name, summary or link (e.g. a homebrew rename).
+   */
+  customizations: z
+    .record(z.string(), z.object({ name: z.string().optional(), description: z.string().optional(), url: z.string().optional() }))
+    .default({}),
   /** Manual overrides from edit mode, keyed by derived value path (e.g. "ac", "skill:stealth"). */
   overrides: z.record(z.string(), z.union([z.number(), z.string()])).default({}),
   settings: z

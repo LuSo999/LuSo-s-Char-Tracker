@@ -35,7 +35,9 @@
     "unverified": "unverified",
     "openHint": "Ctrl+click opens {{site}}",
     "open": "Open rules",
-    "ctrlHint": "Hold Ctrl (Cmd on Mac) and point at anything from the rules to preview it; Ctrl+click opens the rules page. On a phone, press and hold."
+    "ctrlHint": "Hold Ctrl (Cmd on Mac) and point at anything from the rules to preview it; Ctrl+click opens the rules page. On a phone, press and hold.",
+    "customized": "changed",
+    "noDirectLink": "No direct page: Ctrl+click opens a search. In edit mode you can add a link."
   },
   "actionFilter": {
     "all": "All",
@@ -104,7 +106,8 @@
     "stable": "Stable",
     "dying": "Dying",
     "deathSaveRoll": "Death save roll (d20)",
-    "roll": "Roll"
+    "roll": "Roll",
+    "hpMax": "Hit point maximum"
   },
   "settings": {
     "title": "Settings",
@@ -267,7 +270,8 @@
       "money": "Money",
       "recover": "After the fight",
       "reload": "Reload",
-      "settings": "Settings"
+      "settings": "Settings",
+      "edit": "Manual change"
     },
     "items": {
       "damage": "Took {{amount}} damage: HP {{before}} → {{after}}",
@@ -313,7 +317,15 @@
       "pickedUp": "Picked up {{count}} {{name}}",
       "reloaded": "Reloaded {{name}}",
       "loaded": "{{name}} rounds {{before}} → {{after}}",
-      "thrownAttack": "Threw {{name}}"
+      "thrownAttack": "Threw {{name}}",
+      "override": "{{what}}: {{before}} → {{after}} (manual)",
+      "overrideReset": "{{what}}: back to computed {{after}}",
+      "overridesReset": "All {{count}} manual values reset",
+      "customized": "{{what}} – {{field}}: {{before}} → {{after}}",
+      "customReset": "{{what}} – {{field}}: back to the original",
+      "renamed": "Character renamed: {{before}} → {{after}}",
+      "baseScore": "Base {{ability}} {{before}} → {{after}}",
+      "itemRenamed": "Item renamed: {{before}} → {{after}}"
     },
     "attackAction": "Attack action"
   },
@@ -396,5 +408,33 @@
     "thisEdition": "This edition",
     "bothEditions": "Both editions",
     "foreignHint": "Item from the other edition: it works by the rules of its own edition."
+  },
+  "edit": {
+    "banner": "Edit mode: click any value or name to change it. Changed values are marked ✎; ↺ returns the computed value.",
+    "done": "Done",
+    "overridden": "changed manually",
+    "overriddenHint": "Changed manually (computed {{computed}})",
+    "clickToOverride": "Click to type your own value",
+    "reset": "Back to the computed value ({{computed}})",
+    "resetOverrides": "Reset all changed values ({{count}})",
+    "confirmResetAll": "Return all {{count}} manually changed values to the computed ones?",
+    "name": "Name",
+    "description": "Summary (shown in the preview)",
+    "link": "Link (Ctrl+click)",
+    "emptyResets": "Leave a field empty to use the original.",
+    "resetAll": "Back to the original",
+    "save": "Save",
+    "base": "base",
+    "baseScore": "Base score",
+    "baseScoreHint": "Score before bonuses (rolled, point buy or standard array)",
+    "attackBonus": "attack bonus",
+    "damageBonus": "damage bonus",
+    "renameItem": "Own name for this item",
+    "renameItemPrompt": "Own name (empty = {{original}})",
+    "fieldNames": {
+      "name": "name",
+      "description": "summary",
+      "url": "link"
+    }
   }
 }

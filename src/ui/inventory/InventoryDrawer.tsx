@@ -21,6 +21,9 @@ import { Dots } from '../sheet/common'
 import { useRun, useSheet } from '../sheet/context'
 import { NumberAdjust } from '../sheet/NumberAdjust'
 import { AddItemDialog } from './AddItemDialog'
+import { setItemLabel } from '../../engine/edits'
+import { magicName } from '../../engine/items'
+import { useEditMode } from '../sheet/editMode'
 
 const coinIcon: Record<string, string> = { pp: '⚪', gp: '🟡', ep: '🔘', sp: '⚫', cp: '🟤' }
 
@@ -34,6 +37,7 @@ function ItemRow({ r }: { r: ResolvedEntry }) {
   const ammoChoices = weapon?.properties.includes('ammunition') ? sheet.items.filter((x) => x.ammoKind === weapon.ammunition) : []
   const equippable = !!(r.weapon || r.armor || r.item.magic || r.item.kind === 'wondrous' || r.item.kind === 'ring')
   const btn = 'rounded border px-2 py-0.5 text-xs font-semibold'
+  const edit = useEditMode((s) => s.on)
 
   return (
     <li className={`rounded border p-2 ${r.item.magic ? 'border-accent/60 bg-accent/5' : 'border-border'}`}>
@@ -47,6 +51,19 @@ function ItemRow({ r }: { r: ResolvedEntry }) {
             </span>
           )}
         </RuleRef>
+        {edit && (
+          <button
+            className="text-xs text-accent"
+            title={t('edit.renameItem')}
+            onClick={() => {
+              const original = magicName(r.item, r.base)
+              const label = prompt(t('edit.renameItemPrompt', { original }), e.label ?? original)
+              if (label !== null) void run(setItemLabel(character, e.uid, label === original ? '' : label, original))
+            }}
+          >
+            ✎
+          </button>
+        )}
         <span className="text-xs text-muted tabular-nums">{Math.round(unitWeight(r) * e.quantity * 100) / 100} lb</span>
         <NumberAdjust
           label={t('inventory.quantity', { name: r.name })}

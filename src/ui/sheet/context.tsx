@@ -14,7 +14,10 @@ import { restoreTurnFor } from './turn'
 export type SheetCtx = {
   character: Character
   sheet: Sheet
+  /** Content with the character's own names / summaries / links applied. */
   content: ContentIndex
+  /** Content as the rules have it (for "reset to original"). */
+  baseContent: ContentIndex
   store: CharacterStore
 }
 

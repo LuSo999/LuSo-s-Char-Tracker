@@ -102,4 +102,39 @@ export class ContentIndex {
   pack(id: string): Pack | undefined {
     return this.packOf.get(id)
   }
+
+  /**
+   * A view with a character's own names, summaries and links applied, so
+   * every list, preview and link shows them. Activities and resources named
+   * like their entity follow the new name.
+   */
+  withCustomizations(custom: Record<string, { name?: string; description?: string; url?: string }>): ContentIndex {
+    const ids = Object.keys(custom).filter((id) => this.byId.has(id))
+    if (!ids.length) return this
+    const view = Object.create(ContentIndex.prototype) as ContentIndex
+    Object.assign(view, this, { byId: new Map(this.byId), customized: new Set(ids) })
+    for (const id of ids) {
+      const e = this.byId.get(id)!
+      const c = custom[id]
+      const name = c.name || e.name
+      const rename = (n: string) => (n === e.name ? name : n)
+      view.byId.set(id, {
+        ...e,
+        name,
+        description: c.description ?? e.description,
+        text: c.description !== undefined ? c.description : e.text,
+        source: { ...e.source, url: c.url || e.source.url },
+        activities: e.activities.map((a) => ({ ...a, name: rename(a.name) })),
+        resources: e.resources.map((r) => ({ ...r, name: rename(r.name) })),
+      } as Entity)
+    }
+    return view
+  }
+
+  private customized?: Set<string>
+
+  /** True when the character renamed / re-described / re-linked this entity. */
+  isCustomized(id: string): boolean {
+    return this.customized?.has(id) ?? false
+  }
 }

@@ -13,6 +13,7 @@ import { centerOf, fx } from '../fx/fx'
 import { toast } from '../toast'
 import { Dots, Panel } from './common'
 import { useRun, useSheet } from './context'
+import { Editable } from './Editable'
 import { actionTypeClass, actionTypeIcon, actionTypeShort, signed } from './format'
 import { attacksLeft, rememberTurn, slotFree, slotMax, snapshotTurn, useTurn, type Slot } from './turn'
 
@@ -36,10 +37,22 @@ const sectionOrder = { attack: 0, activity: 1, item: 2 }
 
 function attackRow(a: AttackRow, content: ContentIndex): Row {
   const details: React.ReactNode[] = [
-    <strong key="hit">{signed(a.attack.value)}</strong>,
+    <strong key="hit">
+      <Editable value={a.attack} overrideKey={`attack:${a.key}`} label={`${a.name}: ${i18n.t('edit.attackBonus')}`} format={signed} />
+    </strong>,
     <span key="dmg">
       {/* A flat "1" (Unarmed Strike) is shown as its total. */}
-      {a.damageDice === '1' ? Math.max(1, 1 + a.damageBonus) : `${a.damageDice}${a.damageBonus ? signed(a.damageBonus) : ''}`} {a.damageType}
+      {a.damageDice === '1' ? (
+        <Editable value={a.damage} overrideKey={`damage:${a.key}`} label={`${a.name}: ${i18n.t('edit.damageBonus')}`} format={(n) => String(Math.max(1, 1 + n))} />
+      ) : (
+        <>
+          {a.damageDice}
+          {a.damage.value || a.damage.overridden ? (
+            <Editable value={a.damage} overrideKey={`damage:${a.key}`} label={`${a.name}: ${i18n.t('edit.damageBonus')}`} format={signed} />
+          ) : null}
+        </>
+      )}{' '}
+      {a.damageType}
     </span>,
   ]
   if (a.reach) details.push(<span key="reach">{a.reach} ft</span>)
@@ -87,10 +100,10 @@ function activityRow(a: ActivityRow): Row {
       </span>,
     )
   }
-  if (a.saveDc !== undefined) {
+  if (a.dc) {
     details.push(
       <strong key="dc">
-        DC {a.saveDc}
+        DC <Editable value={a.dc} overrideKey={`dc:${a.source.grantKey}:${a.activity.id}`} label={`${a.activity.name}: DC`} />
         {a.activity.saveAbility ? ` ${a.activity.saveAbility.toUpperCase()}` : ''}
       </strong>,
     )
@@ -453,7 +466,7 @@ export function ActionList() {
                 <span aria-hidden>{actionTypeIcon[r.actionType]}</span> {actionTypeShort[r.actionType]}
               </span>
               <div className="min-w-0 flex-1">
-                <RuleRef entity={r.entity} content={content} className="font-semibold">
+                <RuleRef entity={r.entity} content={content} className="font-semibold" editable={!r.attack}>
                   {r.name}
                 </RuleRef>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">{r.details}</div>

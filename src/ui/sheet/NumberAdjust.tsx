@@ -47,6 +47,7 @@ export function NumberAdjust({
       {editing ? (
         <input
           autoFocus
+        onFocus={(e) => e.target.select()}
           inputMode="numeric"
           aria-label={label}
           className="w-20 rounded border border-accent bg-card px-1 text-2xl font-semibold tabular-nums"
