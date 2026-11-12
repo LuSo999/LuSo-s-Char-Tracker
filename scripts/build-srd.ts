@@ -44,6 +44,18 @@ async function load(edition: Edition, name: string): Promise<Raw[]> {
 
 // --- Helpers -----------------------------------------------------------------
 
+/** 2014 option prerequisites (Eldritch Invocations): class level, another option, a known spell. */
+function featurePrerequisite(raw: Raw): Raw {
+  if (!Array.isArray(raw) || !raw.length) return undefined
+  const last = (url: string) => url.split('/').pop()!
+  const level = raw.find((p) => p.type === 'level')?.level
+  const features = raw.filter((p) => p.type === 'feature').map((p) => last(p.feature))
+  const spells = raw.filter((p) => p.type === 'spell').map((p) => last(p.spell))
+  const name = (id: string) => id.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+  const text = [level && `level ${level}`, ...features.map(name), ...spells.map((s) => `${name(s)} cantrip`)].filter(Boolean).join(', ')
+  return { level, features: features.length ? features : undefined, spells: spells.length ? spells : undefined, text }
+}
+
 const textOf = (x: Raw): string => {
   const d = x.desc ?? x.description ?? ''
   return (Array.isArray(d) ? d.join('\n\n') : String(d)).trim()
@@ -369,6 +381,7 @@ async function build(edition: Edition) {
       type: 'feature',
       parent: f.subclass?.index ?? f.class?.index,
       optionOf: f.parent?.index,
+      prerequisite: featurePrerequisite(f.prerequisites),
       choices: options.length
         ? [{ id: 'option', label: f.name, kind: 'entity', count: f.feature_specific.subfeature_options.choose, from: { ids: options } }]
         : [],

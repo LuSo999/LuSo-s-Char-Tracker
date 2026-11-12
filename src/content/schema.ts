@@ -227,6 +227,8 @@ export const Choice = z.object({
   classesFromChoice: z.string().optional(),
   /** For kind "skill": grants expertise instead of proficiency. */
   expertise: z.boolean().optional(),
+  /** Either this choice or the named one is made (2014: a feat instead of the Ability Score Improvement). */
+  alternativeTo: z.string().optional(),
 })
 export type Choice = z.infer<typeof Choice>
 
@@ -278,6 +280,23 @@ const base = {
   tags: z.array(z.string()).default([]),
 }
 
+/**
+ * What a feat or an option (Eldritch Invocation…) needs before it can be
+ * picked. `level` is the character level for feats and the level in the
+ * owning class for class options. The app checks everything except `text`.
+ */
+export const Prerequisite = z.object({
+  level: z.number().optional(),
+  abilities: z.array(z.object({ ability: Ability, min: z.number() })).optional(),
+  /** Every one of these entities must already apply to the character (Pact of the Blade…). */
+  features: z.array(z.string()).optional(),
+  /** At least one of these spells must be known (a damaging Warlock cantrip…). */
+  spells: z.array(z.string()).optional(),
+  /** Shown to the player; a requirement the app can't check, or the wording of the ones it does. */
+  text: z.string().optional(),
+})
+export type Prerequisite = z.infer<typeof Prerequisite>
+
 export const Feature = z.object({
   ...base,
   type: z.literal('feature'),
@@ -289,6 +308,7 @@ export const Feature = z.object({
   /** Options of a parent choice (fighting styles in 5e 2014) are not granted on their own. */
   optionOf: z.string().optional(),
   actionType: ActionType.optional(),
+  prerequisite: Prerequisite.optional(),
 })
 export type Feature = z.infer<typeof Feature>
 
@@ -359,13 +379,7 @@ export const Feat = z.object({
   type: z.literal('feat'),
   /** 2024 categories: origin, general, fighting-style, epic-boon. */
   category: z.string().optional(),
-  prerequisite: z
-    .object({
-      level: z.number().optional(),
-      abilities: z.array(z.object({ ability: Ability, min: z.number() })).optional(),
-      text: z.string().optional(),
-    })
-    .optional(),
+  prerequisite: Prerequisite.optional(),
   repeatable: z.boolean().default(false),
 })
 export type Feat = z.infer<typeof Feat>

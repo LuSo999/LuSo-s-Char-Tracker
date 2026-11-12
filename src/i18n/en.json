@@ -235,7 +235,9 @@
     "notRitual": "This spell can’t be cast as a ritual here.",
     "spellTooHigh": "Level {{level}} is too high for this class now.",
     "limitCantrips": "Cantrip limit reached ({{max}}).",
-    "limitSpells": "Spell limit reached ({{max}})."
+    "limitSpells": "Spell limit reached ({{max}}).",
+    "maxLevel": "The character is already level 20.",
+    "minLevel": "Level 1 can't be removed."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -291,7 +293,10 @@
       "edit": "Manual change",
       "extras": "Features",
       "cast": "Spell",
-      "spells": "Spells"
+      "spells": "Spells",
+      "levelUp": "Level up",
+      "levelDown": "Level removed",
+      "choices": "Choices"
     },
     "items": {
       "damage": "Took {{amount}} damage: HP {{before}} → {{after}}",
@@ -363,7 +368,13 @@
       "favoriteOn": "★ {{name}}",
       "favoriteOff": "☆ {{name}}",
       "slotCreated": "Spell slot (level {{level}}) created from Sorcery Points",
-      "slotConverted": "Spell slot (level {{level}}) turned into Sorcery Points"
+      "slotConverted": "Spell slot (level {{level}}) turned into Sorcery Points",
+      "levelUp": "Level up: {{class}} {{level}}",
+      "levelDown": "Level removed: {{class}} {{level}}",
+      "hpMax": "Max HP",
+      "featureGained": "New: {{name}}",
+      "subclass": "Subclass ({{class}})",
+      "multiclassRule": "Multiclassing allowed"
     },
     "attackAction": "Attack action"
   },
@@ -673,5 +684,52 @@
     "apply": "Recover",
     "title": "Spell slots",
     "pact": "Pact slots (level {{level}})"
+  },
+  "levelUp": {
+    "title": "Level up to {{level}}",
+    "steps": {
+      "class": "Class",
+      "hp": "Hit Points",
+      "choices": "Features & choices",
+      "summary": "Summary"
+    },
+    "newClass": "new class, level 1",
+    "multiclassHint": "A new class is multiclassing: you must meet its ability requirements and those of your current classes.",
+    "maxLevel": "The character is level 20.",
+    "next": "Next",
+    "back": "Back",
+    "confirm": "Level up",
+    "hp": "Hit Points",
+    "hpAverage": "Fixed value: {{value}}",
+    "hpRoll": "Rolled (1–{{die}}):",
+    "rollForMe": "Roll",
+    "hpCon": "Your Constitution modifier ({{con}}) is added; a level always gives at least 1 HP.",
+    "newFeatures": "New features",
+    "noNewFeatures": "No new features at this level.",
+    "choices": "Choices",
+    "subclass": "Subclass",
+    "noSubclass": "No subclass available (more in rule packs).",
+    "spells": "spells",
+    "picked": "{{count}} / {{of}} picked",
+    "points": "Points {{spent}} / {{budget}} (score at most {{cap}})",
+    "showBlocked": "Show unavailable ({{count}})",
+    "noOptions": "Nothing to choose from.",
+    "blocked": {
+      "taken": "already have it",
+      "notProficient": "needs proficiency",
+      "melee": "melee weapons only",
+      "needs": "needs {{what}}"
+    },
+    "nothingToChoose": "Nothing to choose.",
+    "openCount": "{{count}} still to choose",
+    "allDone": "All chosen.",
+    "stillOpen": "{{count}} choices are still open. You can finish them later from the ⚠️ button on the sheet.",
+    "choicesTitle": "Choices to make",
+    "badge": "{{count}} to choose",
+    "badgeHint": "Choices the character hasn't made yet (skills, expertise, feats, spells…)",
+    "levelDown": "Undo last level up ({{what}})",
+    "levelDownConfirm": "Remove the last level ({{what}}) and the choices made at it?",
+    "multiclassRule": "Allow multiclassing (optional rule)",
+    "search": "Search…"
   }
 }

@@ -62,6 +62,8 @@ export const Character = z.object({
   books: z.array(z.string()).default([]),
   /** Classes in the order they were taken; the first is the starting class. */
   classes: z.array(ClassEntry).min(1),
+  /** Class id of every level gained through Level up, in order (for "undo the last level up"). */
+  levelOrder: z.array(z.string()).default([]),
   speciesId: z.string(),
   subspeciesId: z.string().optional(),
   backgroundId: z.string(),

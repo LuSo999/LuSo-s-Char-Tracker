@@ -19,6 +19,8 @@ export type SheetCtx = {
   /** Content as the rules have it (for "reset to original"). */
   baseContent: ContentIndex
   store: CharacterStore
+  /** A copy being edited (Level up): actions apply to it without toasts or effects. */
+  draft?: boolean
 }
 
 export const SheetContext = createContext<SheetCtx | null>(null)
@@ -55,7 +57,7 @@ export function undoGroup(store: CharacterStore, group: HistoryGroup) {
 /** Run an action: save it with its history group, play its effect and offer a quick undo. */
 export function useRun() {
   const { t } = useTranslation()
-  const { store } = useSheet()
+  const { store, draft } = useSheet()
   // Toasts outlive renders; they must check the current history, not the one they were created with.
   const latest = useRef(store)
   useEffect(() => {
@@ -70,6 +72,7 @@ export function useRun() {
       return undefined
     }
     const group = await store.commit(result, { actionId: opts.actionId })
+    if (draft) return group
     effectFor(result.groupType, result.items)
     const check = result.items.find((i) => i.type === 'concentrationCheck')
     if (check) toast(`🔮 ${t('spells.concentrationSave', { dc: check.params?.dc, name: check.params?.name })}`, { tone: 'error', key: 'concentration' })

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { SpellSlots } from './SpellSlots'
+import { choiceOptions } from '../../engine/levelup'
 import type { Choice, Spell } from '../../content/schema'
 import { selections, type ActiveEntity } from '../../engine/derive'
 import { addExtra } from '../../engine/extras'
@@ -130,7 +131,7 @@ function SpellLine({ row }: { row: SpellRow }) {
 /** Picker for choices of entities that grant spells (Magic Initiate: list, cantrips, spell, ability). */
 function GrantChoices({ ae }: { ae: ActiveEntity }) {
   const { t } = useTranslation()
-  const { character, content } = useSheet()
+  const { character, content, sheet } = useSheet()
   const run = useRun()
   const [query, setQuery] = useState<Record<string, string>>({})
   const edit = useEditMode((s) => s.on)
@@ -165,10 +166,9 @@ function GrantChoices({ ae }: { ae: ActiveEntity }) {
         }
         const lists = c.classesFromChoice ? selections(character, ae, c.classesFromChoice) : (c.spellClasses ?? [])
         const q = (query[c.id] ?? '').toLowerCase()
-        const pool = content
-          .all('spell')
-          .filter((s) => s.level === c.spellLevel && (!lists.length || s.classes.some((k) => lists.includes(k))) && (!q || s.name.toLowerCase().includes(q)))
-          .sort((a, b) => a.name.localeCompare(b.name))
+        const pool = choiceOptions(character, content, sheet, ae, c)
+          .flatMap((o) => (o.entity?.type === 'spell' ? [o.entity] : []))
+          .filter((s) => !q || s.name.toLowerCase().includes(q))
         return (
           <div key={c.id}>
             <div className="flex items-center gap-2">
@@ -205,7 +205,7 @@ function GrantChoices({ ae }: { ae: ActiveEntity }) {
 }
 
 /** Choose cantrips, known / spellbook and prepared spells of one class, within its limits. */
-function ManageSpells({ caster }: { caster: CasterState }) {
+export function ManageSpells({ caster }: { caster: CasterState }) {
   const { t } = useTranslation()
   const { character, sheet, content } = useSheet()
   const run = useRun()

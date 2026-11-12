@@ -235,7 +235,9 @@
     "notRitual": "Tohle kouzlo tu nejde seslat jako rituál.",
     "spellTooHigh": "Level {{level}} je pro tuhle classu zatím moc vysoký.",
     "limitCantrips": "Limit cantripů dosažen ({{max}}).",
-    "limitSpells": "Limit kouzel dosažen ({{max}})."
+    "limitSpells": "Limit kouzel dosažen ({{max}}).",
+    "maxLevel": "Postava už je na levelu 20.",
+    "minLevel": "Level 1 nejde odebrat."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -291,7 +293,10 @@
       "edit": "Ruční úprava",
       "extras": "Schopnosti",
       "cast": "Kouzlo",
-      "spells": "Kouzla"
+      "spells": "Kouzla",
+      "levelUp": "Level up",
+      "levelDown": "Odebrání levelu",
+      "choices": "Volby"
     },
     "items": {
       "damage": "Zranění {{amount}}: HP {{before}} → {{after}}",
@@ -363,7 +368,13 @@
       "favoriteOn": "★ {{name}}",
       "favoriteOff": "☆ {{name}}",
       "slotCreated": "Vytvořen spell slot (level {{level}}) ze Sorcery Points",
-      "slotConverted": "Spell slot (level {{level}}) přeměněn na Sorcery Points"
+      "slotConverted": "Spell slot (level {{level}}) přeměněn na Sorcery Points",
+      "levelUp": "Level up: {{class}} {{level}}",
+      "levelDown": "Odebrán level: {{class}} {{level}}",
+      "hpMax": "Max HP",
+      "featureGained": "Nové: {{name}}",
+      "subclass": "Subclass ({{class}})",
+      "multiclassRule": "Multiclass povolen"
     },
     "attackAction": "Attack action"
   },
@@ -673,5 +684,52 @@
     "apply": "Obnovit",
     "title": "Spell sloty",
     "pact": "Pact sloty ({{level}}. úroveň)"
+  },
+  "levelUp": {
+    "title": "Level up na {{level}}",
+    "steps": {
+      "class": "Class",
+      "hp": "Hit Points",
+      "choices": "Featury a volby",
+      "summary": "Souhrn"
+    },
+    "newClass": "nová class, level 1",
+    "multiclassHint": "Nová class je multiclass: musíš splnit její požadavky na ability scores i požadavky svých současných class.",
+    "maxLevel": "Postava je na levelu 20.",
+    "next": "Dál",
+    "back": "Zpět",
+    "confirm": "Potvrdit level up",
+    "hp": "Hit Points",
+    "hpAverage": "Pevná hodnota: {{value}}",
+    "hpRoll": "Hozeno (1–{{die}}):",
+    "rollForMe": "Hodit",
+    "hpCon": "Přičte se modifikátor Constitution ({{con}}); level dá vždy aspoň 1 HP.",
+    "newFeatures": "Nové featury",
+    "noNewFeatures": "Na tomhle levelu žádné nové featury.",
+    "choices": "Volby",
+    "subclass": "Subclass",
+    "noSubclass": "Žádná subclass k dispozici (další v balíčcích pravidel).",
+    "spells": "kouzla",
+    "picked": "vybráno {{count}} / {{of}}",
+    "points": "Body {{spent}} / {{budget}} (skóre nejvýš {{cap}})",
+    "showBlocked": "Ukázat nedostupné ({{count}})",
+    "noOptions": "Není z čeho vybírat.",
+    "blocked": {
+      "taken": "už máš",
+      "notProficient": "potřebuje proficienci",
+      "melee": "jen zbraně na blízko",
+      "needs": "vyžaduje {{what}}"
+    },
+    "nothingToChoose": "Není co vybírat.",
+    "openCount": "Zbývá vybrat: {{count}}",
+    "allDone": "Vše vybráno.",
+    "stillOpen": "Otevřených voleb: {{count}}. Dokončit je můžeš později tlačítkem ⚠️ na sheetu.",
+    "choicesTitle": "Volby k doplnění",
+    "badge": "Vybrat: {{count}}",
+    "badgeHint": "Volby, které postava ještě neudělala (skills, expertise, featy, kouzla…)",
+    "levelDown": "Vrátit poslední level up ({{what}})",
+    "levelDownConfirm": "Odebrat poslední level ({{what}}) a volby na něm udělané?",
+    "multiclassRule": "Povolit multiclass (volitelné pravidlo)",
+    "search": "Hledat…"
   }
 }

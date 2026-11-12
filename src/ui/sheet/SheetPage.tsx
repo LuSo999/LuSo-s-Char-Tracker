@@ -29,6 +29,8 @@ import { SheetShortcuts } from './shortcuts'
 import { useTurn } from './turn'
 import { Vitals } from './Vitals'
 import { Term } from '../rules/Term'
+import { pendingChoices } from '../../engine/levelup'
+import { ChoicesDialog, LevelUpDialog } from '../levelup/LevelUpDialog'
 
 export function SheetPage({ uid }: { uid: string }) {
   const { t } = useTranslation()
@@ -92,9 +94,20 @@ export function SheetView({ character, content, store }: { character: Character;
   )
 }
 
-function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => void; onHistory: () => void }) {
+function TopBar({
+  onRest,
+  onHistory,
+  onLevelUp,
+  onChoices,
+}: {
+  onRest: (kind: 'short' | 'long') => void
+  onHistory: () => void
+  onLevelUp: () => void
+  onChoices: () => void
+}) {
   const { t } = useTranslation()
-  const { character, content, store } = useSheet()
+  const { character, content, store, sheet } = useSheet()
+  const pending = useMemo(() => pendingChoices(character, content, sheet).length, [character, content, sheet])
   const last = undoable(store.history)
   const classes = character.classes.map((c) => ({ entry: c, cls: content.getTyped(c.classId, 'class'), sub: c.subclassId ? content.getTyped(c.subclassId, 'subclass') : undefined }))
   const button = 'rounded border border-border px-3 py-1.5 text-sm hover:bg-bg disabled:opacity-50 disabled:hover:bg-transparent'
@@ -140,8 +153,12 @@ function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => voi
         <button className={button} onClick={() => onRest('long')}>
           🌙 <Term id="rule-long-rest">{t('sheet.buttons.longRest')}</Term>
         </button>
-        {/* Wired up in later milestones; visible now so the layout is final. */}
-        <button disabled className={button} title={t('sheet.comingSoon')}>
+        {pending > 0 && (
+          <button className={`${button} border-accent bg-accent/10 font-semibold`} title={t('levelUp.badgeHint')} onClick={onChoices}>
+            ⚠️ {t('levelUp.badge', { count: pending })}
+          </button>
+        )}
+        <button className={button} onClick={onLevelUp}>
           ⬆️ {t('sheet.buttons.levelUp')}
         </button>
         <EditToggle className={button} />
@@ -246,13 +263,15 @@ function SheetLayout() {
   const [history, setHistory] = useState(false)
   const [inventory, setInventory] = useState(false)
   const [spells, setSpells] = useState(false)
+  const [levelUp, setLevelUp] = useState(false)
+  const [choices, setChoices] = useState(false)
   const edit = useEditMode((s) => s.on)
 
   return (
     // Side gutters on larger screens keep the edge handles off the content.
     <div className="mx-auto w-full max-w-[1920px] px-3 py-3 sm:px-11">
       <SheetShortcuts onSpells={sheet.spellcasting.any || edit ? () => setSpells((v) => !v) : undefined} onInventory={() => setInventory((v) => !v)} />
-      <TopBar onRest={setRest} onHistory={() => setHistory(true)} />
+      <TopBar onRest={setRest} onHistory={() => setHistory(true)} onLevelUp={() => setLevelUp(true)} onChoices={() => setChoices(true)} />
       {/* Side panels open from handles on the edges: spells on the left, inventory on the right. */}
       {!spells && (sheet.spellcasting.any || edit) && <EdgeHandle side="left" icon="✨" label={t('spells.title')} onClick={() => setSpells(true)} />}
       {!inventory && <EdgeHandle side="right" icon="🎒" label={t('inventory.title')} onClick={() => setInventory(true)} />}
@@ -281,6 +300,8 @@ function SheetLayout() {
       <p className="mt-3 text-center text-xs text-muted">{t('rules.ctrlHint')}</p>
 
       {rest && <RestDialog kind={rest} onClose={() => setRest(undefined)} />}
+      {levelUp && <LevelUpDialog onClose={() => setLevelUp(false)} />}
+      {choices && <ChoicesDialog onClose={() => setChoices(false)} />}
       {history && <HistoryDrawer onClose={() => setHistory(false)} />}
       {inventory && <InventoryDrawer onClose={() => setInventory(false)} />}
       {spells && <SpellcastingDrawer onClose={() => setSpells(false)} />}

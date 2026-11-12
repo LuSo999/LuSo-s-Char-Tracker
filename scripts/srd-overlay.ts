@@ -112,7 +112,11 @@ const overlay2014: Record<string, Patch> = {
 function asi2014(byId: Map<string, Raw>) {
   for (const e of byId.values()) {
     if (e.type === 'feature' && /-ability-score-improvement-\d+$/.test(e.id)) {
-      e.choices = [{ id: 'asi', label: 'Ability Score Improvement', kind: 'abilityPoints', points: 2, perOption: 2, scoreCap: 20 }]
+      e.choices = [
+        { id: 'asi', label: 'Ability Score Improvement', kind: 'abilityPoints', points: 2, perOption: 2, scoreCap: 20 },
+        // Optional rule (PHB 2014): a feat instead of the increase.
+        { id: 'feat', label: 'Feat', kind: 'entity', from: { type: 'feat' }, alternativeTo: 'asi' },
+      ]
     }
   }
 }
@@ -300,6 +304,40 @@ function coreCombat(edition: Edition): Raw {
   }
 }
 
+/**
+ * 2024 Eldritch Invocations: the prerequisite line ("Prerequisite: Warlock 5,
+ * Pact of the Blade") becomes a checked prerequisite. Cantrip requirements
+ * list the qualifying Warlock cantrips.
+ */
+function invocationPrerequisites2024(byId: Map<string, Raw>, problems: string[]) {
+  const cantrips = [...byId.values()].filter((e) => e.type === 'spell' && e.level === 0 && e.classes?.includes('warlock'))
+  const damaging = cantrips.filter((s) => s.damage)
+  const cantripReq: Record<string, Raw[]> = {
+    'a damaging Warlock cantrip': damaging,
+    'a damaging Warlock cantrip with 10+ ft range': damaging.filter((s) => !/^(self|touch)/i.test(s.range)),
+    'a Warlock attack-roll cantrip': cantrips.filter((s) => s.attack),
+  }
+  for (const e of byId.values()) {
+    if (e.type !== 'feature' || !e.id.startsWith('invocation-')) continue
+    // The overlay descriptions start with "Prerequisite: Warlock 5, Pact of the Blade. …".
+    const m = /Prerequisite:\s*([^.\n]*)/i.exec(e.description ?? '')
+    if (!m) continue
+    const parts = m[1].split(/,\s*/)
+    const pre: Raw = { text: m[1] }
+    for (const part of parts) {
+      const level = /^Warlock (\d+)\+?$/.exec(part)
+      if (level) pre.level = Number(level[1])
+      else if (cantripReq[part]) pre.spells = cantripReq[part].map((s) => s.id)
+      else {
+        const id = `invocation-${part.toLowerCase().replace(/[^a-z ]/g, '').replace(/ /g, '-')}`
+        if (byId.has(id)) pre.features = [...(pre.features ?? []), id]
+        else problems.push(`invocation prerequisite not understood: ${e.id}: ${part}`)
+      }
+    }
+    e.prerequisite = pre
+  }
+}
+
 export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[] {
   const problems: string[] = []
   byId.set('core-combat', coreCombat(edition))
@@ -332,6 +370,7 @@ export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[]
       if (/-epic-boon$/.test(e.id)) e.choices = [{ id: 'feat', label: 'Epic Boon', kind: 'entity', from: { type: 'feat', tags: ['epic-boon'] } }]
     }
     epicBoons(byId)
+    invocationPrerequisites2024(byId, problems)
     for (const [id, a] of Object.entries(giantAncestry)) {
       // The trait shares its id with the subspecies in the source data.
       const e = byId.get(`${id}-trait`)

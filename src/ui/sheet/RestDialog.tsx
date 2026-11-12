@@ -6,13 +6,13 @@ import { itemText } from '../history/text'
 import { useRun, useSheet } from './context'
 import { Term } from '../rules/Term'
 
-export function Dialog({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+export function Dialog({ title, onClose, children, wide }: { title: string; onClose: () => void; children: React.ReactNode; wide?: boolean }) {
   return (
     <div className="fixed inset-0 z-40 flex items-end bg-black/50 sm:items-center sm:justify-center" onClick={onClose}>
       <div
         role="dialog"
         aria-label={title}
-        className="max-h-[90vh] w-full overflow-y-auto rounded-t-card border border-border bg-card p-5 shadow-xl sm:max-w-lg sm:rounded-card"
+        className={`max-h-[90vh] w-full overflow-y-auto rounded-t-card border border-border bg-card p-5 shadow-xl sm:rounded-card ${wide ? 'sm:max-w-3xl' : 'sm:max-w-lg'}`}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="mb-3 font-heading text-xl font-semibold">{title}</h2>
