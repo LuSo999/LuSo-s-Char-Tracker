@@ -57,8 +57,8 @@ export const sampleWizard: Omit<CharacterInput, 'id'> = {
   hp: { current: 32 },
   spells: {
     wizard: {
-      known: ['fire-bolt', 'mage-hand', 'ray-of-frost', 'prestidigitation', 'magic-missile', 'shield', 'detect-magic', 'sleep', 'misty-step', 'hold-person', 'fireball', 'counterspell', 'identify'],
-      prepared: ['magic-missile', 'shield', 'sleep', 'misty-step', 'hold-person', 'fireball', 'counterspell'],
+      known: ['fire-bolt', 'mage-hand', 'ray-of-frost', 'prestidigitation', 'magic-missile', 'spell-shield', 'detect-magic', 'sleep', 'misty-step', 'hold-person', 'fireball', 'counterspell', 'identify'],
+      prepared: ['magic-missile', 'spell-shield', 'sleep', 'misty-step', 'hold-person', 'fireball', 'counterspell'],
     },
   },
   inventory: [

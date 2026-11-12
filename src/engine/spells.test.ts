@@ -112,7 +112,7 @@ describe('casting and concentration', () => {
   })
 
   it('class limits: prepared count and spell level', () => {
-    const full = wizard('2024', 1, { spells: { wizard: { known: ['magic-missile', 'shield', 'sleep', 'mage-armor', 'burning-hands'], prepared: ['magic-missile', 'shield', 'sleep', 'mage-armor'] } } })
+    const full = wizard('2024', 1, { spells: { wizard: { known: ['magic-missile', 'spell-shield', 'sleep', 'mage-armor', 'burning-hands'], prepared: ['magic-missile', 'spell-shield', 'sleep', 'mage-armor'] } } })
     const sf = computeSheet(full, c24)
     expect(setClassSpell(full, sf, c24, 'wizard', 'prepared', 'burning-hands', true)).toMatchObject({ ok: false, error: 'limitSpells' })
     expect(setClassSpell(full, sf, c24, 'wizard', 'prepared', 'burning-hands', true, true).ok).toBe(true)
