@@ -569,6 +569,18 @@
     "button": "Klávesové zkratky",
     "items": [
       [
+        "N",
+        "Nové kolo (New turn)"
+      ],
+      [
+        "Shift + R",
+        "Zrušit všechny filtry (akce, kouzla)"
+      ],
+      [
+        "Ctrl + Z",
+        "Vrátit poslední změnu (Undo)"
+      ],
+      [
         "Ctrl + najetí myší",
         "Náhled pravidel u zvýrazněného názvu"
       ],
@@ -588,6 +600,8 @@
         "Esc",
         "Zrušit úpravu, zavřít boční panel"
       ]
-    ]
+    ],
+    "filtersReset": "Filtry zrušeny",
+    "nothingToUndo": "Není co vrátit"
   }
 }

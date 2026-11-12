@@ -25,6 +25,7 @@ import { resetAllOverrides, setName } from '../../engine/edits'
 import { EquippedPanel } from './EquippedPanel'
 import { RestDialog } from './RestDialog'
 import { ConditionsPanel, FeaturesPanel, Reminders, ResourcesPanel } from './SidePanels'
+import { SheetShortcuts } from './shortcuts'
 import { useTurn } from './turn'
 import { Vitals } from './Vitals'
 
@@ -146,7 +147,7 @@ function TopBar({ onRest, onHistory }: { onRest: (kind: 'short' | 'long') => voi
         <button
           className={button}
           disabled={!last}
-          title={last ? t('sheet.undoHint', { what: groupSummary(t, last) }) : undefined}
+          title={last ? `${t('sheet.undoHint', { what: groupSummary(t, last) })} (Ctrl+Z)` : undefined}
           onClick={() => {
             if (!last) return
             undoGroup(store, last)
@@ -249,6 +250,7 @@ function SheetLayout() {
   return (
     // Side gutters on larger screens keep the edge handles off the content.
     <div className="mx-auto w-full max-w-[1920px] px-3 py-3 sm:px-11">
+      <SheetShortcuts />
       <TopBar onRest={setRest} onHistory={() => setHistory(true)} />
       {/* Side panels open from handles on the edges: spells on the left, inventory on the right. */}
       {!spells && (sheet.spellcasting.any || edit) && <EdgeHandle side="left" icon="✨" label={t('spells.title')} onClick={() => setSpells(true)} />}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import type { Choice, Spell } from '../../content/schema'
@@ -20,6 +20,7 @@ import { useSettings } from '../../state/settings'
 import { TurnBar } from '../sheet/ActionList'
 import { NumberAdjust } from '../sheet/NumberAdjust'
 import { SidePanel } from '../sheet/SidePanel'
+import { useOnResetFilters } from '../sheet/shortcuts'
 import { centerOf } from '../fx/fx'
 
 type TFn = TFunction
@@ -442,6 +443,7 @@ export function SpellcastingDrawer({ onClose }: { onClose: () => void }) {
   const edit = useEditMode((s) => s.on)
   const [manage, setManage] = useState<string>()
   const [filters, setFilters] = useState<SpellFilters>(defaultSpellFilters)
+  useOnResetFilters(useCallback(() => setFilters(defaultSpellFilters), []))
   const set = (p: Partial<SpellFilters>) => setFilters((f) => ({ ...f, ...p }))
   const sc = sheet.spellcasting
   const slotState = (key: string) => sheet.resources.find((r) => r.key === key)

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../../i18n'
 import type { ContentIndex } from '../../content'
@@ -10,6 +10,7 @@ import type { ActivityRow, AttackRow } from '../../engine/derive'
 import { spellBrief, spellDice, upcastNote, type SpellRow } from '../../engine/spells'
 import { useCastSpell } from '../spells/useCastSpell'
 import { CastPrompt } from '../spells/CastPrompt'
+import { useOnResetFilters } from './shortcuts'
 import { castOptions } from '../../engine/spellActions'
 import { RuleRef } from '../rules/RuleRef'
 import { useSettings } from '../../state/settings'
@@ -194,7 +195,7 @@ export function TurnBar() {
       <button
         className="ml-auto rounded-card border-2 border-accent bg-accent/10 px-4 py-1.5 text-sm font-semibold text-accent hover:bg-accent hover:text-accent-text"
         onClick={turn.newTurn}
-        title={t('turn.newTurnHint')}
+        title={`${t('turn.newTurnHint')} (N)`}
       >
         🔄 {t('turn.newTurn')}
       </button>
@@ -364,6 +365,12 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
   const [casting, setCasting] = useState<string>()
   const { quickCast } = useCastSpell()
   const [category, setCategory] = useState<CategoryFilter>('all')
+  useOnResetFilters(
+    useCallback(() => {
+      setFilter('all')
+      setCategory('all')
+    }, []),
+  )
   const typeOk = (r: Row, f: Filter) => f === 'all' || r.actionType === f
   const categoryOk = (r: Row, c: CategoryFilter) => c === 'all' || r.category === c
   const visible = rows.filter((r) => typeOk(r, filter) && categoryOk(r, category))

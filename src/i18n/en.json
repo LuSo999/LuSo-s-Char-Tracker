@@ -569,6 +569,18 @@
     "button": "Keyboard shortcuts",
     "items": [
       [
+        "N",
+        "New turn"
+      ],
+      [
+        "Shift + R",
+        "Reset all filters (actions, spells)"
+      ],
+      [
+        "Ctrl + Z",
+        "Undo the last change"
+      ],
+      [
         "Ctrl + hover",
         "Preview rules of a highlighted name"
       ],
@@ -588,6 +600,8 @@
         "Esc",
         "Cancel editing, close the side panel"
       ]
-    ]
+    ],
+    "filtersReset": "Filters reset",
+    "nothingToUndo": "Nothing to undo"
   }
 }
