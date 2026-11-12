@@ -155,6 +155,23 @@ const spellcastingByClass: Record<string, 'full' | 'half' | 'pact' | 'none'> = {
  * need the spell prepared (Rules Glossary), the Wizard's Ritual Adept allows
  * any ritual in the spellbook.
  */
+/**
+ * When spells may be swapped (the "Changing your spells" rules). 2014: known
+ * casters replace one spell per class level, cantrips never change, prepared
+ * casters change any after a Long Rest. 2024 (SRD 5.2.1 class texts) below.
+ */
+const swap2014 = (known: boolean) => ({ cantrips: 'none', spells: known ? 'levelUp' : 'longRestAll' })
+const swap2024: Record<string, { cantrips: string; spells: string }> = {
+  bard: { cantrips: 'levelUp', spells: 'levelUp' },
+  cleric: { cantrips: 'levelUp', spells: 'longRestAll' },
+  druid: { cantrips: 'levelUp', spells: 'longRestAll' },
+  paladin: { cantrips: 'none', spells: 'longRestOne' },
+  ranger: { cantrips: 'none', spells: 'longRestOne' },
+  sorcerer: { cantrips: 'levelUp', spells: 'levelUp' },
+  warlock: { cantrips: 'levelUp', spells: 'levelUp' },
+  wizard: { cantrips: 'longRestOne', spells: 'longRestAll' },
+}
+
 function casterInfo(edition: Edition, classId: string, ability: string | undefined) {
   if (!ability || !spellcastingByClass[classId]) return undefined
   const known2014 = ['bard', 'ranger', 'sorcerer', 'warlock'].includes(classId)
@@ -166,6 +183,7 @@ function casterInfo(edition: Edition, classId: string, ability: string | undefin
     spellbook: classId === 'wizard',
     preparedFormula: edition === '2014' ? formula2014[classId] : undefined,
     ritual: classId === 'wizard' ? 'book' : edition === '2014' ? (ritual2014[classId] ?? 'none') : 'prepared',
+    swap: edition === '2014' ? swap2014(known2014) : swap2024[classId],
   }
 }
 

@@ -148,6 +148,8 @@ export function longRest(char: Character, content: ContentIndex, opts: { dawn?: 
     deathSaves: { successes: 0, failures: 0 },
   }
   next = rechargeResources(next, sheet, 'longRest', changes)
+  // A Long Rest renews "one spell per Long Rest" replacements (2024 Paladin, Ranger; Wizard cantrips).
+  next = { ...next, spellSwaps: Object.fromEntries(Object.entries(next.spellSwaps).filter(([k]) => !k.endsWith(':longRest'))) }
   next = endStates(next, sheet, changes)
   if (opts.dawn) next = rechargeResources(next, computeSheet(next, content), 'dawn', changes, opts.dawnRolls)
   return { character: next, changes }

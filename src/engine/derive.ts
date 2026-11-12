@@ -139,6 +139,8 @@ export type Sheet = {
   active: ActiveEntity[]
   armorProficiencies: string[]
   weaponProficiencies: string[]
+  toolProficiencies: string[]
+  languages: string[]
   weaponMasteries: string[]
   notes: string[]
   /** Carried weight and capacity in pounds. */
@@ -234,8 +236,12 @@ export function collectActive(char: Character, content: ContentIndex): ActiveEnt
     const ae = out[i]
     for (const choice of ae.entity.choices) {
       if (choice.kind !== 'entity') continue
+      const seen = new Map<string, number>()
       for (const selected of char.choices[choiceKey(ae.grantKey, choice.id)] ?? []) {
-        push(content.get(selected), `${choiceKey(ae.grantKey, choice.id)}=${selected}`, ae.classLevel, ae.classId)
+        // A repeatable option picked again (2024 Agonizing Blast for another cantrip) gets its own key.
+        const n = (seen.get(selected) ?? 0) + 1
+        seen.set(selected, n)
+        push(content.get(selected), `${choiceKey(ae.grantKey, choice.id)}=${selected}${n > 1 ? `#${n}` : ''}`, ae.classLevel, ae.classId)
       }
     }
   }
@@ -271,6 +277,8 @@ type EffectContext = {
  * weapons without Two-Handed or Heavy. 2024 (SRD 5.2.1): Simple melee weapons
  * and Martial melee weapons with the Light property.
  */
+const bgTools = (content: ContentIndex, char: Character) => content.getTyped(char.backgroundId, 'background')?.tools ?? []
+
 export function isMonkWeapon(w: Weapon | undefined, edition: Edition): boolean {
   if (!w || w.range !== 'melee') return false
   const base = w.baseItem ?? w.id
@@ -448,6 +456,17 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     mc?.proficiencies.weapons.forEach((p) => weaponProf.add(p))
   }
 
+  // Tools and languages: class, background, species, and choices.
+  const toolProf = new Set<string>([...primary.proficiencies.tools, ...bgTools(content, char)])
+  for (const entry of char.classes.slice(1)) content.require(entry.classId, 'class').multiclass?.proficiencies.tools.forEach((p) => toolProf.add(p))
+  const languageSet = new Set<string>(content.getTyped(char.speciesId, 'species')?.languages ?? [])
+  for (const ae of active) {
+    for (const choice of ae.entity.choices) {
+      if (choice.kind !== 'tool' && choice.kind !== 'language') continue
+      for (const v of char.choices[choiceKey(ae.grantKey, choice.id)] ?? []) (choice.kind === 'tool' ? toolProf : languageSet).add(v)
+    }
+  }
+
   const skillProf = new Map<Skill, number>()
   const bg = content.require(char.backgroundId, 'background')
   bg.skills.forEach((s) => skillProf.set(s, 1))
@@ -472,6 +491,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     else if (kind === 'save') for (const a of id === 'all' ? abilities : [id as Ability]) saveProf.add(a)
     else if (kind === 'armor') armorProf.add(id)
     else if (kind === 'weapon') weaponProf.add(id)
+    else if (kind === 'tool') toolProf.add(id)
+    else if (kind === 'language') languageSet.add(id)
   }
 
   const d20Penalty = rules.exhaustionD20Penalty(char.exhaustion)
@@ -825,6 +846,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     active,
     armorProficiencies: [...armorProf],
     weaponProficiencies: [...weaponProf],
+    toolProficiencies: [...toolProf],
+    languages: [...languageSet],
     weaponMasteries,
     notes,
     weight,

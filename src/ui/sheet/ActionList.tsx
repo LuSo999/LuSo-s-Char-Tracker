@@ -49,7 +49,7 @@ const sectionOrder = { attack: 0, activity: 1, spell: 2, item: 3 }
 
 function spellRow(r: SpellRow, characterLevel: number, mod: number): Row {
   const s = r.spell
-  const dice = spellDice(s, Math.max(1, s.level), characterLevel, mod)
+  const dice = spellDice(s, Math.max(1, s.level), characterLevel, mod, r.damageBonus)
   const details: React.ReactNode[] = [
     s.level === 0 ? (
       <Term key="lvl" id="rule-cantrip" className="text-xs text-muted">Cantrip</Term>
@@ -70,7 +70,7 @@ function spellRow(r: SpellRow, characterLevel: number, mod: number): Row {
     actionType: s.actionType,
     // Spells that hit or hurt a target with an attack roll or a damaging save, vs every other spell.
     category: s.attack || (s.save && s.damage) ? 'spellAttack' : 'magic',
-    brief: [spellBrief(s), upcastNote(s)].filter(Boolean).join(' '),
+    brief: [spellBrief(s), upcastNote(s), ...r.notes].filter(Boolean).join(' '),
     details,
     available: true,
     order: sectionOrder.spell,

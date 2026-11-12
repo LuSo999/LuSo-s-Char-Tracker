@@ -11,20 +11,20 @@ const withSlot = (id: string, invocation: string) => ({
 const pactLevel = 'min(5, ceil(level / 2))'
 
 const invocations2014: Record<string, Patch> = {
-  'eldritch-invocation-agonizing-blast': {},
+  'eldritch-invocation-agonizing-blast': { effects: [{ target: 'spellDamage:eldritch-blast', value: 'cha' }] },
   'eldritch-invocation-armor-of-shadows': atWill('mage-armor'),
   'eldritch-invocation-beast-speech': atWill('speak-with-animals'),
   'eldritch-invocation-beguiling-influence': { effects: [{ target: 'proficiency:skill:deception', value: 1 }, { target: 'proficiency:skill:persuasion', value: 1 }] },
   'eldritch-invocation-book-of-ancient-secrets': {},
   'eldritch-invocation-devils-sight': {},
   'eldritch-invocation-eldritch-sight': atWill('detect-magic'),
-  'eldritch-invocation-eldritch-spear': {},
+  'eldritch-invocation-eldritch-spear': { effects: [{ target: 'spellNote:eldritch-blast', note: 'Eldritch Spear: range 300 ft' }] },
   'eldritch-invocation-eyes-of-the-rune-keeper': {},
   'eldritch-invocation-fiendish-vigor': atWill('false-life'),
   'eldritch-invocation-gaze-of-two-minds': { activities: [{ id: 'use', name: 'Gaze of Two Minds', actionType: 'action', summary: 'Touch a willing humanoid: perceive through its senses until the end of your next turn (action to extend).' }] },
   'eldritch-invocation-mask-of-many-faces': atWill('disguise-self'),
   'eldritch-invocation-misty-visions': atWill('silent-image'),
-  'eldritch-invocation-repelling-blast': {},
+  'eldritch-invocation-repelling-blast': { effects: [{ target: 'spellNote:eldritch-blast', note: 'Repelling Blast: on a hit push the creature up to 10 ft away' }] },
   'eldritch-invocation-thief-of-five-fates': withSlot('bane', 'thief-of-five-fates'),
   'eldritch-invocation-voice-of-the-chain-master': {},
   'eldritch-invocation-mire-the-mind': withSlot('slow', 'mire-the-mind'),
@@ -48,8 +48,14 @@ const invocations2014: Record<string, Patch> = {
 }
 
 type Inv = [id: string, name: string, text: string, patch?: Patch]
+/** The cantrip a repeatable invocation applies to: one you know that meets its prerequisite (filled in by the overlay). */
+const cantripChoice = { id: 'cantrip', label: 'Cantrip', kind: 'spell', spellLevel: 0, knownOnly: true, fromPrerequisite: true }
 const invocations2024: Inv[] = [
-  ['agonizing-blast', 'Agonizing Blast', 'Prerequisite: Warlock 2, a damaging Warlock cantrip. Add your Charisma modifier to that cantrip’s damage rolls. Repeatable.'],
+  ['agonizing-blast', 'Agonizing Blast', 'Prerequisite: Warlock 2, a damaging Warlock cantrip. Add your Charisma modifier to that cantrip’s damage rolls. Repeatable.', {
+    repeatable: true,
+    choices: [cantripChoice],
+    effects: [{ target: 'spellDamage:@cantrip', value: 'cha' }],
+  }],
   ['armor-of-shadows', 'Armor of Shadows', 'Cast Mage Armor on yourself without a spell slot.', atWill('mage-armor')],
   ['ascendant-step', 'Ascendant Step', 'Prerequisite: Warlock 5. Cast Levitate on yourself without a spell slot.', atWill('levitate')],
   ['devils-sight', "Devil's Sight", 'Prerequisite: Warlock 2. See normally in Dim Light and Darkness, magical or not, within 120 ft.'],
@@ -58,7 +64,11 @@ const invocations2024: Inv[] = [
   ['eldritch-smite', 'Eldritch Smite', 'Prerequisite: Warlock 5, Pact of the Blade. Once per turn on a pact weapon hit: spend a Pact slot for 1d8 Force + 1d8 per slot level; Huge or smaller target falls Prone.', {
     activities: [{ id: 'use', name: 'Eldritch Smite', actionType: 'other', attack: true, perTurn: 1, cost: [{ resource: 'pact' }], roll: { dice: { count: `${pactLevel} + 1`, die: 8 }, kind: 'damage' }, fx: 'magic', summary: 'Pact weapon hit: spend a Pact slot for Force damage; Huge or smaller target falls Prone.' }],
   }],
-  ['eldritch-spear', 'Eldritch Spear', 'Prerequisite: Warlock 2, a damaging Warlock cantrip with 10+ ft range. Its range increases by 30 ft × Warlock level. Repeatable.'],
+  ['eldritch-spear', 'Eldritch Spear', 'Prerequisite: Warlock 2, a damaging Warlock cantrip with 10+ ft range. Its range increases by 30 ft × Warlock level. Repeatable.', {
+    repeatable: true,
+    choices: [cantripChoice],
+    effects: [{ target: 'spellNote:@cantrip', value: '30 * level', note: 'Eldritch Spear: range +{value} ft' }],
+  }],
   ['fiendish-vigor', 'Fiendish Vigor', 'Prerequisite: Warlock 2. Cast False Life on yourself without a spell slot; you get the maximum Temp HP.', atWill('false-life')],
   ['gaze-of-two-minds', 'Gaze of Two Minds', 'Prerequisite: Warlock 5. Bonus Action: perceive through a willing creature’s senses until the end of your next turn; cast spells from its space within 60 ft.', {
     activities: [{ id: 'use', name: 'Gaze of Two Minds', actionType: 'bonusAction', fx: 'magic', summary: 'Touch a willing creature: perceive through its senses until the end of your next turn (Bonus Action to extend).' }],
@@ -70,6 +80,7 @@ const invocations2024: Inv[] = [
   ['gift-of-the-protectors', 'Gift of the Protectors', 'Prerequisite: Warlock 9, Pact of the Tome. Creatures named in your Book of Shadows drop to 1 HP instead of 0, once per Long Rest.'],
   ['investment-of-the-chain-master', 'Investment of the Chain Master', 'Prerequisite: Warlock 5, Pact of the Chain. Your familiar gets a Fly or Swim Speed of 40 ft, attacks on your Bonus Action, can deal Necrotic or Radiant, uses your save DC; Reaction to give it Resistance.'],
   ['lessons-of-the-first-ones', 'Lessons of the First Ones', 'Prerequisite: Warlock 2. Gain one Origin feat. Repeatable.', {
+    repeatable: true,
     choices: [{ id: 'feat', label: 'Origin feat', kind: 'entity', from: { type: 'feat', tags: ['origin'] } }],
   }],
   ['lifedrinker', 'Lifedrinker', 'Prerequisite: Warlock 9, Pact of the Blade. Once per turn on a pact weapon hit: +1d6 Necrotic, Psychic or Radiant, and you can spend a Hit Point Die to heal.', {
@@ -91,7 +102,11 @@ const invocations2024: Inv[] = [
     ],
     spells: [{ fromChoice: 'cantrips' }, { fromChoice: 'rituals' }],
   }],
-  ['repelling-blast', 'Repelling Blast', 'Prerequisite: Warlock 2, a Warlock attack-roll cantrip. On a hit push a Large or smaller creature 10 ft. Repeatable.'],
+  ['repelling-blast', 'Repelling Blast', 'Prerequisite: Warlock 2, a Warlock attack-roll cantrip. On a hit push a Large or smaller creature 10 ft. Repeatable.', {
+    repeatable: true,
+    choices: [cantripChoice],
+    effects: [{ target: 'spellNote:@cantrip', note: 'Repelling Blast: on a hit push a Large or smaller creature 10 ft' }],
+  }],
   ['thirsting-blade', 'Thirsting Blade', 'Prerequisite: Warlock 5, Pact of the Blade. Extra Attack with your pact weapon.', { effects: [{ target: 'attacksPerAction', op: 'max', value: 2 }] }],
   ['visions-of-distant-realms', 'Visions of Distant Realms', 'Prerequisite: Warlock 9. Cast Arcane Eye without a spell slot.', atWill('arcane-eye')],
   ['whispers-of-the-grave', 'Whispers of the Grave', 'Prerequisite: Warlock 7. Cast Speak with Dead without a spell slot.', atWill('speak-with-dead')],

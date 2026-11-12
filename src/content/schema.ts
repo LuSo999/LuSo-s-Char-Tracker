@@ -227,6 +227,8 @@ export const Choice = z.object({
   classesFromChoice: z.string().optional(),
   /** For kind "skill": grants expertise instead of proficiency. */
   expertise: z.boolean().optional(),
+  /** For kind "spell": only spells the character already knows may be picked. */
+  knownOnly: z.boolean().optional(),
   /** Either this choice or the named one is made (2014: a feat instead of the Ability Score Improvement). */
   alternativeTo: z.string().optional(),
 })
@@ -309,6 +311,8 @@ export const Feature = z.object({
   optionOf: z.string().optional(),
   actionType: ActionType.optional(),
   prerequisite: Prerequisite.optional(),
+  /** Can be picked more than once in a choice (2024 Agonizing Blast, for another cantrip). */
+  repeatable: z.boolean().optional(),
 })
 export type Feature = z.infer<typeof Feature>
 
@@ -316,6 +320,9 @@ export const ClassLevel = z.object({
   level: z.number().int().min(1).max(20),
   features: z.array(z.string()).default([]),
 })
+
+export const SwapRule = z.enum(['none', 'levelUp', 'longRestOne', 'longRestAll'])
+export type SwapRule = z.infer<typeof SwapRule>
 
 export const SpellcastingProgression = z.enum(['none', 'full', 'half', 'third', 'pact'])
 
@@ -359,6 +366,14 @@ export const Class = z.object({
       preparedFormula: z.string().optional(),
       /** Which spells can be cast as rituals: prepared/known ones, any in the spellbook, or none. */
       ritual: z.enum(['none', 'prepared', 'book']),
+      /**
+       * When spells may be replaced: never, one per class level gained, one
+       * per Long Rest, or any after a Long Rest. Adding up to the limits is
+       * always fine; this governs removing one.
+       */
+      swap: z
+        .object({ cantrips: SwapRule, spells: SwapRule })
+        .default({ cantrips: 'none', spells: 'longRestAll' }),
     })
     .optional(),
   /** Per class level: cantrips known, spells known/prepared, slots of levels 1–9 (Pact Magic: slots of one level). */

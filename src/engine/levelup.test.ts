@@ -1,6 +1,8 @@
 // Milestone 9: level up, multiclassing, and choices the character still has to make.
 import { describe, expect, it } from 'vitest'
 import type { ActionResult } from './actions'
+import { longRest } from './rest'
+import { setClassSpell } from './spellActions'
 import type { Character, CharacterInput } from './character'
 import { choiceKey, computeSheet } from './derive'
 import { makeCharacter, srd } from './fixtures'
@@ -196,5 +198,107 @@ describe('Pending choices', () => {
         expect(left.map((p) => (p.kind === 'choice' ? `${edition} ${cls.id}: ${p.ae.entity.id}/${p.choice.id}` : '')), `${edition} ${cls.id}`).toEqual([])
       }
     }
+  })
+})
+
+describe('Spell limits and replacing spells', () => {
+  const wizard = (level: number, known: string[], extra: Partial<CharacterInput> = {}) =>
+    hero('2024', 'wizard', level, { baseScores: { str: 8, dex: 14, con: 14, int: 16, wis: 12, cha: 10 }, spells: { wizard: { known, prepared: [] } }, ...extra })
+  const level1 = ['magic-missile', 'spell-shield', 'sleep', 'mage-armor', 'thunderwave', 'detect-magic']
+
+  it('Wizard: the spellbook gets two spells per level; more only by copying', () => {
+    const c = wizard(2, [...level1, 'feather-fall'])
+    const s = computeSheet(c, c24)
+    expect(s.spellcasting.casters[0].spellbookMax).toBe(8)
+    const eighth = okR(setClassSpell(c, s, c24, 'wizard', 'known', 'burning-hands', true))
+    const s2 = computeSheet(eighth, c24)
+    const ninth = setClassSpell(eighth, s2, c24, 'wizard', 'known', 'charm-person', true)
+    expect(!ninth.ok && ninth.error).toBe('spellbookFull')
+    const copied = setClassSpell(eighth, s2, c24, 'wizard', 'known', 'charm-person', true, true)
+    expect(copied.ok && copied.items[0]).toMatchObject({ type: 'spellCopied', params: { gp: 50, hours: 2 } })
+    // A level up brings two more.
+    const up = okR(levelUp(eighth, c24, 'wizard', null))
+    expect(setClassSpell(up, computeSheet(up, c24), c24, 'wizard', 'known', 'charm-person', true).ok).toBe(true)
+  })
+
+  it('Wizard: spells never leave the spellbook; prepared ones change freely', () => {
+    const c = wizard(1, level1, { spells: { wizard: { known: level1, prepared: ['spell-shield'] } } })
+    const s = computeSheet(c, c24)
+    const r = setClassSpell(c, s, c24, 'wizard', 'known', 'spell-shield', false)
+    expect(!r.ok && r.error).toBe('spellbookRemove')
+    expect(setClassSpell(c, s, c24, 'wizard', 'prepared', 'spell-shield', false).ok).toBe(true)
+  })
+
+  it('2024 Sorcerer: one spell replaced per level gained, renewed by Level up', () => {
+    const c = hero('2024', 'sorcerer', 3, { spells: { sorcerer: { known: [], prepared: ['spell-shield', 'magic-missile', 'sleep', 'burning-hands'] } } })
+    const s = computeSheet(c, c24)
+    const once = okR(setClassSpell(c, s, c24, 'sorcerer', 'prepared', 'sleep', false))
+    const twice = setClassSpell(once, computeSheet(once, c24), c24, 'sorcerer', 'prepared', 'spell-shield', false)
+    expect(!twice.ok && twice.error).toBe('swapUsed.levelUp')
+    const up = okR(levelUp(once, c24, 'sorcerer', null))
+    expect(setClassSpell(up, computeSheet(up, c24), c24, 'sorcerer', 'prepared', 'spell-shield', false).ok).toBe(true)
+  })
+
+  it('2024 Paladin: one per Long Rest; 2014 Cleric: any; 2014 cantrips never', () => {
+    const pal = hero('2024', 'paladin', 3, { spells: { paladin: { known: [], prepared: ['bless', 'cure-wounds'] } } })
+    const once = okR(setClassSpell(pal, computeSheet(pal, c24), c24, 'paladin', 'prepared', 'bless', false))
+    expect(setClassSpell(once, computeSheet(once, c24), c24, 'paladin', 'prepared', 'cure-wounds', false).ok).toBe(false)
+    const rested = longRest(once, c24).character
+    expect(setClassSpell(rested, computeSheet(rested, c24), c24, 'paladin', 'prepared', 'cure-wounds', false).ok).toBe(true)
+
+    const cleric = hero('2014', 'cleric', 3, { spells: { cleric: { known: ['guidance'], prepared: ['bless', 'cure-wounds'] } } })
+    const cs = computeSheet(cleric, c14)
+    const a = okR(setClassSpell(cleric, cs, c14, 'cleric', 'prepared', 'bless', false))
+    expect(setClassSpell(a, computeSheet(a, c14), c14, 'cleric', 'prepared', 'cure-wounds', false).ok).toBe(true)
+    const cantrip = setClassSpell(cleric, cs, c14, 'cleric', 'known', 'guidance', false)
+    expect(!cantrip.ok && cantrip.error).toBe('swapCantripsNone')
+  })
+})
+
+describe('Invocations that apply to a cantrip', () => {
+  it('2024 Agonizing Blast can be taken twice, once per cantrip; adds Charisma to its damage', () => {
+    let c = hero('2024', 'warlock', 5, { baseScores: { str: 8, dex: 14, con: 14, int: 10, wis: 12, cha: 16 }, spells: { warlock: { known: ['eldritch-blast', 'poison-spray'], prepared: [] } } })
+    let s = computeSheet(c, c24)
+    const inv = allChoices(c, s).find((x) => x.choice.id === 'invocations')!
+    c = okR(setChoiceValues(c, c24, inv.ae, inv.choice, ['invocation-agonizing-blast', 'invocation-agonizing-blast']))
+    s = computeSheet(c, c24)
+    const blasts = allChoices(c, s).filter((x) => x.ae.entity.id === 'invocation-agonizing-blast')
+    expect(blasts.map((b) => b.ae.grantKey)).toEqual([expect.stringMatching(/=invocation-agonizing-blast$/), expect.stringMatching(/#2$/)])
+    const opts = choiceOptions(c, c24, s, blasts[0].ae, blasts[0].choice)
+    expect(opts.find((o) => o.id === 'chill-touch')?.blocked).toBe('notKnown')
+    c = okR(setChoiceValues(c, c24, blasts[0].ae, blasts[0].choice, ['eldritch-blast']))
+    c = okR(setChoiceValues(c, c24, blasts[1].ae, blasts[1].choice, ['poison-spray']))
+    const rows = computeSheet(c, c24).spellcasting.rows
+    expect(rows.find((r) => r.spell.id === 'eldritch-blast')?.damageBonus).toBe(3)
+    expect(rows.find((r) => r.spell.id === 'poison-spray')?.damageBonus).toBe(3)
+  })
+
+  it('2014 Agonizing Blast and Eldritch Spear change Eldritch Blast', () => {
+    const c = hero('2014', 'warlock', 2, {
+      baseScores: { str: 8, dex: 14, con: 14, int: 10, wis: 12, cha: 16 },
+      spells: { warlock: { known: ['eldritch-blast'], prepared: [] } },
+      choices: { 'eldritch-invocations/invocations': ['eldritch-invocation-agonizing-blast', 'eldritch-invocation-eldritch-spear'] },
+    })
+    const row = computeSheet(c, c14).spellcasting.rows.find((r) => r.spell.id === 'eldritch-blast')!
+    expect(row.damageBonus).toBe(3)
+    expect(row.notes).toEqual(['Eldritch Spear: range 300 ft'])
+  })
+})
+
+describe('Proficiencies and text prerequisites', () => {
+  it('tools from class and background; languages from species and choices', () => {
+    const c = hero('2014', 'rogue', 1, { speciesId: 'dwarf' })
+    const s = computeSheet(c, c14)
+    expect(s.toolProficiencies).toContain('thieves-tools')
+    expect(s.languages).toEqual(expect.arrayContaining(['common', 'dwarvish']))
+  })
+
+  it('Epic boons that need Spellcasting are blocked for a non-caster', () => {
+    const c = okR(setSubclass(hero('2024', 'fighter', 19), c24, 'fighter', 'champion'))
+    const s = computeSheet(c, c24)
+    const boon = allChoices(c, s).find((x) => x.ae.entity.id === 'fighter-epic-boon')!
+    const opts = Object.fromEntries(choiceOptions(c, c24, s, boon.ae, boon.choice).map((o) => [o.id, o.blocked]))
+    expect(opts['boon-of-spell-recall']).toBe('Spellcasting feature')
+    expect(opts['boon-of-fate']).toBeUndefined()
   })
 })

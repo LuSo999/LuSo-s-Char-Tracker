@@ -335,6 +335,12 @@ function invocationPrerequisites2024(byId: Map<string, Raw>, problems: string[])
       }
     }
     e.prerequisite = pre
+    // Repeatable invocations pick the cantrip they apply to from the qualifying ones.
+    for (const c of e.choices ?? []) {
+      if (!c.fromPrerequisite) continue
+      delete c.fromPrerequisite
+      c.options = pre.spells
+    }
   }
 }
 

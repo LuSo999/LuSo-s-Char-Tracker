@@ -7,10 +7,10 @@
 // down in 2014, rounded up in 2024 — and read the Multiclass Spellcaster
 // table (the full-caster slot table). Pact Magic slots stay separate.
 import type { ContentIndex } from '../content'
-import type { Ability, Class, Resource, Spell } from '../content/schema'
+import type { Ability, Class, Resource, Spell, SwapRule } from '../content/schema'
 import type { Character } from './character'
 import { selections, type ActiveEntity, type Value } from './derive'
-import { evalFormula, type FormulaVars } from './formula'
+import { evalFormula, resolveScaled, type FormulaVars } from './formula'
 
 export type CasterState = {
   classId: string
@@ -34,6 +34,11 @@ export type CasterState = {
   pact: boolean
   /** Extra spells on this class's list (2014 Fiend: Expanded Spell List). */
   expanded: string[]
+  /** Wizard: spells the spellbook gets for free (6 + 2 per level); more only by copying. */
+  spellbookMax?: number
+  /** When cantrips / spells may be replaced, and how many replacements are used up. */
+  swap: { cantrips: SwapRule; spells: SwapRule }
+  swapsUsed: { cantrips: number; spells: number }
 }
 
 export type SpellRow = {
@@ -60,6 +65,10 @@ export type SpellRow = {
   limit?: string
   /** Level of the free cast, if higher than the spell's own. */
   freeLevel?: number
+  /** Added to the damage (Agonizing Blast: Charisma modifier). */
+  damageBonus?: number
+  /** What features change about it (Eldritch Spear: range +30 ft per level). */
+  notes: string[]
 }
 
 export type SlotLevel = { level: number; max: number; key: string }
@@ -84,6 +93,14 @@ function tableRow(cls: Class, level: number) {
   for (let l = 1; l <= level; l++) row = cls.spellTable[l] ?? row
   return row
 }
+
+/** Expected spellbook size of a Wizard: 6 at level 1, +2 per Wizard level. */
+export const spellbookSize = (level: number) => 6 + 2 * (level - 1)
+
+/** Key of a swap counter in Character.spellSwaps. */
+export const swapKey = (classId: string, what: 'cantrips' | 'spells', rule: SwapRule) => `${classId}:${what}:${rule === 'levelUp' ? 'levelUp' : 'longRest'}`
+
+const swapsUsed = (char: Character, classId: string, what: 'cantrips' | 'spells', rule: SwapRule) => char.spellSwaps[swapKey(classId, what, rule)] ?? 0
 
 export function computeSpellcasting(
   char: Character,
@@ -122,6 +139,9 @@ export function computeSpellcasting(
       known: state.known.filter((id) => !isCantrip(id)),
       prepared: state.prepared,
       pact: cls.spellcasting === 'pact',
+      spellbookMax: cls.caster.spellbook ? spellbookSize(entry.level) : undefined,
+      swap: cls.caster.swap,
+      swapsUsed: { cantrips: swapsUsed(char, cls.id, 'cantrips', cls.caster.swap.cantrips), spells: swapsUsed(char, cls.id, 'spells', cls.caster.swap.spells) },
       expanded: active.filter((ae) => ae.classId === cls.id).flatMap((ae) => ae.entity.expandedSpells ?? []),
     })
   }
@@ -166,7 +186,7 @@ export function computeSpellcasting(
       if (!castable && !canRitual) continue
       rows.push({
         key: `${c.classId}:${id}`, spell, classId: c.classId, ability: c.ability, dc: c.dc, attackBonus: c.attack,
-        castable, always: false, ritualOnly: !castable, canRitual,
+        castable, always: false, ritualOnly: !castable, canRitual, notes: [],
       })
     }
   }
@@ -191,7 +211,23 @@ export function computeSpellcasting(
           atWill: 'atWill' in g ? g.atWill : undefined,
           limit: 'limit' in g ? g.limit : undefined,
           freeLevel: 'freeLevel' in g ? g.freeLevel : undefined,
+          notes: [],
         })
+      }
+    }
+  }
+
+  // Features that change particular spells: "spellDamage:<id>" / "spellNote:<id>"; "@<choice>" means the spells picked in that choice.
+  for (const ae of active) {
+    for (const effect of ae.entity.effects) {
+      const m = /^spell(Damage|Note):(.+)$/.exec(effect.target)
+      if (!m) continue
+      const ids = m[2].startsWith('@') ? selections(char, ae, m[2].slice(1)) : [m[2]]
+      const vars: FormulaVars = { ...ctx.mods, pb: ctx.pb, level: ae.classLevel, classLevel: ae.classLevel, characterLevel: ctx.characterLevel }
+      const value = resolveScaled(effect.value, vars)
+      for (const row of rows.filter((r) => ids.includes(r.spell.id))) {
+        if (m[1] === 'Damage') row.damageBonus = (row.damageBonus ?? 0) + value
+        if (effect.note) row.notes.push(effect.note.replace('{value}', String(value)))
       }
     }
   }
@@ -202,14 +238,15 @@ export function computeSpellcasting(
 }
 
 /** Damage or healing dice for a spell at a slot level (cantrips: by character level); "MOD" becomes the modifier. */
-export function spellDice(spell: Spell, slotLevel: number, characterLevel: number, mod: number): { damage?: string; heal?: string } {
+export function spellDice(spell: Spell, slotLevel: number, characterLevel: number, mod: number, damageBonus = 0): { damage?: string; heal?: string } {
   const pick = (table: Record<string, string>, at: number) => {
     let v: string | undefined
     for (const [k, d] of Object.entries(table).sort((a, b) => Number(a[0]) - Number(b[0]))) if (Number(k) <= at) v = d
     return v ?? Object.values(table)[0]
   }
   const withMod = (s: string | undefined) => s?.replace(/\s*\+\s*MOD/, mod ? (mod > 0 ? `+${mod}` : `${mod}`) : '')
-  const damage = spell.damage ? `${pick(spell.damage.dice, spell.damage.by === 'character' ? characterLevel : slotLevel)} ${spell.damage.type}` : undefined
+  const bonus = damageBonus ? (damageBonus > 0 ? `+${damageBonus}` : `${damageBonus}`) : ''
+  const damage = spell.damage ? `${pick(spell.damage.dice, spell.damage.by === 'character' ? characterLevel : slotLevel)}${bonus} ${spell.damage.type}` : undefined
   const heal = spell.heal ? withMod(pick(spell.heal, slotLevel)) : undefined
   return { damage, heal }
 }

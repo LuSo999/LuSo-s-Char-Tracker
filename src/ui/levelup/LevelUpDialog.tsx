@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { HistoryItem } from '../../engine/actions'
 import type { Character } from '../../engine/character'
 import { computeSheet } from '../../engine/derive'
-import { levelDown, levelUp, levelUpOptions, MAX_LEVEL, mergeItems, pendingId, setMulticlass } from '../../engine/levelup'
+import { levelDown, levelUp, levelUpOptions, MAX_LEVEL, mergeItems, pendingId, setMulticlass, type Pending } from '../../engine/levelup'
 import type { CharacterStore } from '../../state/history'
 import { itemText } from '../history/text'
 import { RuleRef } from '../rules/RuleRef'
@@ -13,9 +13,9 @@ import { Dialog } from '../sheet/RestDialog'
 import { PendingCard } from './ChoiceCards'
 import { useDecisions } from './useDecisions'
 
-function DecisionList() {
+function DecisionList(opts: { also?: (p: Pending) => boolean; all?: boolean }) {
   const { t } = useTranslation()
-  const { list, open } = useDecisions()
+  const { list, open } = useDecisions(opts)
   if (!list.length) return <p className="text-sm text-muted">{t('levelUp.nothingToChoose')}</p>
   return (
     <div className="space-y-2">
@@ -28,11 +28,16 @@ function DecisionList() {
 }
 
 /** Choices the character still has to make (from the ⚠️ badge). Changes save right away. */
-export function ChoicesDialog({ onClose }: { onClose: () => void }) {
+export function ChoicesDialog({ onClose, all: allFirst = false }: { onClose: () => void; all?: boolean }) {
   const { t } = useTranslation()
+  const [all, setAll] = useState(allFirst)
   return (
     <Dialog title={t('levelUp.choicesTitle')} onClose={onClose} wide>
-      <DecisionList />
+      <label className="mb-2 flex items-center gap-2 text-xs">
+        <input type="checkbox" checked={all} onChange={(e) => setAll(e.target.checked)} />
+        {t('levelUp.showMade')}
+      </label>
+      <DecisionList all={all} />
       <div className="mt-4 flex justify-end">
         <button className="rounded bg-accent px-3 py-1.5 text-sm font-semibold text-accent-text" onClick={onClose}>
           {t('edit.done')}
@@ -211,6 +216,7 @@ export function LevelUpDialog({ onClose }: { onClose: () => void }) {
         <DraftProvider draft={draft} setDraft={setDraft}>
           {step === 'choices' ? (
             <ChoicesStep
+              classId={classId}
               items={draft.items}
               onBack={() => {
                 setDraftState(undefined)
@@ -227,7 +233,7 @@ export function LevelUpDialog({ onClose }: { onClose: () => void }) {
   )
 }
 
-function ChoicesStep({ items, onBack, onNext }: { items: HistoryItem[]; onBack: () => void; onNext: () => void }) {
+function ChoicesStep({ classId, items, onBack, onNext }: { classId: string; items: HistoryItem[]; onBack: () => void; onNext: () => void }) {
   const { t } = useTranslation()
   const { content } = useSheet()
   const gained = items.filter((i) => i.type === 'featureGained')
@@ -252,7 +258,8 @@ function ChoicesStep({ items, onBack, onNext }: { items: HistoryItem[]; onBack: 
         <p className="mb-4 text-sm text-muted">{t('levelUp.noNewFeatures')}</p>
       )}
       <h3 className="mb-1 text-sm font-semibold">{t('levelUp.choices')}</h3>
-      <DecisionList />
+      {/* A new level also lets you swap what the rules allow then: invocations, metamagic, spells. */}
+      <DecisionList also={(p) => (p.kind === 'choice' ? p.choice.changeable === 'levelUp' && p.ae.classId === classId : p.kind === 'spells' && p.classId === classId)} />
       <div className="mt-4 flex items-center gap-2">
         <button className="rounded border border-border px-3 py-1.5 text-sm hover:bg-bg" onClick={onBack}>
           ‹ {t('levelUp.back')}

@@ -77,7 +77,34 @@ export function AbilitiesPanel({ sheet }: { sheet: Sheet; content: ContentIndex 
           )
         })}
       </ul>
+      <Proficiencies sheet={sheet} />
     </Panel>
+  )
+}
+
+/** Armor, weapons, tools and languages, like the paper sheet's "Other proficiencies & languages". */
+function Proficiencies({ sheet }: { sheet: Sheet }) {
+  const { t } = useTranslation()
+  const { content } = useSheet()
+  const name = (id: string) => content.get(id)?.name ?? content.get(`${id}-armor`)?.name ?? id.replace(/-/g, ' ')
+  const rows: [string, string[]][] = [
+    [t('sheet.prof.armor'), sheet.armorProficiencies.map(name)],
+    [t('sheet.prof.weapons'), sheet.weaponProficiencies.map(name)],
+    [t('sheet.prof.tools'), sheet.toolProficiencies.map(name)],
+    [t('sheet.prof.languages'), sheet.languages.map((l) => l.replace(/-/g, ' '))],
+  ]
+  return (
+    <>
+      <h3 className="mt-2 mb-0.5 text-xs font-semibold uppercase text-muted">{t('sheet.prof.title')}</h3>
+      <dl className="space-y-0.5 text-xs">
+        {rows.map(([label, list]) => (
+          <div key={label}>
+            <dt className="inline font-semibold">{label}: </dt>
+            <dd className="inline capitalize text-muted">{list.length ? list.join(', ') : '—'}</dd>
+          </div>
+        ))}
+      </dl>
+    </>
   )
 }
 

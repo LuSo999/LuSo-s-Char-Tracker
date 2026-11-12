@@ -82,8 +82,7 @@ export function allChoices(char: Character, sheet: Sheet): PendingChoice[] {
   return out
 }
 
-/** Expected spellbook size of a Wizard: 6 at level 1, +2 per level. */
-export const spellbookSize = (level: number) => 6 + 2 * (level - 1)
+export { spellbookSize } from './spells'
 
 /**
  * Every decision the character has: subclasses (from their level on), all
@@ -99,10 +98,7 @@ export function allDecisions(char: Character, content: ContentIndex, sheet: Shee
   for (const c of sheet.spellcasting.casters) {
     const missing: PendingSpells['missing'] = []
     if (c.cantrips.length < c.cantripsMax) missing.push({ what: 'cantrips', count: c.cantripsMax - c.cantrips.length })
-    if (c.spellbook) {
-      const size = spellbookSize(c.level)
-      if (c.known.length < size) missing.push({ what: 'spellbook', count: size - c.known.length })
-    }
+    if (c.spellbookMax && c.known.length < c.spellbookMax) missing.push({ what: 'spellbook', count: c.spellbookMax - c.known.length })
     const counted = c.mode === 'known' ? c.known.length : c.prepared.length
     if (counted < c.spellsMax) missing.push({ what: c.mode === 'known' ? 'known' : 'prepared', count: c.spellsMax - counted })
     out.push({ kind: 'spells', classId: c.classId, className: c.name, missing })
@@ -137,6 +133,27 @@ export type Option = {
   entity?: Entity
   /** Why it can't be picked (a prerequisite isn't met, already taken). */
   blocked?: string
+  /** A requirement the app can't check (shown for the player to check). */
+  note?: string
+  /** Can be picked more than once. */
+  repeatable?: boolean
+}
+
+/** Every spell the character knows or can cast (class lists and granted spells). */
+const knownSpells = (char: Character, sheet: Sheet) =>
+  new Set([...Object.values(char.spells).flatMap((s) => s.known), ...sheet.spellcasting.rows.map((r) => r.spell.id)])
+
+/** Prerequisites written as text that the app still understands. */
+const textChecks: [RegExp, (sheet: Sheet) => boolean][] = [
+  [/^(Spellcasting|Pact Magic)( or (Spellcasting|Pact Magic))? feature$/i, (sheet) => sheet.spellcasting.casters.length > 0],
+  [/^Fighting Style feature$/i, (sheet) => sheet.active.some((ae) => /fighting-style/.test(ae.entity.id))],
+]
+
+/** A text-only prerequisite the app can't check, if any. */
+export function uncheckedPrerequisite(pre: Prerequisite | undefined): string | undefined {
+  // Texts that only restate the checked fields ("Warlock 5, Pact of the Blade", "level 5") need no warning.
+  if (!pre?.text || pre.features || pre.spells || /^(level|[A-Z][a-z]+) \d+$/.test(pre.text)) return undefined
+  return textChecks.some(([re]) => re.test(pre.text!)) ? undefined : pre.text
 }
 
 /** Unmet prerequisites as short texts; empty when everything is met. */
@@ -148,12 +165,11 @@ export function unmetPrerequisites(pre: Prerequisite | undefined, char: Characte
   const activeIds = new Set(sheet.active.map((ae) => ae.entity.id))
   for (const f of pre.features ?? []) if (!activeIds.has(f)) out.push(f)
   if (pre.spells?.length) {
-    const known = new Set([
-      ...Object.values(char.spells).flatMap((s) => s.known),
-      ...sheet.spellcasting.rows.map((r) => r.spell.id),
-    ])
+    const known = knownSpells(char, sheet)
     if (!pre.spells.some((s) => known.has(s))) out.push(pre.spells.join(' / '))
   }
+  const check = pre.text ? textChecks.find(([re]) => re.test(pre.text!)) : undefined
+  if (check && !check[1](sheet)) out.push(pre.text!)
   return out
 }
 
@@ -178,7 +194,7 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
           const unmet = unmetPrerequisites(pre, char, sheet, level)
           const repeatable = 'repeatable' in e && e.repeatable === true
           const blocked = chosen.has(e.id) ? undefined : unmet.length ? unmet.join(', ') : taken.has(e.id) && !repeatable ? 'taken' : undefined
-          return { id: e.id, label: e.name, entity: e, blocked }
+          return { id: e.id, label: e.name, entity: e, blocked, repeatable, note: uncheckedPrerequisite(pre) }
         })
         .sort((a, b) => Number(!!a.blocked) - Number(!!b.blocked) || a.label.localeCompare(b.label))
     }
@@ -208,8 +224,14 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
         })
         .sort((a, b) => Number(!!a.blocked) - Number(!!b.blocked) || a.label.localeCompare(b.label))
     }
-    case 'language':
-      return (choice.options ?? languages[char.edition]).map((l) => ({ id: l, label: l }))
+    case 'language': {
+      // Stored like species languages: "deep-speech"; already known ones are blocked.
+      const known = new Set(sheet.languages)
+      return (choice.options ?? languages[char.edition]).map((l) => {
+        const id = l.toLowerCase().replace(/[^a-z]+/g, '-')
+        return { id, label: l, blocked: known.has(id) && !chosen.has(id) ? 'taken' : undefined }
+      })
+    }
     case 'tool':
       return (choice.options ?? content.all('item').flatMap((i) => (i.kind === 'tool' ? [i.id] : []))).map((id) => ({ id, label: content.get(id)?.name ?? id, entity: content.get(id) }))
     case 'option':
@@ -221,11 +243,12 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
       const maxLevel = sheet.spellcasting.casters.find((c) => c.classId === ae.classId)?.maxSpellLevel ?? 9
       const levelOk = (l: number) => (choice.spellLevel === undefined ? l <= maxLevel : l === choice.spellLevel)
       const lists = choice.classesFromChoice ? (char.choices[choiceKey(ae.grantKey, choice.classesFromChoice)] ?? []) : (choice.spellClasses ?? [])
+      const known = choice.knownOnly ? knownSpells(char, sheet) : undefined
       return content
         .all('spell')
-        .filter((s) => levelOk(s.level) && (!lists.length || s.classes.some((k) => lists.includes(k))))
+        .filter((s) => (choice.options ? choice.options.includes(s.id) : levelOk(s.level) && (!lists.length || s.classes.some((k) => lists.includes(k)))))
         .sort((a, b) => a.name.localeCompare(b.name))
-        .map((s) => ({ id: s.id, label: s.name, entity: s }))
+        .map((s) => ({ id: s.id, label: s.name, entity: s, blocked: known && !known.has(s.id) && !chosen.has(s.id) ? 'notKnown' : undefined }))
     }
   }
 }
@@ -355,7 +378,9 @@ export function levelUp(char: Character, content: ContentIndex, classId: string,
     ? char.classes.map((c) => (c === existing ? { ...c, level: c.level + 1, hpRolls: [...c.hpRolls, hpRoll] } : c))
     : [...char.classes, { classId, level: 1, hpRolls: [hpRoll] }]
   const levelOrder = [...(char.levelOrder.length ? char.levelOrder : impliedOrder(char)), classId]
-  let next: Character = { ...char, classes, levelOrder }
+  // Gaining a class level renews that class's "one spell per level" replacements.
+  const spellSwaps = Object.fromEntries(Object.entries(char.spellSwaps).filter(([k]) => !(k.startsWith(`${classId}:`) && k.endsWith(':levelUp'))))
+  let next: Character = { ...char, classes, levelOrder, spellSwaps }
   const after = computeSheet(next, content)
   const gained = after.hpMax.value - before.hpMax.value
   next = { ...next, hp: { ...next.hp, current: Math.max(0, next.hp.current + gained) } }

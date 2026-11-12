@@ -111,7 +111,14 @@
     "deathSaveRoll": "Death save roll (d20)",
     "roll": "Roll",
     "hpMax": "Hit point maximum",
-    "endState": "End {{name}}"
+    "endState": "End {{name}}",
+    "prof": {
+      "title": "Proficiencies & languages",
+      "armor": "Armor",
+      "weapons": "Weapons",
+      "tools": "Tools",
+      "languages": "Languages"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -237,7 +244,15 @@
     "limitCantrips": "Cantrip limit reached ({{max}}).",
     "limitSpells": "Spell limit reached ({{max}}).",
     "maxLevel": "The character is already level 20.",
-    "minLevel": "Level 1 can't be removed."
+    "minLevel": "Level 1 can't be removed.",
+    "spellbookFull": "The spellbook has its {{max}} free spells; more only by copying.",
+    "spellbookRemove": "Spells don't disappear from a spellbook.",
+    "swapNone": "This class can't replace spells.",
+    "swapCantripsNone": "This class can't replace cantrips.",
+    "swapUsed": {
+      "levelUp": "{{name}}: the spell replacement for this level is used up.",
+      "longRestOne": "{{name}}: the spell replacement for this Long Rest is used up."
+    }
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -374,7 +389,8 @@
       "hpMax": "Max HP",
       "featureGained": "New: {{name}}",
       "subclass": "Subclass ({{class}})",
-      "multiclassRule": "Multiclassing allowed"
+      "multiclassRule": "Multiclassing allowed",
+      "spellCopied": "Copied {{name}} into the spellbook ({{gp}} GP, {{hours}} h)"
     },
     "attackAction": "Attack action"
   },
@@ -573,7 +589,25 @@
     "open": "Open",
     "noSlotsFor": "No slot left for {{name}}.",
     "castHow": "Cast with a higher slot, as a ritual…",
-    "castHint": "Casts right away with the lowest slot that fits (Undo takes it back)"
+    "castHint": "Casts right away with the lowest slot that fits (Undo takes it back)",
+    "rules": {
+      "used": "used {{used}}/{{of}}",
+      "cantrips": "Replacing a cantrip",
+      "spells": "Replacing a spell",
+      "swap": {
+        "none": "not allowed",
+        "levelUp": "one per class level gained",
+        "longRestOne": "one after each Long Rest",
+        "longRestAll": "any after a Long Rest"
+      },
+      "spellbook": "Spellbook: two Wizard spells for free with each Wizard level (of a level you have slots for); more only by copying them from a scroll or another book.",
+      "copyConfirm": "The spellbook already has its {{max}} free spells. Copy {{name}} from a scroll or another book? (Costs {{gp}} GP and {{hours}} hours.)",
+      "bookRemoveConfirm": "Spells don't disappear from a spellbook. Remove {{name}} anyway?",
+      "swapNoneConfirm": "The rules don't let this class replace spells. Remove {{name}} anyway?",
+      "swapCantripsNoneConfirm": "The rules don't let this class replace cantrips. Remove {{name}} anyway?",
+      "swapUsedLevelUpConfirm": "{{name}} may replace one spell per level gained, and it is used up. Remove {{name}} anyway?",
+      "swapUsedLongRestConfirm": "{{name}} may replace one spell per Long Rest, and it is used up. Remove {{name}} anyway?"
+    }
   },
   "actionCategory": {
     "all": "All",
@@ -718,7 +752,8 @@
       "taken": "already have it",
       "notProficient": "needs proficiency",
       "melee": "melee weapons only",
-      "needs": "needs {{what}}"
+      "needs": "needs {{what}}",
+      "notKnown": "you don't know it"
     },
     "nothingToChoose": "Nothing to choose.",
     "openCount": "{{count}} still to choose",
@@ -730,6 +765,13 @@
     "levelDown": "Undo last level up ({{what}})",
     "levelDownConfirm": "Remove the last level ({{what}}) and the choices made at it?",
     "multiclassRule": "Allow multiclassing (optional rule)",
-    "search": "Search…"
+    "search": "Search…",
+    "again": "Take it again (for another cantrip)",
+    "checkYourself": "check yourself: {{what}}",
+    "showMade": "Show choices already made (to change them)",
+    "change": {
+      "never": "The rules don't let this choice change once made. Change it anyway?",
+      "levelUp": "This can change only when you gain a level (in Level up). Change it now anyway?"
+    }
   }
 }

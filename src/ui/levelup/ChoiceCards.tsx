@@ -61,16 +61,17 @@ export function SubclassCard({ classId, className }: { classId: string; classNam
 function SpellsCard({ classId }: { classId: string }) {
   const { t } = useTranslation()
   const { sheet } = useSheet()
-  const [open, setOpen] = useState(false)
   const caster = sheet.spellcasting.casters.find((c) => c.classId === classId)
+  // Open right away when something is missing.
+  const [open, setOpen] = useState(() => !!caster && (caster.cantrips.length < caster.cantripsMax || (caster.mode === 'known' ? caster.known.length : caster.prepared.length) < caster.spellsMax || (caster.spellbookMax ?? 0) > caster.known.length))
   if (!caster) return null
   const counted = caster.mode === 'known' ? caster.known.length : caster.prepared.length
   const parts = [
     `${t('spells.cantrips')} ${caster.cantrips.length}/${caster.cantripsMax}`,
-    caster.spellbook ? `📖 ${t('spells.spellbook')} ${caster.known.length}` : undefined,
+    caster.spellbookMax !== undefined ? `📖 ${t('spells.spellbook')} ${caster.known.length}/${caster.spellbookMax}` : undefined,
     `${t(caster.mode === 'known' ? 'spells.known' : 'spells.prepared')} ${counted}/${caster.spellsMax}`,
   ].filter(Boolean)
-  const done = caster.cantrips.length >= caster.cantripsMax && counted >= caster.spellsMax
+  const done = caster.cantrips.length >= caster.cantripsMax && counted >= caster.spellsMax && caster.known.length >= (caster.spellbookMax ?? 0)
   return (
     <div className={`${card} ${done ? 'border-border' : 'border-accent/60 bg-accent/5'}`}>
       <Header title={`${caster.name}: ${t('levelUp.spells')}`} done={done}>
@@ -135,13 +136,23 @@ function Options({ p, choice, count, chosen }: { p: PendingChoice; choice: Choic
   const matching = all.filter((o) => !q || o.label.toLowerCase().includes(q))
   const blocked = matching.filter((o) => o.blocked)
   const shown = showBlocked ? matching : matching.filter((o) => !o.blocked)
+  const guard = useChangeGuard(choice, chosen, count)
+  const apply = (next: string[]) => {
+    if (guard(next)) void run(setChoiceValues(character, content, p.ae, choice, next))
+  }
+  const copies = (id: string) => chosen.filter((x) => x === id).length
   const toggle = (o: Option) => {
     if (o.blocked) return
     const on = chosen.includes(o.id)
-    const next = on ? chosen.filter((x) => x !== o.id) : count === 1 ? [o.id] : chosen.length >= count ? chosen : [...chosen, o.id]
-    void run(setChoiceValues(character, content, p.ae, choice, next))
+    // Unticking a repeated pick removes one copy.
+    const withoutOne = () => {
+      const i = chosen.lastIndexOf(o.id)
+      return [...chosen.slice(0, i), ...chosen.slice(i + 1)]
+    }
+    apply(on ? withoutOne() : count === 1 ? [o.id] : chosen.length >= count ? chosen : [...chosen, o.id])
   }
-  const reason = (o: Option) => (o.blocked && ['taken', 'notProficient', 'melee'].includes(o.blocked) ? t(`levelUp.blocked.${o.blocked}`) : t('levelUp.blocked.needs', { what: o.blocked }))
+  const reason = (o: Option) =>
+    o.blocked && ['taken', 'notProficient', 'melee', 'notKnown'].includes(o.blocked) ? t(`levelUp.blocked.${o.blocked}`) : t('levelUp.blocked.needs', { what: o.blocked })
   // Entities and spells get a row with their summary; short options are chips.
   const rows = choice.kind === 'entity' || choice.kind === 'spell'
   return (
@@ -169,7 +180,21 @@ function Options({ p, choice, count, chosen }: { p: PendingChoice; choice: Choic
                   <RuleRef entity={o.entity} content={content} className="font-semibold">
                     {o.label}
                   </RuleRef>
+                  {copies(o.id) > 1 && <span className="ml-1 text-xs font-semibold">×{copies(o.id)}</span>}
+                  {o.repeatable && chosen.includes(o.id) && chosen.length < count && (
+                    <button
+                      className="ml-1.5 rounded border border-border px-1 text-xs hover:bg-bg"
+                      title={t('levelUp.again')}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        apply([...chosen, o.id])
+                      }}
+                    >
+                      +1
+                    </button>
+                  )}
                   {o.blocked && <span className="ml-1.5 text-xs text-danger">{reason(o)}</span>}
+                  {o.note && <span className="ml-1.5 text-xs text-amber-700 dark:text-amber-300">⚠️ {t('levelUp.checkYourself', { what: o.note })}</span>}
                   {o.entity?.description && <span className="block text-xs text-muted">{o.entity.description}</span>}
                 </span>
               </label>
@@ -192,6 +217,25 @@ function Options({ p, choice, count, chosen }: { p: PendingChoice; choice: Choic
   )
 }
 
+/**
+ * Changing a choice that was already made follows its rules: some may change
+ * on a Short / Long Rest, some only when you gain a level (allowed freely in
+ * the Level up wizard), most never. Going against them asks first.
+ */
+function useChangeGuard(choice: Choice, chosen: string[], count: number) {
+  const { t } = useTranslation()
+  const { draft } = useSheet()
+  // Only a choice made before this window opened counts as changing it.
+  const [wasDone] = useState(() => isComplete(choice, chosen, count))
+  return (next: string[]) => {
+    const removes = chosen.some((v) => !next.includes(v)) || next.length < chosen.length
+    if (!wasDone || !removes) return true
+    if (choice.changeable === 'never') return confirm(t('levelUp.change.never'))
+    if (choice.changeable === 'levelUp' && !draft) return confirm(t('levelUp.change.levelUp'))
+    return true
+  }
+}
+
 /** Ability Score Improvement and similar: spend points, at most `perOption` per ability, up to the cap. */
 function AbilityPoints({ p, choice }: { p: PendingChoice; choice: Choice }) {
   const { t } = useTranslation()
@@ -203,9 +247,11 @@ function AbilityPoints({ p, choice }: { p: PendingChoice; choice: Choice }) {
   const cap = choice.scoreCap ?? 20
   const assigned = (a: string) => values.filter((v) => v.startsWith(`${a}+`)).reduce((s, v) => s + Number(v.split('+')[1]), 0)
   const spent = values.reduce((s, v) => s + Number(v.split('+')[1] ?? 0), 0)
+  const guard = useChangeGuard(choice, values, p.count)
   const set = (a: string, n: number) => {
     const rest = values.filter((v) => !v.startsWith(`${a}+`))
-    void run(setChoiceValues(character, content, p.ae, choice, n > 0 ? [...rest, `${a}+${n}`] : rest))
+    const next = n > 0 ? [...rest, `${a}+${n}`] : rest
+    if (guard(next)) void run(setChoiceValues(character, content, p.ae, choice, next))
   }
   const options = (choice.options ?? ['str', 'dex', 'con', 'int', 'wis', 'cha']) as Ability[]
   return (

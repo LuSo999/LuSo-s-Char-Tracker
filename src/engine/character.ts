@@ -103,7 +103,13 @@ export const Character = z.object({
    * are granted by those entities and not stored here.
    */
   spells: z.record(z.string(), z.object({ known: z.array(z.string()).default([]), prepared: z.array(z.string()).default([]) })).default({}),
+  /**
+   * Spells removed since the swap allowance was last renewed, per
+   * "<class id>:<cantrips|spells>:<levelUp|longRest>" (Level up and Long Rest renew it).
+   */
+  spellSwaps: z.record(z.string(), z.number().int().min(0)).default({}),
   /** Spells marked ★: shown in the action list next to weapons and features. */
+
   favoriteSpells: z.array(z.string()).default([]),
   /** The spell the character is concentrating on. */
   concentration: z.object({ spellId: z.string(), name: z.string() }).optional(),

@@ -55,7 +55,7 @@ function SpellLine({ row }: { row: SpellRow }) {
   const fav = character.favoriteSpells.includes(row.spell.id)
   const s = row.spell
   const mod = sheet.mods[row.ability]
-  const dice = spellDice(s, Math.max(1, s.level), sheet.characterLevel, mod)
+  const dice = spellDice(s, Math.max(1, s.level), sheet.characterLevel, mod, row.damageBonus)
   const options = castOptions(row, sheet)
   const { quickCast } = useCastSpell()
   return (
@@ -99,6 +99,7 @@ function SpellLine({ row }: { row: SpellRow }) {
           )}
         </span>
       </div>
+      {row.notes.length > 0 && <p className="text-xs text-violet-700 dark:text-violet-300">{row.notes.join(' · ')}</p>}
       <div className="flex flex-wrap gap-x-3 text-xs text-muted">
         {actionTypeTerm(s.actionType, true) ? <Term id={actionTypeTerm(s.actionType, true)!}>{s.castingTime}</Term> : <span>{s.castingTime}</span>}
         <span>{s.range}</span>
@@ -225,8 +226,20 @@ export function ManageSpells({ caster }: { caster: CasterState }) {
 
   async function toggle(list: 'known' | 'prepared', s: Spell, on: boolean) {
     const r = setClassSpell(character, sheet, content, caster.classId, list, s.id, on)
-    if (!r.ok && ['limitSpells', 'limitCantrips', 'spellTooHigh'].includes(r.error)) {
-      if (confirm(t('spells.overLimit'))) await run(setClassSpell(character, sheet, content, caster.classId, list, s.id, on, true))
+    // Going past a rule: say which one and let the player decide (the DM may allow it).
+    const asks: Record<string, string> = {
+      limitSpells: 'spells.overLimit',
+      limitCantrips: 'spells.overLimit',
+      spellTooHigh: 'spells.overLimit',
+      spellbookFull: 'spells.rules.copyConfirm',
+      spellbookRemove: 'spells.rules.bookRemoveConfirm',
+      swapNone: 'spells.rules.swapNoneConfirm',
+      swapCantripsNone: 'spells.rules.swapCantripsNoneConfirm',
+      'swapUsed.levelUp': 'spells.rules.swapUsedLevelUpConfirm',
+      'swapUsed.longRestOne': 'spells.rules.swapUsedLongRestConfirm',
+    }
+    if (!r.ok && asks[r.error]) {
+      if (confirm(t(asks[r.error], { name: s.name, ...r.params }))) await run(setClassSpell(character, sheet, content, caster.classId, list, s.id, on, true))
       return
     }
     await run(r)
@@ -238,8 +251,13 @@ export function ManageSpells({ caster }: { caster: CasterState }) {
       <p className="text-sm">
         {t('spells.cantrips')}: <strong className={caster.cantrips.length > caster.cantripsMax ? 'text-danger' : ''}>{caster.cantrips.length}</strong>/{caster.cantripsMax} ·{' '}
         {t(caster.mode === 'known' ? 'spells.known' : 'spells.prepared')}: <strong className={counted > caster.spellsMax ? 'text-danger' : ''}>{counted}</strong>/{caster.spellsMax}
-        {caster.spellbook && ` · 📖 ${t('spells.spellbook')}: ${caster.known.length}`}
+        {caster.spellbookMax !== undefined && (
+          <>
+            {' · '}📖 {t('spells.spellbook')}: <strong className={caster.known.length > caster.spellbookMax ? 'text-violet-600' : ''}>{caster.known.length}</strong>/{caster.spellbookMax}
+          </>
+        )}
       </p>
+      <SpellRules caster={caster} />
       <input className="w-full rounded border border-border bg-card px-2 py-1 text-sm" placeholder={t('spells.search')} value={query} onChange={(e) => setQuery(e.target.value)} />
       <div className="flex flex-wrap gap-1">
         {(['all', ...Array.from({ length: caster.maxSpellLevel + 1 }, (_, i) => i)] as (number | 'all')[]).map((l) => (
@@ -290,6 +308,23 @@ export function ManageSpells({ caster }: { caster: CasterState }) {
         })}
       </ul>
     </div>
+  )
+}
+
+/** The class's rules for adding and replacing spells, with what's used up. */
+function SpellRules({ caster }: { caster: CasterState }) {
+  const { t } = useTranslation()
+  const rule = (what: 'cantrips' | 'spells') => {
+    const r = caster.swap[what]
+    const used = r === 'levelUp' || r === 'longRestOne' ? ` (${t('spells.rules.used', { used: Math.min(1, caster.swapsUsed[what]), of: 1 })})` : ''
+    return `${t(`spells.rules.${what}`)}: ${t(`spells.rules.swap.${r}`)}${used}`
+  }
+  return (
+    <ul className="list-disc pl-4 text-xs text-muted">
+      {caster.spellbookMax !== undefined && <li>{t('spells.rules.spellbook')}</li>}
+      {caster.cantripsMax > 0 && <li>{rule('cantrips')}</li>}
+      <li>{rule('spells')}</li>
+    </ul>
   )
 }
 

@@ -111,7 +111,14 @@
     "deathSaveRoll": "Hod death save (d20)",
     "roll": "Hodit",
     "hpMax": "Maximum HP",
-    "endState": "Ukončit {{name}}"
+    "endState": "Ukončit {{name}}",
+    "prof": {
+      "title": "Proficience a jazyky",
+      "armor": "Zbroje",
+      "weapons": "Zbraně",
+      "tools": "Nástroje",
+      "languages": "Jazyky"
+    }
   },
   "settings": {
     "title": "Nastavení",
@@ -237,7 +244,15 @@
     "limitCantrips": "Limit cantripů dosažen ({{max}}).",
     "limitSpells": "Limit kouzel dosažen ({{max}}).",
     "maxLevel": "Postava už je na levelu 20.",
-    "minLevel": "Level 1 nejde odebrat."
+    "minLevel": "Level 1 nejde odebrat.",
+    "spellbookFull": "Spellbook má svých {{max}} kouzel zdarma; další jen zkopírováním.",
+    "spellbookRemove": "Kouzla ze spellbooku nemizí.",
+    "swapNone": "Tahle class nemůže měnit kouzla.",
+    "swapCantripsNone": "Tahle class nemůže měnit cantripy.",
+    "swapUsed": {
+      "levelUp": "{{name}}: výměna kouzla za tento level je využitá.",
+      "longRestOne": "{{name}}: výměna kouzla za tento Long Rest je využitá."
+    }
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -374,7 +389,8 @@
       "hpMax": "Max HP",
       "featureGained": "Nové: {{name}}",
       "subclass": "Subclass ({{class}})",
-      "multiclassRule": "Multiclass povolen"
+      "multiclassRule": "Multiclass povolen",
+      "spellCopied": "Zkopírováno {{name}} do spellbooku ({{gp}} GP, {{hours}} h)"
     },
     "attackAction": "Attack action"
   },
@@ -573,7 +589,25 @@
     "open": "Otevřít",
     "noSlotsFor": "Na {{name}} už nezbývá slot.",
     "castHow": "Seslat vyšším slotem, jako ritual…",
-    "castHint": "Sešle hned nejnižším vhodným slotem (Undo to vrátí)"
+    "castHint": "Sešle hned nejnižším vhodným slotem (Undo to vrátí)",
+    "rules": {
+      "used": "použito {{used}}/{{of}}",
+      "cantrips": "Výměna cantripu",
+      "spells": "Výměna kouzla",
+      "swap": {
+        "none": "nejde",
+        "levelUp": "jeden za každý získaný level classy",
+        "longRestOne": "jedno po každém Long Restu",
+        "longRestAll": "libovolně po Long Restu"
+      },
+      "spellbook": "Spellbook: s každým levelem Wizarda dvě kouzla zdarma (úrovně, na kterou máš sloty); další jen zkopírováním ze svitku nebo cizí knihy.",
+      "copyConfirm": "Spellbook už má svých {{max}} kouzel zdarma. Zkopírovat {{name}} ze svitku nebo cizí knihy? (Stojí {{gp}} GP a {{hours}} h.)",
+      "bookRemoveConfirm": "Kouzla ze spellbooku nemizí. Přesto odebrat {{name}}?",
+      "swapNoneConfirm": "Tahle class podle pravidel kouzla nevyměňuje. Přesto odebrat {{name}}?",
+      "swapCantripsNoneConfirm": "Tahle class podle pravidel cantripy nevyměňuje. Přesto odebrat {{name}}?",
+      "swapUsedLevelUpConfirm": "{{name}} smí vyměnit jedno kouzlo za získaný level a to už je využité. Přesto odebrat?",
+      "swapUsedLongRestConfirm": "{{name}} smí vyměnit jedno kouzlo za Long Rest a to už je využité. Přesto odebrat?"
+    }
   },
   "actionCategory": {
     "all": "Vše",
@@ -718,7 +752,8 @@
       "taken": "už máš",
       "notProficient": "potřebuje proficienci",
       "melee": "jen zbraně na blízko",
-      "needs": "vyžaduje {{what}}"
+      "needs": "vyžaduje {{what}}",
+      "notKnown": "neznáš ho"
     },
     "nothingToChoose": "Není co vybírat.",
     "openCount": "Zbývá vybrat: {{count}}",
@@ -730,6 +765,13 @@
     "levelDown": "Vrátit poslední level up ({{what}})",
     "levelDownConfirm": "Odebrat poslední level ({{what}}) a volby na něm udělané?",
     "multiclassRule": "Povolit multiclass (volitelné pravidlo)",
-    "search": "Hledat…"
+    "search": "Hledat…",
+    "again": "Vzít znovu (pro jiný cantrip)",
+    "checkYourself": "zkontroluj sám: {{what}}",
+    "showMade": "Ukázat i hotové volby (pro změnu)",
+    "change": {
+      "never": "Tuhle volbu pravidla po výběru měnit nedovolují. Přesto změnit?",
+      "levelUp": "Tohle jde měnit jen při získání levelu (v Level upu). Přesto změnit teď?"
+    }
   }
 }

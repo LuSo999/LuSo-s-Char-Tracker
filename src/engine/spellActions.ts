@@ -7,7 +7,7 @@ import type { ContentIndex } from '../content'
 import type { ActionResult, HistoryItem } from './actions'
 import type { Character } from './character'
 import { choiceKey, type ActiveEntity, type Sheet } from './derive'
-import type { SpellRow } from './spells'
+import { swapKey, type SpellRow } from './spells'
 
 export type CastHow = { kind: 'slot'; level: number } | { kind: 'pact' } | { kind: 'free' } | { kind: 'ritual' } | { kind: 'cantrip' }
 
@@ -116,8 +116,26 @@ export function setClassSpell(
   const current = char.spells[classId] ?? { known: [], prepared: [] }
   const has = current[list].includes(spellId)
   if (has === on) return { ok: false, error: 'noChange' }
+  const inBook = caster.spellbook && list === 'known' && spell.level > 0
+  // Removing one: the class's rules say when spells may be replaced.
+  let swapCounter: string | undefined
+  if (!on && !force) {
+    if (inBook) return { ok: false, error: 'spellbookRemove' }
+    const what = spell.level === 0 ? 'cantrips' : 'spells'
+    const relevant = what === 'cantrips' || list === (caster.mode === 'known' ? 'known' : 'prepared')
+    const rule = caster.swap[what]
+    if (relevant && rule !== 'longRestAll') {
+      if (rule === 'none') return { ok: false, error: what === 'cantrips' ? 'swapCantripsNone' : 'swapNone' }
+      if (caster.swapsUsed[what] >= 1) return { ok: false, error: `swapUsed.${rule}`, params: { name: caster.name } }
+      swapCounter = swapKey(classId, what, rule)
+    }
+  }
   if (on && !force) {
     if (spell.level > caster.maxSpellLevel) return { ok: false, error: 'spellTooHigh', params: { level: spell.level } }
+    // Wizard: two free spells per level; more only by copying them from a scroll or another book.
+    if (inBook && caster.spellbookMax !== undefined && caster.known.length >= caster.spellbookMax) {
+      return { ok: false, error: 'spellbookFull', params: { max: caster.spellbookMax, gp: 50 * spell.level, hours: 2 * spell.level } }
+    }
     if (spell.level === 0 && caster.cantrips.length >= caster.cantripsMax) return { ok: false, error: 'limitCantrips', params: { max: caster.cantripsMax } }
     if (spell.level > 0) {
       const counted = list === 'prepared' ? caster.prepared.length : caster.mode === 'known' ? caster.known.length : 0
@@ -128,8 +146,11 @@ export function setClassSpell(
   // Removing a spell from the spellbook / known list also unprepares it.
   const prepared = list === 'known' && !on ? current.prepared.filter((id) => id !== spellId) : current.prepared
   const entry = { ...current, prepared, [list]: nextList }
-  const type = list === 'prepared' ? (on ? 'spellPrepared' : 'spellUnprepared') : on ? 'spellLearned' : 'spellForgotten'
-  return ok({ ...char, spells: { ...char.spells, [classId]: entry } }, [{ type, params: { name: spell.name, class: caster.name }, entity: spellId }], 'spells', 'sheet')
+  const copied = force && on && inBook && caster.spellbookMax !== undefined && caster.known.length >= caster.spellbookMax
+  const type = copied ? 'spellCopied' : list === 'prepared' ? (on ? 'spellPrepared' : 'spellUnprepared') : on ? 'spellLearned' : 'spellForgotten'
+  const spellSwaps = swapCounter ? { ...char.spellSwaps, [swapCounter]: (char.spellSwaps[swapCounter] ?? 0) + 1 } : char.spellSwaps
+  const params = { name: spell.name, class: caster.name, ...(copied ? { gp: 50 * spell.level, hours: 2 * spell.level } : {}) }
+  return ok({ ...char, spellSwaps, spells: { ...char.spells, [classId]: entry } }, [{ type, params, entity: spellId }], 'spells', 'sheet')
 }
 
 /** Set the selections of an entity's choice (spells of Magic Initiate, a spell list, an ability…). */
