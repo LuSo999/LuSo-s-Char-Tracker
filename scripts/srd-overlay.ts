@@ -6,10 +6,12 @@ import type { Edition } from '../src/content/schema.ts'
 import { barbarian } from './overlay/barbarian.ts'
 import type { ClassOverlay } from './overlay/common.ts'
 import { monk } from './overlay/monk.ts'
+import { paladin } from './overlay/paladin.ts'
+import { ranger } from './overlay/ranger.ts'
 import { rogue } from './overlay/rogue.ts'
 
 /** Per-class overlays (scripts/overlay/*.ts). */
-const classOverlays: ClassOverlay[] = [barbarian, monk, rogue]
+const classOverlays: ClassOverlay[] = [barbarian, monk, rogue, paladin, ranger]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = any
@@ -295,6 +297,7 @@ function coreCombat(edition: Edition): Raw {
 export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[] {
   const problems: string[] = []
   byId.set('core-combat', coreCombat(edition))
+  for (const o of classOverlays) for (const e of o.entities?.[edition] ?? []) byId.set(e.id, e)
   const patches = { ...(edition === '2014' ? overlay2014 : overlay2024), ...Object.assign({}, ...classOverlays.map((o) => o[edition])) }
   for (const o of classOverlays) for (const [cls, column, table] of o.checks?.[edition] ?? []) checkTable(byId, cls, column, table, problems)
   for (const [id, patch] of Object.entries(patches)) {

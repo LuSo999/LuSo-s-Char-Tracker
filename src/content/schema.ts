@@ -156,7 +156,7 @@ export const Activity = z.object({
   /** Short rules summary shown in the row. */
   summary: z.string().optional(),
   /** Healing or damage roll, e.g. Second Wind "1d10 + level". */
-  roll: z.object({ dice: Dice.optional(), bonus: Scaled.optional(), kind: z.enum(['heal', 'damage', 'other']) }).optional(),
+  roll: z.object({ dice: Dice.optional(), bonus: Scaled.optional(), kind: z.enum(['heal', 'temp', 'damage', 'other']) }).optional(),
   /** Save DC for the activity, e.g. "8 + pb + str". */
   saveDc: Scaled.optional(),
   saveAbility: Ability.optional(),
@@ -172,6 +172,8 @@ export const Activity = z.object({
   perTurn: z.number().int().min(1).optional(),
   /** At most one activity of this group per attack (e.g. "maneuver"). */
   perAttack: z.string().optional(),
+  /** Pool features (Lay on Hands): the player enters how many points to spend; with a heal roll that many HP are restored. */
+  spendInput: z.boolean().default(false),
   /** An attack or a rider on a hit (Flurry of Blows, Sneak Attack): listed with the attacks. */
   attack: z.boolean().default(false),
   /** Using it switches on this toggle of the same entity (Rage → "Raging"); rests switch it off. */
@@ -204,7 +206,7 @@ export const Choice = z.object({
   perOption: z.number().optional(),
   scoreCap: z.number().optional(),
   /** When the selection may be changed later. */
-  changeable: z.enum(['never', 'levelUp', 'longRest']).default('never'),
+  changeable: z.enum(['never', 'levelUp', 'shortRest', 'longRest']).default('never'),
   /** For kind "spell": spell level and class lists to pick from (or the lists picked in another choice). */
   spellLevel: z.number().int().min(0).max(9).optional(),
   spellClasses: z.array(z.string()).optional(),

@@ -94,3 +94,63 @@ describe('Rogue', () => {
     expect(thief.attunementSlots).toBe(4)
   })
 })
+
+describe('Paladin', () => {
+  for (const [edition, content] of [['2024', c24], ['2014', c14]] as const) {
+    it(`${edition}: Lay on Hands pool spends the entered points and heals that much`, () => {
+      const c = hero(edition, 'paladin', 5, { hp: { current: 10 } })
+      const s = computeSheet(c, content)
+      const loh = s.activities.find((a) => a.activity.name === 'Lay on Hands')!
+      expect(loh.uses?.remaining).toBe(25)
+      const after = okR(performActivity(c, s, loh, 7))
+      expect(after.hp.current).toBe(17)
+      expect(computeSheet(after, content).resources.find((r) => r.key.endsWith('lay-on-hands'))?.remaining).toBe(18)
+      const cure = okR(performActivity(c, s, loh, 5, { spendOnly: true }))
+      expect(cure.hp.current).toBe(10)
+    })
+
+    it(`${edition}: Aura of Protection adds Charisma to every save; Devotion oath spells by level`, () => {
+      const sub = edition === '2024' ? 'oath-of-devotion' : 'devotion'
+      const base = { baseScores: { str: 16, dex: 10, con: 14, int: 8, wis: 10, cha: 16 } }
+      const s5 = computeSheet(hero(edition, 'paladin', 5, { ...base, classes: [{ classId: 'paladin', level: 5, subclassId: sub }] }), content)
+      const s6 = computeSheet(hero(edition, 'paladin', 6, { ...base, classes: [{ classId: 'paladin', level: 6, subclassId: sub }] }), content)
+      expect(s6.saves.dex.value - s5.saves.dex.value).toBe(3)
+      const always = s5.spellcasting.rows.filter((r) => r.always).map((r) => r.spell.id)
+      expect(always).toContain('zone-of-truth')
+      expect(always).not.toContain('beacon-of-hope')
+    })
+  }
+
+  it('2014 Divine Smite spends a slot: 2d8, +1d8 per level, max 5d8', async () => {
+    const { spellDice } = await import('./spells')
+    const smite = c14.getTyped('divine-smite-slot', 'spell')!
+    expect([1, 2, 4, 5].map((l) => spellDice(smite, l, 5, 0).damage)).toEqual(['2d8 radiant', '3d8 radiant', '5d8 radiant', '5d8 radiant'])
+    const s = computeSheet(hero('2014', 'paladin', 5), c14)
+    expect(s.spellcasting.rows.some((r) => r.spell.id === 'divine-smite-slot')).toBe(true)
+  })
+
+  it("2024 Paladin's Smite: Divine Smite always prepared with one free cast", () => {
+    const s = computeSheet(hero('2024', 'paladin', 2), c24)
+    expect(s.spellcasting.rows.find((r) => r.spell.id === 'divine-smite')).toMatchObject({ always: true, freeCast: 'paladins-smite' })
+  })
+})
+
+describe('Ranger', () => {
+  it("2024: Hunter's Mark free casts 2 → 3 at level 5; Tireless gives Temp HP", () => {
+    const s = computeSheet(hero('2024', 'ranger', 5), c24)
+    expect(s.resources.find((r) => r.key.endsWith('favored-enemy'))?.max).toBe(3)
+    expect(s.spellcasting.rows.find((r) => r.spell.id === 'hunters-mark')?.freeCast).toBe('favored-enemy')
+    const c = hero('2024', 'ranger', 10)
+    const s10 = computeSheet(c, c24)
+    const tireless = s10.activities.find((a) => a.activity.name === 'Tireless')!
+    expect(okR(performActivity(c, s10, tireless, 6)).hp.temp).toBe(6 + 2)
+  })
+
+  it("2024 Hunter's Prey: the chosen option's activity shows up", () => {
+    const c = hero('2024', 'ranger', 3, { classes: [{ classId: 'ranger', level: 3, subclassId: 'hunter' }], choices: {} })
+    const s = computeSheet(c, c24)
+    const prey = s.active.find((a) => a.entity.id === 'hunter-hunters-prey')!
+    const chosen = computeSheet({ ...c, choices: { [`${prey.grantKey}/option`]: ['hunter-colossus-slayer'] } }, c24)
+    expect(chosen.activities.some((a) => a.activity.name === 'Colossus Slayer')).toBe(true)
+  })
+})

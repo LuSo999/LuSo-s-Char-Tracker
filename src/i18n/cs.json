@@ -204,7 +204,11 @@
     "prompt": "Hod {{dice}}:",
     "heals": "vyléčí {{total}} HP",
     "apply": "Vyléčit",
-    "withoutHealing": "Použít bez léčení"
+    "withoutHealing": "Použít bez léčení",
+    "spendPrompt": "Kolik bodů? (max {{max}})",
+    "healPoints": "Vyléčit {{n}} HP",
+    "spendOnly": "Jen utratit",
+    "temp": "= {{total}} Temp HP"
   },
   "errors": {
     "positiveAmount": "Zadej kladné číslo.",

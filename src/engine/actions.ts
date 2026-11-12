@@ -181,15 +181,23 @@ export function setResourceRemaining(char: Character, sheet: Sheet, key: string,
  * Use an action from the list: pay its costs and, for healing, apply the
  * rolled total. `roll` is what the player rolled on the dice (bonus is added here).
  */
-export function performActivity(char: Character, sheet: Sheet, row: ActivityRow, roll?: number): ActionResult {
+/**
+ * Use an activity: pay its costs, switch on its state, apply its roll.
+ * `roll` is the player's dice total for heal / Temp HP rolls, or — for pool
+ * features (spendInput) — the number of points spent; `opts.spendOnly` spends
+ * them without healing (Lay on Hands curing Poisoned).
+ */
+export function performActivity(char: Character, sheet: Sheet, row: ActivityRow, roll?: number, opts: { spendOnly?: boolean } = {}): ActionResult {
   let next = char
   const name = row.source.entity.type === 'item' ? `${row.source.entity.name}` : row.activity.name
   const items: HistoryItem[] = [{ type: 'use', params: { name }, entity: row.source.entity.id }]
-  for (const cost of row.costs) {
+  const spend = row.activity.spendInput && roll !== undefined ? Math.max(1, Math.round(roll)) : undefined
+  for (const [i, cost] of row.costs.entries()) {
+    const amount = i === 0 && spend !== undefined ? spend : cost.amount
     const r = remainingOf(next, sheet, cost.resourceKey)
-    if (!r || r.remaining < cost.amount) return { ok: false, error: 'notEnough', params: { name: r?.name ?? cost.resourceKey } }
-    next = withRemaining(next, sheet, cost.resourceKey, r.remaining - cost.amount)
-    items.push({ type: 'resource', params: { name: r.name }, before: r.remaining, after: r.remaining - cost.amount })
+    if (!r || r.remaining < amount) return { ok: false, error: 'notEnough', params: { name: r?.name ?? cost.resourceKey } }
+    next = withRemaining(next, sheet, cost.resourceKey, r.remaining - amount)
+    items.push({ type: 'resource', params: { name: r.name }, before: r.remaining, after: r.remaining - amount })
   }
   // Rage, Wild Shape…: the activity switches its state on.
   const state = row.activity.toggle && `state:${row.activity.toggle}`
@@ -197,12 +205,21 @@ export function performActivity(char: Character, sheet: Sheet, row: ActivityRow,
     next = { ...next, toggles: [...next.toggles, state] }
     items.push({ type: 'toggleOn', params: { name: row.activity.toggle! } })
   }
-  if (roll !== undefined && row.activity.roll?.kind === 'heal') {
-    const total = roll + (row.rollBonus ?? 0)
+  const kind = row.activity.roll?.kind
+  if (roll !== undefined && !opts.spendOnly && kind === 'heal') {
+    const total = spend ?? roll + (row.rollBonus ?? 0)
     const healed = heal(next, sheet, total, { name, entity: row.source.entity.id })
     if (healed.ok) {
       next = healed.character
       items.push(...healed.items)
+    }
+  }
+  if (roll !== undefined && kind === 'temp') {
+    // Temporary HP don't stack: keep the higher amount.
+    const total = Math.max(0, roll + (row.rollBonus ?? 0))
+    if (total > next.hp.temp) {
+      items.push({ type: 'tempHp', before: next.hp.temp, after: total })
+      next = { ...next, hp: { ...next.hp, temp: total } }
     }
   }
   return ok(next, 'use', items)

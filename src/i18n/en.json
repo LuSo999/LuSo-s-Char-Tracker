@@ -204,7 +204,11 @@
     "prompt": "Rolled {{dice}}:",
     "heals": "heals {{total}} HP",
     "apply": "Heal",
-    "withoutHealing": "Use without healing"
+    "withoutHealing": "Use without healing",
+    "spendPrompt": "How many points? (max {{max}})",
+    "healPoints": "Heal {{n}} HP",
+    "spendOnly": "Only spend",
+    "temp": "= {{total}} Temp HP"
   },
   "errors": {
     "positiveAmount": "Enter a positive number.",

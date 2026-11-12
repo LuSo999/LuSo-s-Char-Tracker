@@ -136,7 +136,7 @@ function attackRow(a: AttackRow, content: ContentIndex): Row {
 function activityRow(a: ActivityRow): Row {
   const details: React.ReactNode[] = []
   if (a.rollDice || a.rollBonus !== undefined) {
-    const kind = a.activity.roll?.kind === 'heal' ? 'HP' : ''
+    const kind = a.activity.roll?.kind === 'heal' ? 'HP' : a.activity.roll?.kind === 'temp' ? 'Temp HP' : ''
     details.push(
       <span key="roll">
         {a.rollDice ?? ''}
@@ -330,11 +330,44 @@ function BlockedPrompt({ row, problem, onChoose }: { row: Row; problem: Problem;
 }
 
 /** Asks for the physical dice result of a healing action; the bonus is added by the app. */
-function RollPrompt({ row, onDone }: { row: ActivityRow; onDone: (roll?: number) => void }) {
+/** Activities that ask for a number first: healing / Temp HP rolls, and points spent from a pool. */
+const needsPrompt = (r: Row) => !!r.activity && (r.activity.activity.spendInput || ['heal', 'temp'].includes(r.activity.activity.roll?.kind ?? ''))
+
+function RollPrompt({ row, onDone }: { row: ActivityRow; onDone: (roll?: number, spendOnly?: boolean) => void }) {
   const { t } = useTranslation()
   const [value, setValue] = useState('')
   const n = Number.parseInt(value, 10)
+  if (row.activity.spendInput) {
+    const max = row.uses?.remaining ?? 0
+    const ok = Number.isFinite(n) && n >= 1 && n <= max
+    return (
+      <form
+        className="mt-1 flex flex-wrap items-center gap-2 rounded border border-accent bg-accent/5 p-2 text-sm"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (ok) onDone(n)
+        }}
+      >
+        <label className="flex items-center gap-2">
+          {t('roll.spendPrompt', { max })}
+          <input autoFocus inputMode="numeric" className="w-14 rounded border border-border bg-card px-1.5 py-0.5 text-center" value={value} onChange={(e) => setValue(e.target.value.replace(/\D/g, ''))} />
+        </label>
+        {row.activity.roll?.kind === 'heal' && (
+          <button type="submit" disabled={!ok} className="rounded bg-accent px-3 py-0.5 font-semibold text-accent-text disabled:opacity-50">
+            {t('roll.healPoints', { n: ok ? n : '…' })}
+          </button>
+        )}
+        <button type={row.activity.roll?.kind === 'heal' ? 'button' : 'submit'} disabled={!ok} className="rounded border border-border px-3 py-0.5 disabled:opacity-50" onClick={() => ok && row.activity.roll?.kind === 'heal' && onDone(n, true)}>
+          {t('roll.spendOnly')}
+        </button>
+        <button type="button" className="text-muted underline" onClick={() => onDone(-1)}>
+          {t('cancel')}
+        </button>
+      </form>
+    )
+  }
   const total = Number.isFinite(n) ? n + (row.rollBonus ?? 0) : undefined
+  const temp = row.activity.roll?.kind === 'temp'
   return (
     <form
       className="mt-1 flex flex-wrap items-center gap-2 rounded border border-accent bg-accent/5 p-2 text-sm"
@@ -347,13 +380,15 @@ function RollPrompt({ row, onDone }: { row: ActivityRow; onDone: (roll?: number)
         {t('roll.prompt', { dice: row.rollDice ?? '' })}
         <input autoFocus inputMode="numeric" className="w-14 rounded border border-border bg-card px-1.5 py-0.5 text-center" value={value} onChange={(e) => setValue(e.target.value.replace(/\D/g, ''))} />
       </label>
-      {total !== undefined && <span className="text-muted">{t('roll.heals', { total })}</span>}
+      {total !== undefined && <span className="text-muted">{t(temp ? 'roll.temp' : 'roll.heals', { total })}</span>}
       <button type="submit" disabled={total === undefined} className="rounded bg-accent px-3 py-0.5 font-semibold text-accent-text disabled:opacity-50">
         {t('roll.apply')}
       </button>
-      <button type="button" className="rounded border border-border px-3 py-0.5" onClick={() => onDone(undefined)}>
-        {t('roll.withoutHealing')}
-      </button>
+      {!temp && (
+        <button type="button" className="rounded border border-border px-3 py-0.5" onClick={() => onDone(undefined)}>
+          {t('roll.withoutHealing')}
+        </button>
+      )}
       <button type="button" className="text-muted underline" onClick={() => onDone(-1)}>
         {t('cancel')}
       </button>
@@ -421,8 +456,8 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
   }
 
   /** Pay, record and animate. `as` spends a different slot (Opportunity Attack…) or none ("ignore"). */
-  async function perform(r: Row, as?: Slot | 'ignore', at?: { x: number; y: number }, roll?: number, thrown = false) {
-    const result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll)
+  async function perform(r: Row, as?: Slot | 'ignore', at?: { x: number; y: number }, roll?: number, thrown = false, spendOnly = false) {
+    const result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll, { spendOnly })
     if (!result.ok) return void run(result)
     const before = snapshotTurn()
     let actionId: string | undefined
@@ -471,7 +506,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       // Cast right away with the default slot (undo is in history); ▾ picks another slot.
       return void quickCast(r.spellRow, undefined, at)
     }
-    if (r.activity?.activity.roll?.kind === 'heal') return setPrompt(r.key)
+    if (needsPrompt(r)) return setPrompt(r.key)
     await perform(r, undefined, at, undefined, thrown)
   }
 
@@ -484,14 +519,14 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       return void activate(r, document.body)
     }
     if (r.spellRow) return void quickCast(r.spellRow, choice, at)
-    if (r.activity?.activity.roll?.kind === 'heal') return setPrompt(r.key)
+    if (needsPrompt(r)) return setPrompt(r.key)
     await perform(r, choice, at)
   }
 
-  async function finishRoll(r: Row, roll?: number) {
+  async function finishRoll(r: Row, roll?: number, spendOnly = false) {
     setPrompt(undefined)
     if (roll === -1) return
-    await perform(r, mode === 'strict' && problemOf(r) ? 'ignore' : undefined, undefined, roll)
+    await perform(r, mode === 'strict' && problemOf(r) ? 'ignore' : undefined, undefined, roll, false, spendOnly)
   }
 
   /** Cleave (2024 mastery): one extra attack per turn against a second creature. */
@@ -698,7 +733,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
               />
             )}
             {blocked?.key === r.key && <BlockedPrompt row={r} problem={blocked.problem} onChoose={(c) => void chooseBlocked(r, c)} />}
-            {prompt === r.key && r.activity && <RollPrompt row={r.activity} onDone={(roll) => void finishRoll(r, roll)} />}
+            {prompt === r.key && r.activity && <RollPrompt row={r.activity} onDone={(roll, spendOnly) => void finishRoll(r, roll, spendOnly)} />}
           </li>
         ))}
       </ul>
