@@ -1,10 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
  * A panel sliding in from a side of the sheet. It doesn't block the rest of
  * the sheet (no backdrop), so HP and actions stay usable; on phones it fills
- * the screen. Escape closes it.
+ * the screen. Escape or a click outside closes it — that click only closes
+ * the panel, it doesn't also press what was under it. Clicks in the other side
+ * panel, dialogs, toasts and the rules preview don't count as outside.
  */
 export function SidePanel({
   side,
@@ -20,13 +22,37 @@ export function SidePanel({
   header?: React.ReactNode
 }) {
   const { t } = useTranslation()
+  const ref = useRef<HTMLElement>(null)
+  const close = useRef(onClose)
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    close.current = onClose
   }, [onClose])
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close.current()
+    const swallow = (e: MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Element | null
+      if (!target || ref.current?.contains(target)) return
+      if (target.closest('[data-side-panel], [role=dialog], [aria-live], [data-keep-panels]')) return
+      close.current()
+      // The click that closes the panel shouldn't also attack, cast or open something.
+      window.addEventListener('click', swallow, { capture: true, once: true })
+      window.setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 500)
+    }
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('pointerdown', onDown, true)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('pointerdown', onDown, true)
+    }
+  }, [])
   return (
     <aside
+      ref={ref}
+      data-side-panel={side}
       className={`fixed inset-y-0 z-30 flex w-full flex-col bg-card shadow-2xl sm:w-[34rem] ${side === 'left' ? 'left-0 border-r' : 'right-0 border-l'} border-border`}
       aria-label={typeof title === 'string' ? title : undefined}
     >
@@ -55,6 +81,7 @@ export function EdgeHandle({ side, icon, label, onClick }: { side: 'left' | 'rig
     <button
       onClick={onClick}
       aria-label={label}
+      data-keep-panels
       className={`fixed top-1/2 z-20 hidden min-h-64 w-9 -translate-y-1/2 flex-col items-center justify-center gap-2 border border-border bg-card py-5 text-sm font-semibold shadow-md hover:bg-accent hover:text-accent-text sm:flex ${side === 'left' ? 'left-0 rounded-r-card border-l-0' : 'right-0 rounded-l-card border-r-0'}`}
     >
       <span aria-hidden className="text-xs">{arrow}</span>

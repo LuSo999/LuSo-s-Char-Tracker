@@ -28,6 +28,24 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
+    // Feedback: anyone signed in can send it (as themselves, status "new"); only admins read and manage it.
+    match /feedback/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'new'
+        && request.resource.data.kind in ['bug', 'idea', 'other']
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 5000;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // config/notify: URL of the admin's Apps Script that e-mails new feedback.
+    match /config/notify {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
     match /content/access {
       allow read, write: if isAdmin();
     }

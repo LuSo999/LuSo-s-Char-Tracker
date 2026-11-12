@@ -251,7 +251,7 @@ function SheetLayout() {
   return (
     // Side gutters on larger screens keep the edge handles off the content.
     <div className="mx-auto w-full max-w-[1920px] px-3 py-3 sm:px-11">
-      <SheetShortcuts />
+      <SheetShortcuts onSpells={sheet.spellcasting.any || edit ? () => setSpells((v) => !v) : undefined} onInventory={() => setInventory((v) => !v)} />
       <TopBar onRest={setRest} onHistory={() => setHistory(true)} />
       {/* Side panels open from handles on the edges: spells on the left, inventory on the right. */}
       {!spells && (sheet.spellcasting.any || edit) && <EdgeHandle side="left" icon="✨" label={t('spells.title')} onClick={() => setSpells(true)} />}

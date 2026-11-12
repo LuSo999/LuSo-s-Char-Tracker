@@ -573,6 +573,18 @@
         "New turn"
       ],
       [
+        "S",
+        "Open / close Spellcasting"
+      ],
+      [
+        "I",
+        "Open / close the inventory"
+      ],
+      [
+        "C",
+        "End concentration"
+      ],
+      [
         "Shift + R",
         "Reset all filters (actions, spells)"
       ],
@@ -602,6 +614,45 @@
       ]
     ],
     "filtersReset": "Filters reset",
-    "nothingToUndo": "Nothing to undo"
+    "nothingToUndo": "Nothing to undo",
+    "notConcentrating": "Not concentrating on anything"
+  },
+  "feedback": {
+    "button": "Send feedback",
+    "title": "Feedback",
+    "hint": "Found a bug or missing something? Write it here — it goes straight to the author.",
+    "kinds": {
+      "bug": "Bug",
+      "idea": "Feature request",
+      "other": "Other"
+    },
+    "placeholder": {
+      "bug": "What happened, and what did you expect? Which character / screen?",
+      "idea": "What would you like the app to do?",
+      "other": "Anything else…"
+    },
+    "send": "Send",
+    "thanks": "Thanks! Feedback sent.",
+    "failed": "Sending failed: {{error}}",
+    "status": {
+      "new": "New",
+      "read": "Read",
+      "done": "Done",
+      "all": "All"
+    },
+    "admin": {
+      "title": "Feedback",
+      "empty": "Nothing here.",
+      "markRead": "Mark read",
+      "markDone": "Done",
+      "markNew": "Back to new",
+      "delete": "Delete",
+      "confirmDelete": "Delete this feedback for good?",
+      "email": "E-mail notifications",
+      "emailHint": "URL of your Google Apps Script web app; every new feedback is sent to your Gmail through it. Empty = no e-mails.",
+      "saveUrl": "Save",
+      "saved": "Saved",
+      "howTo": "How to set it up (2 minutes)"
+    }
   }
 }

@@ -1,12 +1,14 @@
-// Sheet keyboard shortcuts: N = new turn, Shift+R = reset every filter,
-// Ctrl+Z (⌘Z) = undo. Ignored while typing in a field (there Ctrl+Z undoes text).
+// Sheet keyboard shortcuts: N = new turn, S = Spellcasting panel, I = inventory,
+// C = end concentration, Shift+R = reset every filter, Ctrl+Z (⌘Z) = undo.
+// Ignored while typing in a field (there Ctrl+Z undoes text).
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { endConcentration } from '../../engine/spellActions'
 import { undoable } from '../../state/history'
 import { useSettings } from '../../state/settings'
 import { groupSummary } from '../history/text'
 import { toast } from '../toast'
-import { undoGroup, useSheet } from './context'
+import { undoGroup, useRun, useSheet } from './context'
 import { useTurn } from './turn'
 
 const RESET = 'luso:reset-filters'
@@ -25,9 +27,10 @@ export function useOnResetFilters(reset: () => void) {
 const typing = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName))
 
-export function SheetShortcuts() {
+export function SheetShortcuts({ onSpells, onInventory }: { onSpells?: () => void; onInventory: () => void }) {
   const { t } = useTranslation()
-  const { store } = useSheet()
+  const { store, character } = useSheet()
+  const run = useRun()
   const mode = useSettings((s) => s.turnMode)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -46,14 +49,26 @@ export function SheetShortcuts() {
         e.preventDefault()
         resetFilters()
         toast(t('shortcuts.filtersReset'))
-      } else if (!e.shiftKey && key === 'n' && mode !== 'off') {
+      } else if (e.shiftKey) {
+        return
+      } else if (key === 'n' && mode !== 'off') {
         e.preventDefault()
         useTurn.getState().newTurn()
         toast(`🔄 ${t('turn.newTurn')}`)
+      } else if (key === 's' && onSpells) {
+        e.preventDefault()
+        onSpells()
+      } else if (key === 'i') {
+        e.preventDefault()
+        onInventory()
+      } else if (key === 'c') {
+        e.preventDefault()
+        if (!character.concentration) return void toast(t('shortcuts.notConcentrating'))
+        void run(endConcentration(character))
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [store, mode, t])
+  }, [store, mode, t, character, run, onSpells, onInventory])
   return null
 }

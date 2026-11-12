@@ -573,6 +573,18 @@
         "Nové kolo (New turn)"
       ],
       [
+        "S",
+        "Otevřít / zavřít Spellcasting"
+      ],
+      [
+        "I",
+        "Otevřít / zavřít inventář"
+      ],
+      [
+        "C",
+        "Ukončit koncentraci"
+      ],
+      [
         "Shift + R",
         "Zrušit všechny filtry (akce, kouzla)"
       ],
@@ -602,6 +614,45 @@
       ]
     ],
     "filtersReset": "Filtry zrušeny",
-    "nothingToUndo": "Není co vrátit"
+    "nothingToUndo": "Není co vrátit",
+    "notConcentrating": "Nesoustředíš se na žádné kouzlo"
+  },
+  "feedback": {
+    "button": "Poslat zpětnou vazbu",
+    "title": "Zpětná vazba",
+    "hint": "Našel jsi chybu nebo ti něco chybí? Napiš to sem, přijde to rovnou autorovi.",
+    "kinds": {
+      "bug": "Chyba",
+      "idea": "Návrh funkce",
+      "other": "Jiné"
+    },
+    "placeholder": {
+      "bug": "Co se stalo a co jsi čekal? Která postava / obrazovka?",
+      "idea": "Co bys chtěl, aby appka uměla?",
+      "other": "Cokoli dalšího…"
+    },
+    "send": "Odeslat",
+    "thanks": "Díky! Zpětná vazba odeslána.",
+    "failed": "Odeslání selhalo: {{error}}",
+    "status": {
+      "new": "Nové",
+      "read": "Přečtené",
+      "done": "Hotové",
+      "all": "Vše"
+    },
+    "admin": {
+      "title": "Zpětná vazba",
+      "empty": "Nic tu není.",
+      "markRead": "Přečteno",
+      "markDone": "Hotovo",
+      "markNew": "Zpět mezi nové",
+      "delete": "Smazat",
+      "confirmDelete": "Opravdu smazat tuhle zpětnou vazbu?",
+      "email": "Upozornění e-mailem",
+      "emailHint": "URL tvé Google Apps Script web app; přes ni ti každá nová zpětná vazba přijde do Gmailu. Prázdné = žádné maily.",
+      "saveUrl": "Uložit",
+      "saved": "Uloženo",
+      "howTo": "Jak to nastavit (2 minuty)"
+    }
   }
 }

@@ -7,6 +7,7 @@ import { useAuth } from './state/auth'
 import { loadOfficial } from './state/official'
 import { watchSettings } from './state/settings'
 import { AdminPage } from './ui/AdminPage'
+import { FeedbackPage } from './ui/feedback/FeedbackPage'
 import { Card } from './ui/Card'
 import { CharacterList } from './ui/CharacterList'
 import { Layout } from './ui/Layout'
@@ -71,6 +72,7 @@ function Main() {
       <Route path="/c/:id" element={<SheetPage uid={uid} />} />
       <Route path="/settings" element={<SettingsPage uid={uid} />} />
       {ADMIN_UIDS.includes(uid) && <Route path="/admin" element={<AdminPage />} />}
+      {ADMIN_UIDS.includes(uid) && <Route path="/feedback" element={<FeedbackPage />} />}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
