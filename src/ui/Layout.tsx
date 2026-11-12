@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { signOut } from '../firebase'
 import { languages, setLanguage, type Language } from '../i18n'
 import { useAuth } from '../state/auth'
+import { ShortcutsButton } from './ShortcutsButton'
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { t, i18n } = useTranslation()
@@ -15,6 +16,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {t('appName')}
         </Link>
         <div className="ml-auto flex items-center gap-3">
+          <ShortcutsButton />
           <label className="flex items-center gap-1 text-sm text-muted">
             <span className="sr-only">{t('language')}</span>
             <select
@@ -32,6 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {user && (
             <>
               <Link to="/settings" className="text-sm text-muted hover:underline">
+                <span aria-hidden>⚙️ </span>
                 {t('settings.title')}
               </Link>
               <span className="hidden text-sm text-muted sm:inline">{user.displayName ?? user.email}</span>

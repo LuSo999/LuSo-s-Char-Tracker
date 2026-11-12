@@ -11,8 +11,8 @@ export function breakdown(v: Value) {
 }
 
 export const actionTypeIcon: Record<ActionType, string> = {
-  action: '⚔️',
-  bonusAction: '✨',
+  action: '●',
+  bonusAction: '⚡',
   reaction: '↩️',
   other: '◆',
 }
@@ -29,4 +29,14 @@ export const actionTypeClass: Record<ActionType, string> = {
   bonusAction: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
   reaction: 'bg-violet-600/15 text-violet-700 dark:text-violet-300',
   other: 'bg-slate-500/15 text-slate-700 dark:text-slate-300',
+}
+
+/** What a row in the action list does: weapon attack, spell attack, other magic, or anything else. */
+export type ActionCategory = 'weapon' | 'spellAttack' | 'magic' | 'other'
+
+export const categoryIcon: Record<ActionCategory, string> = {
+  weapon: '🗡️',
+  spellAttack: '☄️',
+  magic: '🪄',
+  other: '⚙️',
 }

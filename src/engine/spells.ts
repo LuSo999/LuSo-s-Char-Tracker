@@ -204,3 +204,28 @@ export function spellDice(spell: Spell, slotLevel: number, characterLevel: numbe
 
 /** Spell save DC and attack bonus as Values for overrides (keys "spellDc:<class>", "spellAttack:<class>"). */
 export type CasterValues = { dc: Value; attack: Value }
+
+/** What a higher slot adds, cheat-sheet style ("↑ +1d6", "↑ +1 target"); empty if nothing or the brief already says it. */
+export function upcastNote(spell: Spell): string {
+  if (spell.level === 0 || spell.brief?.includes('↑')) return ''
+  const step = (table?: Record<string, string>) => {
+    if (!table) return ''
+    const levels = Object.keys(table).map(Number).sort((a, b) => a - b)
+    if (levels.length < 2) return ''
+    const dice = (s: string) => /^(\d+)d(\d+)/.exec(s)
+    const a = dice(table[levels[0]])
+    const b = dice(table[levels[1]])
+    if (!a || !b || a[2] !== b[2]) return ''
+    const n = Number(b[1]) - Number(a[1])
+    return n > 0 ? `+${n}d${a[2]}` : ''
+  }
+  const parts: string[] = []
+  if (spell.damage?.by === 'slot') parts.push(step(spell.damage.dice))
+  if (spell.heal) parts.push(step(spell.heal))
+  if (/one additional (creature|target|Humanoid|Beast|Undead|ray|dart|beam)/i.test(spell.higherLevels ?? '')) parts.push('+1 target')
+  const out = parts.filter(Boolean).join(', ')
+  return out ? `↑ ${out}` : ''
+}
+
+/** The one-line effect for lists: the brief, or the short description (official and homebrew content). */
+export const spellBrief = (spell: Spell) => spell.brief ?? spell.description

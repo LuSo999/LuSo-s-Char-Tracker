@@ -142,3 +142,23 @@ describe('content saved by an older app version', () => {
     expect(() => computeSheet(c, content)).not.toThrow()
   })
 })
+
+describe('quick cast and briefs', () => {
+  it('a click casts a cantrip, the free cast, then the lowest slot; rituals only as a last resort', async () => {
+    const { defaultCast } = await import('./spellActions')
+    expect(defaultCast([{ kind: 'slot', level: 3 }, { kind: 'pact' }, { kind: 'slot', level: 1 }, { kind: 'ritual' }])).toEqual({ kind: 'slot', level: 1 })
+    expect(defaultCast([{ kind: 'slot', level: 1 }, { kind: 'free' }])).toEqual({ kind: 'free' })
+    expect(defaultCast([{ kind: 'ritual' }])).toEqual({ kind: 'ritual' })
+    expect(defaultCast([])).toBeUndefined()
+  })
+
+  it('every SRD spell has a brief; upcasting notes come from the damage table', async () => {
+    const { upcastNote } = await import('./spells')
+    for (const c of [c24, c14]) for (const s of c.all('spell')) expect(s.brief, s.id).toBeTruthy()
+    expect(upcastNote(c24.getTyped('fireball', 'spell')!)).toBe('↑ +1d6')
+    expect(upcastNote(c24.getTyped('cure-wounds', 'spell')!)).toBe('↑ +2d8')
+    expect(upcastNote(c24.getTyped('hold-person', 'spell')!)).toBe('↑ +1 target')
+    expect(upcastNote(c24.getTyped('magic-missile', 'spell')!)).toBe('')
+    expect(c14.getTyped('sleep', 'spell')!.brief).toMatch(/5d8/)
+  })
+})

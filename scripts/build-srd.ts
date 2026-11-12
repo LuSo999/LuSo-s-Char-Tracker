@@ -10,6 +10,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Pack, skills, type Ability, type Edition, type Entity } from '../src/content/schema.ts'
 import { applyOverlay } from './srd-overlay.ts'
+import { spellBriefs, spellBriefs2014 } from './spell-briefs.ts'
 
 const SOURCE_REPO = '5e-bits/5e-srd-api'
 const SOURCE_COMMIT = 'dff09cc6f6764734d20fdba65a07a041613697ca'
@@ -57,6 +58,40 @@ function summarize(text: string): string {
     out += s
   }
   return out.trim().slice(0, 300)
+}
+
+/**
+ * Cheat-sheet style condensed rules text, for spells without a hand-written
+ * brief (spell-briefs.ts): shorter words, filler dropped, about 160 chars.
+ */
+function autoBrief(text: string): string {
+  const ab: Record<string, string> = { Strength: 'Str', Dexterity: 'Dex', Constitution: 'Con', Intelligence: 'Int', Wisdom: 'Wis', Charisma: 'Cha' }
+  let t = text.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim()
+  const reps: [RegExp, string | ((...m: string[]) => string)][] = [
+    [/\b(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) saving throw/gi, (_m, a) => `${ab[a[0].toUpperCase() + a.slice(1).toLowerCase()]} save`],
+    [/saving throws?/gi, 'save'],
+    [/ or half as much damage on a successful one/gi, ', half on a success'],
+    [/(\d+)[- ]?(foot|feet)\b/gi, '$1 ft'],
+    [/\bHit Points?\b/gi, 'HP'],
+    [/,,/g, ','],
+    [/\b(has|have) the (\w+) condition/gi, (_m, v, c) => `${v === 'has' ? 'is' : 'be'} ${c}`],
+    [/\bthat you can see\b|\byou can see\b/gi, ''],
+    [/\b(with)?in range\b/gi, ''],
+    [/\bfor the duration\b|\buntil the spell ends\b/gi, ''],
+    [/\bof your choice\b/gi, ''],
+    [/\s+([,.])/g, '$1'],
+    [/\s{2,}/g, ' '],
+  ]
+  for (const [re, to] of reps) t = typeof to === 'string' ? t.replace(re, to) : t.replace(re, to)
+  const sentences = t.match(/[^.!?]+[.!?]+/g) ?? [t]
+  let out = ''
+  for (const s of sentences) {
+    if (out && (out + s).length > 170) break
+    out += s
+  }
+  out = out.trim()
+  if (out.length > 200) out = out.slice(0, 190).replace(/\s+\S*$/, '') + '…'
+  return out.charAt(0).toUpperCase() + out.slice(1)
 }
 
 const abilityOf = (index: string) => index.toLowerCase() as Ability
@@ -572,7 +607,7 @@ async function build(edition: Edition) {
       school: s.school.index,
       castingTime: s.casting_time,
       actionType: actionTypeOf(s.casting_time),
-      range: s.range,
+      range: String(s.range).replace(/\s*Component.*$/, ''),
       components: s.components ?? [],
       material: s.material,
       duration: s.duration,
@@ -617,6 +652,13 @@ async function build(edition: Edition) {
 
   const byId = new Map<string, Raw>(entities.map((e) => [e.id, e]))
   problems.push(...applyOverlay(edition, byId))
+  for (const e of byId.values()) {
+    if (e.type !== 'spell') continue
+    e.brief = (edition === '2014' ? spellBriefs2014[e.id] : undefined) ?? spellBriefs[e.id] ?? autoBrief(e.text || e.description)
+  }
+  for (const id of [...Object.keys(spellBriefs), ...(edition === '2014' ? Object.keys(spellBriefs2014) : [])]) {
+    if (edition === '2024' && !byId.has(id)) problems.push(`brief for unknown spell ${id}`)
+  }
 
   const pack = Pack.parse({
     id: `srd-${edition}`,

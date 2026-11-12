@@ -7,8 +7,10 @@ import { makeAttack, performActivity } from '../../engine/actions'
 import { pickUpThrown, recoverAmmo, reload } from '../../engine/inventory'
 import { offhandEligible } from '../../engine/items'
 import type { ActivityRow, AttackRow } from '../../engine/derive'
-import { spellDice, type SpellRow } from '../../engine/spells'
+import { spellBrief, spellDice, upcastNote, type SpellRow } from '../../engine/spells'
+import { useCastSpell } from '../spells/useCastSpell'
 import { CastPrompt } from '../spells/CastPrompt'
+import { castOptions } from '../../engine/spellActions'
 import { RuleRef } from '../rules/RuleRef'
 import { useSettings } from '../../state/settings'
 import { centerOf, fx } from '../fx/fx'
@@ -16,10 +18,11 @@ import { toast } from '../toast'
 import { Dots, Panel } from './common'
 import { useRun, useSheet } from './context'
 import { Editable } from './Editable'
-import { actionTypeClass, actionTypeIcon, actionTypeShort, signed } from './format'
+import { actionTypeClass, actionTypeIcon, actionTypeShort, categoryIcon, signed, type ActionCategory } from './format'
 import { attacksLeft, rememberTurn, slotFree, slotMax, snapshotTurn, useTurn, type Slot } from './turn'
 
 type Filter = 'all' | ActionType
+type CategoryFilter = 'all' | ActionCategory
 
 /** One row in the BG3-style action list. */
 type Row = {
@@ -27,6 +30,9 @@ type Row = {
   name: string
   entity?: Entity
   actionType: ActionType
+  category: ActionCategory
+  /** One-line effect shown under the details (spells). */
+  brief?: string
   details: React.ReactNode[]
   uses?: { remaining: number; max: number }
   available: boolean
@@ -53,6 +59,9 @@ function spellRow(r: SpellRow, characterLevel: number, mod: number): Row {
     name: s.name,
     entity: s,
     actionType: s.actionType,
+    // Spells that hit or hurt a target with an attack roll or a damaging save, vs every other spell.
+    category: s.attack || (s.save && s.damage) ? 'spellAttack' : 'magic',
+    brief: [spellBrief(s), upcastNote(s)].filter(Boolean).join(' '),
     details,
     available: true,
     order: sectionOrder.spell,
@@ -105,6 +114,7 @@ function attackRow(a: AttackRow, content: ContentIndex): Row {
     name: a.name,
     entity: a.weapon,
     actionType: 'action',
+    category: 'weapon',
     details,
     uses: a.ammo ? { remaining: a.ammo.remaining, max: a.ammo.remaining } : undefined,
     // A melee weapon with Thrown can still strike in melee when none are left to throw.
@@ -149,6 +159,8 @@ function activityRow(a: ActivityRow): Row {
     name: isItem ? `${a.source.entity.name}` : a.activity.name,
     entity: a.source.entity,
     actionType: a.actionType,
+    // Maneuvers, Grapple/Shove and the like replace an attack; magic items and spell-like features are magic.
+    category: a.activity.costsAttack ? 'weapon' : a.activity.fx === 'magic' || (isItem && 'magic' in a.source.entity && a.source.entity.magic) ? 'magic' : 'other',
     details,
     uses: a.uses && { remaining: a.uses.remaining, max: a.uses.max },
     available: a.available,
@@ -350,9 +362,16 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       .map((r) => spellRow(r, sheet.characterLevel, sheet.mods[r.ability])),
   ].sort((a, b) => a.order - b.order)
   const [casting, setCasting] = useState<string>()
-  const visible = rows.filter((r) => filter === 'all' || r.actionType === filter)
+  const { quickCast } = useCastSpell()
+  const [category, setCategory] = useState<CategoryFilter>('all')
+  const typeOk = (r: Row, f: Filter) => f === 'all' || r.actionType === f
+  const categoryOk = (r: Row, c: CategoryFilter) => c === 'all' || r.category === c
+  const visible = rows.filter((r) => typeOk(r, filter) && categoryOk(r, category))
   const filters: Filter[] = ['all', 'action', 'bonusAction', 'reaction', 'other']
-  const count = (f: Filter) => rows.filter((r) => f === 'all' || r.actionType === f).length
+  const categories: CategoryFilter[] = ['all', 'weapon', 'spellAttack', 'magic', 'other']
+  // Each filter row counts within the other row's current choice.
+  const count = (f: Filter) => rows.filter((r) => typeOk(r, f) && categoryOk(r, category)).length
+  const countCategory = (c: CategoryFilter) => rows.filter((r) => typeOk(r, filter) && categoryOk(r, c)).length
   const perAction = sheet.attacks[0]?.attacksPerAction ?? 1
 
   /** Melee weapons with the Thrown property: clicking the row is a melee attack; throwing has its own button. */
@@ -425,8 +444,8 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       }
     }
     if (r.spellRow) {
-      // Casting pays the slot; the turn slot is spent when the cast succeeds.
-      return setCasting(r.key)
+      // Cast right away with the default slot (undo is in history); ▾ picks another slot.
+      return void quickCast(r.spellRow, undefined, at)
     }
     if (r.activity?.activity.roll?.kind === 'heal') return setPrompt(r.key)
     await perform(r, undefined, at, undefined, thrown)
@@ -440,6 +459,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       turn.newTurn()
       return void activate(r, document.body)
     }
+    if (r.spellRow) return void quickCast(r.spellRow, choice, at)
     if (r.activity?.activity.roll?.kind === 'heal') return setPrompt(r.key)
     await perform(r, choice, at)
   }
@@ -513,15 +533,30 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       {mode !== 'off' && <TurnBar />}
       {sheet.spellcasting.any && onOpenSpells && <MagicTile onOpen={onOpenSpells} />}
       {mode !== 'off' && <AttackBanner />}
-      <div className="my-2 flex flex-wrap gap-1" role="tablist">
+      <div className="mt-2 flex flex-wrap gap-1" role="tablist" aria-label={t('actionFilter.byCategory')}>
+        {categories.map((c) => (
+          <button
+            key={c}
+            role="tab"
+            aria-selected={category === c}
+            className={`rounded-full border px-3 py-1 text-sm ${category === c ? 'border-accent bg-accent text-accent-text' : 'border-border hover:bg-bg'}`}
+            onClick={() => setCategory(c)}
+          >
+            {c !== 'all' && <span aria-hidden>{categoryIcon[c]} </span>}
+            {t(`actionCategory.${c}`)} <span className="opacity-60">{countCategory(c)}</span>
+          </button>
+        ))}
+      </div>
+      <div className="mb-2 mt-1 flex flex-wrap gap-1" role="tablist" aria-label={t('actionFilter.byType')}>
         {filters.map((f) => (
           <button
             key={f}
             role="tab"
             aria-selected={filter === f}
-            className={`rounded-full border px-3 py-1 text-sm ${filter === f ? 'border-accent bg-accent text-accent-text' : 'border-border hover:bg-bg'}`}
+            className={`rounded-full border px-2.5 py-0.5 text-xs ${filter === f ? 'border-accent bg-accent text-accent-text' : 'border-border hover:bg-bg'}`}
             onClick={() => setFilter(f)}
           >
+            {f !== 'all' && <span aria-hidden>{actionTypeIcon[f]} </span>}
             {t(`actionFilter.${f}`)} <span className="opacity-60">{count(f)}</span>
           </button>
         ))}
@@ -543,11 +578,19 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
               <span className={`mt-0.5 w-20 shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-semibold ${actionTypeClass[r.actionType]}`}>
                 <span aria-hidden>{actionTypeIcon[r.actionType]}</span> {actionTypeShort[r.actionType]}
               </span>
+              <span className="mt-0.5 w-6 shrink-0 text-center text-lg leading-none" title={t(`actionCategory.${r.category}`)} aria-label={t(`actionCategory.${r.category}`)}>
+                {categoryIcon[r.category]}
+              </span>
               <div className="min-w-0 flex-1">
                 <RuleRef entity={r.entity} content={content} className="font-semibold" editable={!r.attack && !r.spellRow}>
                   {r.name}
                 </RuleRef>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">{r.details}</div>
+                {r.brief && (
+                  <p className="truncate text-xs text-muted" title={r.brief}>
+                    {r.brief}
+                  </p>
+                )}
               </div>
               {meleeThrown(r) && (
                 <button
@@ -595,6 +638,19 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
                   }}
                 >
                   ↯ Cleave
+                </button>
+              )}
+              {r.spellRow && castOptions(r.spellRow, sheet).length > 1 && (
+                <button
+                  className="shrink-0 rounded border border-violet-500/60 px-1.5 py-0.5 text-xs font-semibold text-violet-700 hover:bg-violet-500/10 dark:text-violet-300"
+                  title={t('spells.castHow')}
+                  aria-label={t('spells.castHow')}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCasting(casting === r.key ? undefined : r.key)
+                  }}
+                >
+                  ▾
                 </button>
               )}
               {r.uses && (

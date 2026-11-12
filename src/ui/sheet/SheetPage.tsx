@@ -251,8 +251,8 @@ function SheetLayout() {
     <div className="mx-auto w-full max-w-[1920px] px-3 py-3 sm:px-11">
       <TopBar onRest={setRest} onHistory={() => setHistory(true)} />
       {/* Side panels open from handles on the edges: spells on the left, inventory on the right. */}
-      {!spells && (sheet.spellcasting.any || edit) && <EdgeHandle side="left" label={`✨ ${t('spells.title')}`} onClick={() => setSpells(true)} />}
-      {!inventory && <EdgeHandle side="right" label={`🎒 ${t('inventory.title')}`} onClick={() => setInventory(true)} />}
+      {!spells && (sheet.spellcasting.any || edit) && <EdgeHandle side="left" icon="✨" label={t('spells.title')} onClick={() => setSpells(true)} />}
+      {!inventory && <EdgeHandle side="right" icon="🎒" label={t('inventory.title')} onClick={() => setInventory(true)} />}
       <EditBanner />
       <EntityEditHost />
 

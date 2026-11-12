@@ -463,6 +463,8 @@ export const Spell = z.object({
   /** Damage dice by slot level or by character level (cantrips). */
   damage: z.object({ type: z.string(), by: z.enum(['slot', 'character']), dice: z.record(z.string(), z.string()) }).optional(),
   heal: z.record(z.string(), z.string()).optional(),
+  /** Cheat-sheet style one-line effect (dice the app computes are left out). */
+  brief: z.string().optional(),
 })
 export type Spell = z.infer<typeof Spell>
 

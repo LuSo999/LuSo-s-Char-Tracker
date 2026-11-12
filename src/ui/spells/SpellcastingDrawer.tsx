@@ -5,13 +5,14 @@ import type { Choice, Spell } from '../../content/schema'
 import { setResourceRemaining } from '../../engine/actions'
 import { selections, type ActiveEntity } from '../../engine/derive'
 import { addExtra } from '../../engine/extras'
-import { endConcentration, setChoice, setClassSpell, toggleFavoriteSpell } from '../../engine/spellActions'
-import { spellDice, type CasterState, type SpellRow } from '../../engine/spells'
+import { castOptions, endConcentration, setChoice, setClassSpell, toggleFavoriteSpell } from '../../engine/spellActions'
+import { spellBrief, spellDice, upcastNote, type CasterState, type SpellRow } from '../../engine/spells'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots } from '../sheet/common'
 import { useRun, useSheet } from '../sheet/context'
 import { useEditMode } from '../sheet/editMode'
 import { signed } from '../sheet/format'
+import { useCastSpell } from './useCastSpell'
 import { CastPrompt } from './CastPrompt'
 import { defaultSpellFilters, filterSpells, type SpellFilters } from './spellFilters'
 import { adjustHp, setHp } from '../../engine/actions'
@@ -19,6 +20,7 @@ import { useSettings } from '../../state/settings'
 import { TurnBar } from '../sheet/ActionList'
 import { NumberAdjust } from '../sheet/NumberAdjust'
 import { SidePanel } from '../sheet/SidePanel'
+import { centerOf } from '../fx/fx'
 
 type TFn = TFunction
 
@@ -43,6 +45,8 @@ function SpellLine({ row }: { row: SpellRow }) {
   const s = row.spell
   const mod = sheet.mods[row.ability]
   const dice = spellDice(s, Math.max(1, s.level), sheet.characterLevel, mod)
+  const options = castOptions(row, sheet)
+  const { quickCast } = useCastSpell()
   return (
     <li className={`py-1.5 ${row.ritualOnly ? 'opacity-70' : ''}`}>
       <div className="flex flex-wrap items-baseline gap-x-2">
@@ -64,9 +68,25 @@ function SpellLine({ row }: { row: SpellRow }) {
           </span>
         )}
         {row.ritualOnly && <span className="text-[10px] text-muted">{t('spells.ritualOnly')}</span>}
-        <button className="ml-auto rounded border border-violet-500/60 px-2 py-0.5 text-xs font-semibold text-violet-700 hover:bg-violet-500/10 dark:text-violet-300" onClick={() => setCasting(true)}>
-          ✨ {t('spells.cast')}
-        </button>
+        <span className="ml-auto flex">
+          <button
+            className={`border border-violet-500/60 px-2 py-0.5 text-xs font-semibold text-violet-700 hover:bg-violet-500/10 dark:text-violet-300 ${options.length > 1 ? 'rounded-l' : 'rounded'}`}
+            title={t('spells.castHint')}
+            onClick={(e) => void quickCast(row, undefined, centerOf(e.currentTarget))}
+          >
+            ✨ {t('spells.cast')}
+          </button>
+          {options.length > 1 && (
+            <button
+              className="rounded-r border border-l-0 border-violet-500/60 px-1.5 py-0.5 text-xs font-semibold text-violet-700 hover:bg-violet-500/10 dark:text-violet-300"
+              title={t('spells.castHow')}
+              aria-label={t('spells.castHow')}
+              onClick={() => setCasting(!casting)}
+            >
+              ▾
+            </button>
+          )}
+        </span>
       </div>
       <div className="flex flex-wrap gap-x-3 text-xs text-muted">
         <span>{s.castingTime}</span>
@@ -77,6 +97,9 @@ function SpellLine({ row }: { row: SpellRow }) {
         {dice.damage && <span className="text-text">{dice.damage}</span>}
         {dice.heal && <span className="text-text">❤️ {dice.heal}</span>}
       </div>
+      <p className="text-sm leading-snug">
+        {spellBrief(s)} {upcastNote(s) && <span className="whitespace-nowrap text-xs font-semibold text-violet-700 dark:text-violet-300">{upcastNote(s)}</span>}
+      </p>
       {casting && <CastPrompt row={row} onDone={() => setCasting(false)} />}
     </li>
   )
@@ -209,10 +232,15 @@ function ManageSpells({ caster }: { caster: CasterState }) {
           return (
             <li key={s.id} className="flex items-center gap-2 py-1">
               <span className="w-8 text-xs text-muted">{s.level || 'C'}</span>
-              <RuleRef entity={s} content={content} className="flex-1">
-                {s.name}
-                <SpellTags spell={s} />
-              </RuleRef>
+              <div className="min-w-0 flex-1">
+                <RuleRef entity={s} content={content}>
+                  {s.name}
+                  <SpellTags spell={s} />
+                </RuleRef>
+                <p className="truncate text-xs text-muted" title={spellBrief(s)}>
+                  {spellBrief(s)}
+                </p>
+              </div>
               {(s.level === 0 || caster.mode === 'known' || caster.spellbook) && (
                 <label className="flex items-center gap-1 text-xs">
                   <input type="checkbox" checked={known} onChange={(e) => void toggle('known', s, e.target.checked)} />

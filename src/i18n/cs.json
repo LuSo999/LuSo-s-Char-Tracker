@@ -44,7 +44,9 @@
     "action": "Action",
     "bonusAction": "Bonus action",
     "reaction": "Reaction",
-    "other": "Other"
+    "other": "Other",
+    "byCategory": "Filtr podle druhu",
+    "byType": "Filtr podle typu akce"
   },
   "sheet": {
     "abilities": "Vlastnosti",
@@ -550,6 +552,42 @@
     "noConcentrationNow": "bez koncentrace",
     "magic": "Magie",
     "inActions": "{{count}} v akcích",
-    "open": "Otevřít"
+    "open": "Otevřít",
+    "noSlotsFor": "Na {{name}} už nezbývá slot.",
+    "castHow": "Seslat vyšším slotem, jako ritual…",
+    "castHint": "Sešle hned nejnižším vhodným slotem (Undo to vrátí)"
+  },
+  "actionCategory": {
+    "all": "Vše",
+    "weapon": "Attack",
+    "spellAttack": "Spell attack",
+    "magic": "Magic",
+    "other": "Other"
+  },
+  "shortcuts": {
+    "title": "Klávesové zkratky",
+    "button": "Klávesové zkratky",
+    "items": [
+      [
+        "Ctrl + najetí myší",
+        "Náhled pravidel u zvýrazněného názvu"
+      ],
+      [
+        "Ctrl + klik",
+        "Otevřít stránku s pravidly (wikidot) v nové záložce"
+      ],
+      [
+        "Enter / mezerník",
+        "Použít vybranou akci"
+      ],
+      [
+        "Enter",
+        "Potvrdit zadané číslo nebo jméno"
+      ],
+      [
+        "Esc",
+        "Zrušit úpravu, zavřít boční panel"
+      ]
+    ]
   }
 }

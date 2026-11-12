@@ -38,6 +38,15 @@ export function castOptions(row: SpellRow, sheet: Sheet): CastHow[] {
   return out
 }
 
+/**
+ * The cast used by a plain click: a cantrip, the free cast, the lowest slot
+ * that fits, Pact slots, and a ritual only when nothing else is left.
+ */
+export function defaultCast(options: CastHow[]): CastHow | undefined {
+  const rank = (o: CastHow) => (o.kind === 'cantrip' ? 0 : o.kind === 'free' ? 1 : o.kind === 'slot' ? 2 + o.level / 10 : o.kind === 'pact' ? 3 : 4)
+  return [...options].sort((a, b) => rank(a) - rank(b))[0]
+}
+
 export function castSpell(char: Character, sheet: Sheet, row: SpellRow, how: CastHow): ActionResult {
   const spell = row.spell
   const items: HistoryItem[] = []

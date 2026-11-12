@@ -44,7 +44,9 @@
     "action": "Action",
     "bonusAction": "Bonus action",
     "reaction": "Reaction",
-    "other": "Other"
+    "other": "Other",
+    "byCategory": "Filter by kind",
+    "byType": "Filter by action type"
   },
   "sheet": {
     "abilities": "Abilities",
@@ -550,6 +552,42 @@
     "noConcentrationNow": "not concentrating",
     "magic": "Magic",
     "inActions": "{{count}} in actions",
-    "open": "Open"
+    "open": "Open",
+    "noSlotsFor": "No slot left for {{name}}.",
+    "castHow": "Cast with a higher slot, as a ritual…",
+    "castHint": "Casts right away with the lowest slot that fits (Undo takes it back)"
+  },
+  "actionCategory": {
+    "all": "All",
+    "weapon": "Attack",
+    "spellAttack": "Spell attack",
+    "magic": "Magic",
+    "other": "Other"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "button": "Keyboard shortcuts",
+    "items": [
+      [
+        "Ctrl + hover",
+        "Preview rules of a highlighted name"
+      ],
+      [
+        "Ctrl + click",
+        "Open the rules page (wikidot) in a new tab"
+      ],
+      [
+        "Enter / Space",
+        "Use the focused action"
+      ],
+      [
+        "Enter",
+        "Confirm a typed number or name"
+      ],
+      [
+        "Esc",
+        "Cancel editing, close the side panel"
+      ]
+    ]
   }
 }

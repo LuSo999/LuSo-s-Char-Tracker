@@ -44,15 +44,25 @@ export function SidePanel({
   )
 }
 
-/** Vertical tab on the edge of the sheet that opens a side panel (desktop). */
-export function EdgeHandle({ side, label, onClick }: { side: 'left' | 'right'; label: string; onClick: () => void }) {
+/**
+ * Tall vertical tab on the edge of the sheet that opens a side panel
+ * (desktop). Both read top to bottom; icon and arrow stay upright, the arrow
+ * pointing to where the panel slides in from.
+ */
+export function EdgeHandle({ side, icon, label, onClick }: { side: 'left' | 'right'; icon: string; label: string; onClick: () => void }) {
+  const arrow = side === 'left' ? '▸' : '◂'
   return (
     <button
       onClick={onClick}
-      className={`fixed top-1/2 z-20 hidden -translate-y-1/2 items-center gap-1 rounded-card border border-border bg-card px-1.5 py-4 text-sm font-semibold shadow-md hover:bg-accent hover:text-accent-text sm:flex ${side === 'left' ? 'left-0 rounded-l-none' : 'right-0 rounded-r-none'}`}
-      style={{ writingMode: 'vertical-rl', transform: `translateY(-50%) ${side === 'left' ? 'rotate(180deg)' : ''}` }}
+      aria-label={label}
+      className={`fixed top-1/2 z-20 hidden min-h-64 w-9 -translate-y-1/2 flex-col items-center justify-center gap-2 border border-border bg-card py-5 text-sm font-semibold shadow-md hover:bg-accent hover:text-accent-text sm:flex ${side === 'left' ? 'left-0 rounded-r-card border-l-0' : 'right-0 rounded-l-card border-r-0'}`}
     >
-      {side === 'left' ? `${label} ›` : `‹ ${label}`}
+      <span aria-hidden className="text-xs">{arrow}</span>
+      <span aria-hidden className="text-base">{icon}</span>
+      <span style={{ writingMode: 'vertical-rl' }} className="tracking-wide">
+        {label}
+      </span>
+      <span aria-hidden className="text-xs">{arrow}</span>
     </button>
   )
 }
