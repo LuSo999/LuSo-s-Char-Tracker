@@ -265,7 +265,7 @@ export function SpellcastingDrawer({ onClose }: { onClose: () => void }) {
   const [manage, setManage] = useState<string>()
   const sc = sheet.spellcasting
   const slotState = (key: string) => sheet.resources.find((r) => r.key === key)
-  const granters = sheet.active.filter((ae) => ae.entity.spells.length > 0)
+  const granters = sheet.active.filter((ae) => (ae.entity.spells ?? []).length > 0)
   const byLevel = new Map<number, SpellRow[]>()
   for (const r of sc.rows) byLevel.set(r.spell.level, [...(byLevel.get(r.spell.level) ?? []), r])
 

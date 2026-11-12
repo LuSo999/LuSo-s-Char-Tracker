@@ -166,7 +166,7 @@ export function computeSpellcasting(
   const bestCasterAbility = casters[0]?.ability
   const bestMental = (['int', 'wis', 'cha'] as Ability[]).reduce((a, b) => (ctx.mods[b] > ctx.mods[a] ? b : a), 'int' as Ability)
   for (const ae of active) {
-    const grants = ae.entity.type === 'spell' ? [{ id: ae.entity.id }] : ae.entity.spells
+    const grants = ae.entity.type === 'spell' ? [{ id: ae.entity.id }] : (ae.entity.spells ?? [])
     for (const g of grants) {
       if ('minLevel' in g && g.minLevel !== undefined && ae.classLevel < g.minLevel) continue
       const ids = g.id ? [g.id] : 'fromChoice' in g && g.fromChoice ? selections(char, ae, g.fromChoice) : []
@@ -185,7 +185,7 @@ export function computeSpellcasting(
   }
 
   // Also "any" when something grants spells whose choices are still open (e.g. a new Magic Initiate).
-  const any = casters.length > 0 || rows.length > 0 || active.some((ae) => ae.entity.spells.length > 0)
+  const any = casters.length > 0 || rows.length > 0 || active.some((ae) => (ae.entity.spells ?? []).length > 0)
   return { casters, slots, pact, rows, resources, any }
 }
 

@@ -126,3 +126,19 @@ describe('concentration at 0 HP', () => {
     expect(okR(takeDamage(c, computeSheet(c, c24), 10)).concentration).toBeUndefined()
   })
 })
+
+describe('content saved by an older app version', () => {
+  it('a feature without the newer "spells" field does not break the sheet', async () => {
+    const { ContentIndex } = await import('../content')
+    const { readFileSync } = await import('node:fs')
+    const { Pack } = await import('../content/schema')
+    const srdPack = Pack.parse(JSON.parse(readFileSync(new URL('../data/srd/2024.json', import.meta.url), 'utf8')))
+    const old = {
+      id: 'old', name: 'Old pack', edition: '2024', version: '1', book: 'x',
+      entities: [{ id: 'old-feature', edition: '2024', type: 'feature', name: 'Old', description: '', source: { book: 'x' }, verified: true, effects: [], resources: [], activities: [], choices: [], tags: [] }],
+    } as unknown as import('../content/schema').Pack
+    const content = new ContentIndex('2024', [srdPack, old])
+    const c = valdric({ extras: [{ uid: 'o', entityId: 'old-feature' }] })
+    expect(() => computeSheet(c, content)).not.toThrow()
+  })
+})

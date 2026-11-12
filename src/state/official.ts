@@ -40,7 +40,9 @@ export async function loadOfficial(force = false) {
     const meta = metaSnap.data() as Meta
     const cached = await cacheGet<{ version: string; packs: Pack[] }>(CACHE_KEY)
     if (cached?.version === meta.version) {
-      useOfficial.setState({ status: 'ready', packs: cached.packs, version: meta.version })
+      // The cache may come from an older app version: parse it again so new fields get their defaults.
+      const packs = cached.packs.map((p) => Pack.safeParse(p)).filter((r) => r.success).map((r) => r.data)
+      useOfficial.setState({ status: 'ready', packs, version: meta.version })
       return
     }
     const snap = await getDocs(partsCol())
