@@ -391,6 +391,10 @@
     "sortRarity": "Rarity",
     "reset": "Clear filters",
     "found": "{{count}} found",
-    "showing": "showing {{count}}"
+    "showing": "showing {{count}}",
+    "edition": "Edition",
+    "thisEdition": "This edition",
+    "bothEditions": "Both editions",
+    "foreignHint": "Item from the other edition: it works by the rules of its own edition."
   }
 }

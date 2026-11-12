@@ -7,6 +7,19 @@ import { Character, type CharacterInput } from './character'
 
 const packs = new Map<Edition, Pack>()
 
+function pack(edition: Edition): Pack {
+  if (!packs.has(edition)) {
+    const raw = JSON.parse(readFileSync(new URL(`../data/srd/${edition}.json`, import.meta.url), 'utf8'))
+    packs.set(edition, Pack.parse(raw))
+  }
+  return packs.get(edition)!
+}
+
+/** Content for an edition with the other edition's items available, as in the app. */
+export function srdBoth(edition: Edition): ContentIndex {
+  return new ContentIndex(edition, [pack(edition), pack(edition === '2014' ? '2024' : '2014')])
+}
+
 export function srd(edition: Edition): ContentIndex {
   if (!packs.has(edition)) {
     const raw = JSON.parse(readFileSync(new URL(`../data/srd/${edition}.json`, import.meta.url), 'utf8'))

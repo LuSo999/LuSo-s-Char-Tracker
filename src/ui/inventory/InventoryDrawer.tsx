@@ -41,6 +41,11 @@ function ItemRow({ r }: { r: ResolvedEntry }) {
         <RuleRef entity={r.item} content={content} className="min-w-0 flex-1 font-semibold">
           {r.item.magic && <span aria-hidden>✨ </span>}
           {r.name}
+          {content.isForeign(r.item.id) && (
+            <span className="ml-1.5 rounded border border-border px-1 text-[10px] font-normal text-muted" title={t('itemFilters.foreignHint')}>
+              {r.item.edition === '2014' ? '5e (2014)' : '5.5e (2024)'}
+            </span>
+          )}
         </RuleRef>
         <span className="text-xs text-muted tabular-nums">{Math.round(unitWeight(r) * e.quantity * 100) / 100} lb</span>
         <NumberAdjust

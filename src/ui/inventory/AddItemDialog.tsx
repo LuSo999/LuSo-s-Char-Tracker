@@ -26,9 +26,10 @@ export function AddItemDialog({ onClose }: { onClose: () => void }) {
   const [quantity, setQuantityState] = useState(1)
 
   const all = useMemo(
-    () => content.all('item').filter((i) => !i.tags.includes('variant-group')).sort((a, b) => a.name.localeCompare(b.name)),
-    [content],
+    () => content.all('item', { foreign: filters.edition === 'both' }).filter((i) => !i.tags.includes('variant-group')),
+    [content, filters.edition],
   )
+  const editionBadge = (i: Item) => (content.isForeign(i.id) ? (i.edition === '2014' ? '5e (2014)' : '5.5e (2024)') : undefined)
   const bookOf = (i: Item) => content.pack(i.id)?.name ?? i.source.book
   const books = [...new Set(all.map(bookOf))]
   const found = filterItems(all, filters, bookOf)
@@ -107,6 +108,10 @@ export function AddItemDialog({ onClose }: { onClose: () => void }) {
                 ))}
               </select>
             )}
+            <select className={select} value={filters.edition} onChange={(e) => set({ edition: e.target.value as ItemFilters['edition'] })} aria-label={t('itemFilters.edition')}>
+              <option value="this">📘 {t('itemFilters.thisEdition')}</option>
+              <option value="both">📚 {t('itemFilters.bothEditions')}</option>
+            </select>
             <select className={select} value={filters.sort} onChange={(e) => set({ sort: e.target.value as ItemFilters['sort'] })} aria-label={t('itemFilters.sort')}>
               <option value="name">↕ {t('itemFilters.sortName')}</option>
               <option value="cost">↕ {t('itemFilters.sortCost')}</option>
@@ -137,6 +142,7 @@ export function AddItemDialog({ onClose }: { onClose: () => void }) {
                   <RuleRef entity={i} content={content} className="flex-1 font-medium">
                     {i.name}
                   </RuleRef>
+                  {editionBadge(i) && <span className="rounded border border-border px-1 text-[10px] text-muted">{editionBadge(i)}</span>}
                   <span className="text-xs text-muted">
                     {i.magic ? (i.rarity ?? '') : i.cost ? `${i.cost.amount} ${i.cost.unit}` : ''}
                     {i.attunement ? ' · 🔗' : ''}

@@ -17,9 +17,11 @@ export type ItemFilters = {
   sub: string
   book: string
   sort: 'name' | 'cost' | 'rarity'
+  /** Items of this edition only, or both editions. */
+  edition: 'this' | 'both'
 }
 
-export const defaultFilters: ItemFilters = { query: '', category: 'all', magic: 'all', rarity: '', attunement: 'all', sub: '', book: '', sort: 'name' }
+export const defaultFilters: ItemFilters = { query: '', category: 'all', magic: 'all', rarity: '', attunement: 'all', sub: '', book: '', sort: 'name', edition: 'this' }
 
 export function categoryOf(i: Item): Exclude<Category, 'all'> {
   if (i.kind === 'weapon' || ('baseKind' in i && i.baseKind === 'weapon')) return 'weapon'

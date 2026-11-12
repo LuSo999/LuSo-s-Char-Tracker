@@ -391,6 +391,10 @@
     "sortRarity": "Vzácnost",
     "reset": "Zrušit filtry",
     "found": "Nalezeno: {{count}}",
-    "showing": "zobrazeno {{count}}"
+    "showing": "zobrazeno {{count}}",
+    "edition": "Edice",
+    "thisEdition": "Tato edice",
+    "bothEditions": "Obě edice",
+    "foreignHint": "Předmět z druhé edice: funguje podle pravidel své edice."
   }
 }

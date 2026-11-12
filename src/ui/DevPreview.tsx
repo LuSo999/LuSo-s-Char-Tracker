@@ -20,7 +20,7 @@ export default function DevPreview() {
   const [state, setState] = useState<{ character: Character; packs: Pack[] }>()
   useEffect(() => {
     void (async () => {
-      const srd = await loadSrd('2024')
+      const [srd, other] = await Promise.all([loadSrd('2024'), loadSrd('2014')])
       const official = privateFiles['../../private/official-content.json']
       const valdric = privateFiles['../../private/valdric.json']
       const usePrivate = official !== undefined && valdric !== undefined && !location.hash.includes('sample')
@@ -30,7 +30,7 @@ export default function DevPreview() {
       // #/dev?level=5 previews a higher level (e.g. Extra Attack).
       const level = Number(/level=(\d+)/.exec(location.hash)?.[1])
       if (level) character.classes[0] = { ...character.classes[0], level }
-      setState({ character, packs: [srd, ...packs] })
+      setState({ character, packs: [srd, other, ...packs] })
     })()
   }, [])
   const content = useMemo(() => state && new ContentIndex('2024', state.packs), [state])
