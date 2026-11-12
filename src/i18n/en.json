@@ -350,5 +350,47 @@
     "loading": "Loading: one shot per action",
     "heavySmall": "Heavy: Disadvantage for Small creatures",
     "heavyWeak": "Heavy: Disadvantage (score under 13)"
+  },
+  "itemFilters": {
+    "categories": {
+      "all": "All",
+      "weapon": "Weapons",
+      "armor": "Armor",
+      "ammunition": "Ammunition",
+      "potion": "Potions",
+      "gear": "Gear",
+      "wondrous": "Magic items"
+    },
+    "type": "Type",
+    "anyType": "Any type",
+    "sub": {
+      "simple": "Simple",
+      "martial": "Martial",
+      "melee": "Melee",
+      "ranged": "Ranged",
+      "light": "Light",
+      "medium": "Medium",
+      "heavy": "Heavy",
+      "shield": "Shield"
+    },
+    "magic": "Magic",
+    "magicAll": "Magic and mundane",
+    "magicOnly": "Magic only",
+    "mundaneOnly": "Mundane only",
+    "rarity": "Rarity",
+    "anyRarity": "Any rarity",
+    "attunement": "Attunement",
+    "attunementAny": "Attunement: any",
+    "attunementYes": "Needs attunement",
+    "attunementNo": "No attunement",
+    "book": "Book",
+    "anyBook": "All books",
+    "sort": "Sort",
+    "sortName": "Name",
+    "sortCost": "Price",
+    "sortRarity": "Rarity",
+    "reset": "Clear filters",
+    "found": "{{count}} found",
+    "showing": "showing {{count}}"
   }
 }

@@ -6,6 +6,9 @@ import { magicName } from '../../engine/items'
 import { RuleRef } from '../rules/RuleRef'
 import { useRun, useSheet } from '../sheet/context'
 import { Dialog } from '../sheet/RestDialog'
+import { categories, defaultFilters, filterItems, rarities, type ItemFilters } from './itemFilters'
+
+const categoryIcon: Record<string, string> = { all: '🔎', weapon: '⚔️', armor: '🛡️', ammunition: '🏹', potion: '🧪', gear: '📦', wondrous: '✨' }
 
 const kindIcon: Record<string, string> = {
   weapon: '⚔️', armor: '🛡️', ammunition: '🏹', potion: '🧪', ring: '💍', wand: '🪄', staff: '🦯', rod: '🦯', scroll: '📜', tool: '🔧', pack: '🎒', gear: '📦', wondrous: '✨',
@@ -16,7 +19,8 @@ export function AddItemDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation()
   const { character, content } = useSheet()
   const run = useRun()
-  const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState<ItemFilters>(defaultFilters)
+  const set = (patch: Partial<ItemFilters>) => setFilters((f) => ({ ...f, ...patch }))
   const [picked, setPicked] = useState<Item>()
   const [baseId, setBaseId] = useState('')
   const [quantity, setQuantityState] = useState(1)
@@ -25,8 +29,13 @@ export function AddItemDialog({ onClose }: { onClose: () => void }) {
     () => content.all('item').filter((i) => !i.tags.includes('variant-group')).sort((a, b) => a.name.localeCompare(b.name)),
     [content],
   )
-  const q = query.trim().toLowerCase()
-  const results = (q ? all.filter((i) => i.name.toLowerCase().includes(q)) : all).slice(0, 80)
+  const bookOf = (i: Item) => content.pack(i.id)?.name ?? i.source.book
+  const books = [...new Set(all.map(bookOf))]
+  const found = filterItems(all, filters, bookOf)
+  const LIMIT = 150
+  const results = found.slice(0, LIMIT)
+  const subOptions = filters.category === 'weapon' ? ['simple', 'martial', 'melee', 'ranged'] : filters.category === 'armor' ? ['light', 'medium', 'heavy', 'shield'] : []
+  const select = 'rounded border border-border bg-card px-1.5 py-0.5 text-sm'
   const baseOptions = picked && 'baseOptions' in picked ? (picked.baseOptions ?? []).map((id) => content.item(id)).filter((i): i is Item => !!i) : []
 
   async function add() {
@@ -43,9 +52,76 @@ export function AddItemDialog({ onClose }: { onClose: () => void }) {
             autoFocus
             className="w-full rounded border border-border bg-card px-2 py-1.5"
             placeholder={t('inventory.searchItems')}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={filters.query}
+            onChange={(e) => set({ query: e.target.value })}
           />
+          <div className="mt-2 flex flex-wrap gap-1">
+            {categories.map((c) => (
+              <button
+                key={c}
+                className={`rounded-full border px-2.5 py-0.5 text-sm ${filters.category === c ? 'border-accent bg-accent text-accent-text' : 'border-border hover:bg-bg'}`}
+                onClick={() => set({ category: c, sub: '' })}
+              >
+                {categoryIcon[c]} {t(`itemFilters.categories.${c}`)}
+              </button>
+            ))}
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            {subOptions.length > 0 && (
+              <select className={select} value={filters.sub} onChange={(e) => set({ sub: e.target.value })} aria-label={t('itemFilters.type')}>
+                <option value="">{t('itemFilters.anyType')}</option>
+                {subOptions.map((o) => (
+                  <option key={o} value={o}>
+                    {t(`itemFilters.sub.${o}`)}
+                  </option>
+                ))}
+              </select>
+            )}
+            <select className={select} value={filters.magic} onChange={(e) => set({ magic: e.target.value as ItemFilters['magic'], rarity: '' })} aria-label={t('itemFilters.magic')}>
+              <option value="all">{t('itemFilters.magicAll')}</option>
+              <option value="magic">✨ {t('itemFilters.magicOnly')}</option>
+              <option value="mundane">{t('itemFilters.mundaneOnly')}</option>
+            </select>
+            {filters.magic !== 'mundane' && (
+              <select className={select} value={filters.rarity} onChange={(e) => set({ rarity: e.target.value })} aria-label={t('itemFilters.rarity')}>
+                <option value="">{t('itemFilters.anyRarity')}</option>
+                {rarities.map((r) => (
+                  <option key={r} value={r}>
+                    {r[0].toUpperCase() + r.slice(1)}
+                  </option>
+                ))}
+              </select>
+            )}
+            <select className={select} value={filters.attunement} onChange={(e) => set({ attunement: e.target.value as ItemFilters['attunement'] })} aria-label={t('itemFilters.attunement')}>
+              <option value="all">🔗 {t('itemFilters.attunementAny')}</option>
+              <option value="yes">🔗 {t('itemFilters.attunementYes')}</option>
+              <option value="no">{t('itemFilters.attunementNo')}</option>
+            </select>
+            {books.length > 1 && (
+              <select className={select} value={filters.book} onChange={(e) => set({ book: e.target.value })} aria-label={t('itemFilters.book')}>
+                <option value="">📚 {t('itemFilters.anyBook')}</option>
+                {books.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            )}
+            <select className={select} value={filters.sort} onChange={(e) => set({ sort: e.target.value as ItemFilters['sort'] })} aria-label={t('itemFilters.sort')}>
+              <option value="name">↕ {t('itemFilters.sortName')}</option>
+              <option value="cost">↕ {t('itemFilters.sortCost')}</option>
+              <option value="rarity">↕ {t('itemFilters.sortRarity')}</option>
+            </select>
+            {JSON.stringify(filters) !== JSON.stringify(defaultFilters) && (
+              <button className="text-muted underline" onClick={() => setFilters(defaultFilters)}>
+                {t('itemFilters.reset')}
+              </button>
+            )}
+            <span className="ml-auto text-xs text-muted">
+              {t('itemFilters.found', { count: found.length })}
+              {found.length > LIMIT ? ` · ${t('itemFilters.showing', { count: LIMIT })}` : ''}
+            </span>
+          </div>
           <ul className="mt-2 max-h-[55vh] divide-y divide-border overflow-y-auto">
             {results.map((i) => (
               <li key={i.id}>

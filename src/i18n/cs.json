@@ -350,5 +350,47 @@
     "loading": "Loading: jeden výstřel za akci",
     "heavySmall": "Heavy: Disadvantage pro Small",
     "heavyWeak": "Heavy: Disadvantage (vlastnost pod 13)"
+  },
+  "itemFilters": {
+    "categories": {
+      "all": "Vše",
+      "weapon": "Zbraně",
+      "armor": "Zbroj",
+      "ammunition": "Munice",
+      "potion": "Lektvary",
+      "gear": "Vybavení",
+      "wondrous": "Magické předměty"
+    },
+    "type": "Typ",
+    "anyType": "Jakýkoli typ",
+    "sub": {
+      "simple": "Simple",
+      "martial": "Martial",
+      "melee": "Na blízko",
+      "ranged": "Na dálku",
+      "light": "Light",
+      "medium": "Medium",
+      "heavy": "Heavy",
+      "shield": "Štít"
+    },
+    "magic": "Magie",
+    "magicAll": "Magické i obyčejné",
+    "magicOnly": "Jen magické",
+    "mundaneOnly": "Jen obyčejné",
+    "rarity": "Vzácnost",
+    "anyRarity": "Jakákoli vzácnost",
+    "attunement": "Attunement",
+    "attunementAny": "Attunement: jakýkoli",
+    "attunementYes": "Vyžaduje attunement",
+    "attunementNo": "Bez attunementu",
+    "book": "Kniha",
+    "anyBook": "Všechny knihy",
+    "sort": "Řazení",
+    "sortName": "Název",
+    "sortCost": "Cena",
+    "sortRarity": "Vzácnost",
+    "reset": "Zrušit filtry",
+    "found": "Nalezeno: {{count}}",
+    "showing": "zobrazeno {{count}}"
   }
 }
