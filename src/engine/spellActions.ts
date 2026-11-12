@@ -33,7 +33,7 @@ export function castOptions(row: SpellRow, sheet: Sheet): CastHow[] {
     // Pact slots: the Warlock's own spells, or any spell when multiclassing (both SRDs).
     if (sc.pact && sc.pact.level >= spell.level && left('pact') > 0) out.push({ kind: 'pact' })
   }
-  if (row.freeCast && left(row.freeCast) > 0) out.push({ kind: 'free' })
+  if (row.atWill || (row.freeCast && left(row.freeCast) > 0)) out.push({ kind: 'free' })
   if (row.canRitual) out.push({ kind: 'ritual' })
   return out
 }
@@ -67,7 +67,7 @@ export function castSpell(char: Character, sheet: Sheet, row: SpellRow, how: Cas
     if (!spend('pact')) return { ok: false, error: 'noSlot', params: { level: sheet.spellcasting.pact?.level ?? 0 } }
     level = sheet.spellcasting.pact!.level
   } else if (how.kind === 'free') {
-    if (!row.freeCast || !spend(row.freeCast)) return { ok: false, error: 'notEnough', params: { name: spell.name } }
+    if (!row.atWill && (!row.freeCast || !spend(row.freeCast))) return { ok: false, error: 'notEnough', params: { name: spell.name } }
   } else if (how.kind === 'ritual') {
     if (!row.canRitual) return { ok: false, error: 'notRitual' }
   } else if (spell.level !== 0) {
@@ -143,4 +143,44 @@ export function toggleFavoriteSpell(char: Character, spellId: string, name: stri
   const on = !char.favoriteSpells.includes(spellId)
   const favoriteSpells = on ? [...char.favoriteSpells, spellId] : char.favoriteSpells.filter((id) => id !== spellId)
   return ok({ ...char, favoriteSpells }, [{ type: on ? 'favoriteOn' : 'favoriteOff', params: { name }, entity: spellId }], 'spells', 'sheet')
+}
+
+/**
+ * Font of Magic (Sorcerer, both SRDs). Creating a slot costs Sorcery Points
+ * by level — 1: 2, 2: 3, 3: 5, 4: 6, 5: 7, no higher than level 5 (2024 also
+ * needs Sorcerer level 2 / 3 / 5 / 7 / 9) — and the slot vanishes on a Long
+ * Rest: it's tracked as a negative "used" count, which the rest resets.
+ * Converting a slot gives points equal to its level, up to the maximum.
+ */
+export const slotCost: Record<number, { points: number; minLevel: number }> = {
+  1: { points: 2, minLevel: 2 },
+  2: { points: 3, minLevel: 3 },
+  3: { points: 5, minLevel: 5 },
+  4: { points: 6, minLevel: 7 },
+  5: { points: 7, minLevel: 9 },
+}
+
+export function fontOfMagic(char: Character, sheet: Sheet, pointsKey: string, mode: 'create' | 'convert', level: number, sorcererLevel: number): ActionResult {
+  const points = sheet.resources.find((r) => r.key === pointsKey)
+  const slot = sheet.resources.find((r) => r.key === `slot:${level}`)
+  if (!points || !slot) return { ok: false, error: 'noSlot', params: { level } }
+  const used = (key: string, r: { used: number }) => char.resourcesUsed[key] ?? r.used
+  if (mode === 'create') {
+    const cost = slotCost[level]
+    if (!cost || (char.edition === '2024' && sorcererLevel < cost.minLevel)) return { ok: false, error: 'slotTooHigh', params: { level } }
+    if (points.remaining < cost.points) return { ok: false, error: 'notEnough', params: { name: points.resource.name } }
+    const next = { ...char, resourcesUsed: { ...char.resourcesUsed, [pointsKey]: used(pointsKey, points) + cost.points, [slot.key]: used(slot.key, slot) - 1 } }
+    return ok(next, [
+      { type: 'slotCreated', params: { level }, before: slot.remaining, after: slot.remaining + 1 },
+      { type: 'resource', params: { name: points.resource.name }, before: points.remaining, after: points.remaining - cost.points },
+    ], 'use')
+  }
+  if (slot.remaining <= 0) return { ok: false, error: 'noSlot', params: { level } }
+  const gain = Math.min(level, points.max - points.remaining)
+  if (gain <= 0) return { ok: false, error: 'noChange' }
+  const next = { ...char, resourcesUsed: { ...char.resourcesUsed, [pointsKey]: used(pointsKey, points) - gain, [slot.key]: used(slot.key, slot) + 1 } }
+  return ok(next, [
+    { type: 'slotConverted', params: { level }, before: slot.remaining, after: slot.remaining - 1 },
+    { type: 'resource', params: { name: points.resource.name }, before: points.remaining, after: points.remaining + gain },
+  ], 'use')
 }

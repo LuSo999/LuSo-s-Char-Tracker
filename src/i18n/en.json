@@ -361,7 +361,9 @@
       "spellForgotten": "Removed {{name}} ({{class}})",
       "choice": "{{what}}: {{before}} → {{after}}",
       "favoriteOn": "★ {{name}}",
-      "favoriteOff": "☆ {{name}}"
+      "favoriteOff": "☆ {{name}}",
+      "slotCreated": "Spell slot (level {{level}}) created from Sorcery Points",
+      "slotConverted": "Spell slot (level {{level}}) turned into Sorcery Points"
     },
     "attackAction": "Attack action"
   },
@@ -659,5 +661,9 @@
       "saved": "Saved",
       "howTo": "How to set it up (2 minutes)"
     }
+  },
+  "font": {
+    "create": "Create a spell slot:",
+    "convert": "Turn a spell slot into Sorcery Points:"
   }
 }

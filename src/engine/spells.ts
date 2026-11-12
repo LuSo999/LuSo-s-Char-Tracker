@@ -52,6 +52,8 @@ export type SpellRow = {
   canRitual: boolean
   /** Resource for casting it once without a slot (Magic Initiate). */
   freeCast?: string
+  /** Cast without a slot at will (Eldritch Invocations). */
+  atWill?: boolean
 }
 
 export type SlotLevel = { level: number; max: number; key: string }
@@ -179,6 +181,7 @@ export function computeSpellcasting(
           key: `${ae.grantKey}:${id}`, spell, grantedBy: ae, ability, dc: dcFor(ability), attackBonus: atkFor(ability),
           castable: true, always: true, ritualOnly: false, canRitual: spell.ritual,
           freeCast: 'freeCast' in g ? g.freeCast : undefined,
+          atWill: 'atWill' in g ? g.atWill : undefined,
         })
       }
     }

@@ -56,7 +56,7 @@ describe.each(editions)('SRD %s', (edition) => {
   it('has a resource for every activity cost', () => {
     const resourceIds = new Set(entities.flatMap((e) => e.resources.map((r) => r.id)))
     const missing = entities.flatMap((e) =>
-      e.activities.flatMap((a) => a.cost.filter((c) => c.resource !== '@quantity' && !resourceIds.has(c.resource)).map((c) => `${e.id}: ${c.resource}`)),
+      e.activities.flatMap((a) => a.cost.filter((c) => c.resource !== '@quantity' && c.resource !== 'pact' && !c.resource.startsWith('slot:') && !resourceIds.has(c.resource)).map((c) => `${e.id}: ${c.resource}`)),
     )
     expect(missing).toEqual([])
   })

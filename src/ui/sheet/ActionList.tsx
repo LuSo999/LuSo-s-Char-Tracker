@@ -11,7 +11,7 @@ import { spellBrief, spellDice, upcastNote, type SpellRow } from '../../engine/s
 import { useCastSpell } from '../spells/useCastSpell'
 import { CastPrompt } from '../spells/CastPrompt'
 import { useOnResetFilters } from './shortcuts'
-import { castOptions } from '../../engine/spellActions'
+import { castOptions, fontOfMagic, slotCost } from '../../engine/spellActions'
 import { RuleRef } from '../rules/RuleRef'
 import { useSettings } from '../../state/settings'
 import { centerOf, fx } from '../fx/fx'
@@ -330,8 +330,52 @@ function BlockedPrompt({ row, problem, onChoose }: { row: Row; problem: Problem;
 }
 
 /** Asks for the physical dice result of a healing action; the bonus is added by the app. */
+/** Font of Magic: pick the slot level to create (for Sorcery Points) or to turn into points. */
+function FontPrompt({ row, onDone }: { row: ActivityRow; onDone: () => void }) {
+  const { t } = useTranslation()
+  const { character, sheet } = useSheet()
+  const run = useRun()
+  const mode = row.activity.fontOfMagic!
+  const points = sheet.resources.find((r) => r.resource.id === 'sorcery-points')
+  const slots = sheet.spellcasting.slots.filter((s) => s.level <= 5)
+  const left = (key: string) => sheet.resources.find((r) => r.key === key)?.remaining ?? 0
+  async function pick(level: number) {
+    if (!points) return
+    const group = await run(fontOfMagic(character, sheet, points.key, mode, level, row.source.classLevel))
+    if (group) {
+      fx('magic')
+      if (mode === 'create' && useSettings.getState().turnMode !== 'off') {
+        // Creating a slot takes a Bonus Action.
+        useTurn.getState().use('bonusAction')
+      }
+    }
+    onDone()
+  }
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-1.5 rounded border border-violet-500/60 bg-violet-500/5 p-2 text-sm">
+      <span className="font-semibold">{t(mode === 'create' ? 'font.create' : 'font.convert')}</span>
+      <span className="text-xs text-muted">({points?.remaining ?? 0} SP)</span>
+      {slots.map((s) => {
+        const cost = slotCost[s.level]
+        const disabled = mode === 'create' ? (points?.remaining ?? 0) < cost.points || (character.edition === '2024' && row.source.classLevel < cost.minLevel) : left(s.key) <= 0
+        return (
+          <button key={s.level} disabled={disabled} className="rounded border border-violet-500/60 px-2 py-0.5 hover:bg-violet-500/10 disabled:opacity-40" onClick={() => void pick(s.level)}>
+            {t('spells.castAt', { level: s.level })} <span className="text-xs text-muted">{mode === 'create' ? `−${cost.points} SP` : `+${s.level} SP`}</span>
+          </button>
+        )
+      })}
+      <button className="text-muted underline" onClick={onDone}>
+        {t('cancel')}
+      </button>
+    </div>
+  )
+}
+
 /** Activities that ask for a number first: healing / Temp HP rolls, and points spent from a pool. */
-const needsPrompt = (r: Row) => !!r.activity && (r.activity.activity.spendInput || ['heal', 'temp'].includes(r.activity.activity.roll?.kind ?? ''))
+const healing = (r: Row) => ['heal', 'temp'].includes(r.activity?.activity.roll?.kind ?? '')
+const needsPrompt = (r: Row) => !!r.activity && (r.activity.activity.spendInput || !!r.activity.activity.fontOfMagic || (healing(r) && !!r.activity.rollDice))
+/** Healing / Temp HP without dice (Dark One's Blessing): the bonus applies straight away. */
+const autoRoll = (r: Row) => (healing(r) && !r.activity?.rollDice ? 0 : undefined)
 
 function RollPrompt({ row, onDone }: { row: ActivityRow; onDone: (roll?: number, spendOnly?: boolean) => void }) {
   const { t } = useTranslation()
@@ -507,7 +551,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       return void quickCast(r.spellRow, undefined, at)
     }
     if (needsPrompt(r)) return setPrompt(r.key)
-    await perform(r, undefined, at, undefined, thrown)
+    await perform(r, undefined, at, autoRoll(r), thrown)
   }
 
   async function chooseBlocked(r: Row, choice: Choice) {
@@ -520,7 +564,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     }
     if (r.spellRow) return void quickCast(r.spellRow, choice, at)
     if (needsPrompt(r)) return setPrompt(r.key)
-    await perform(r, choice, at)
+    await perform(r, choice, at, autoRoll(r))
   }
 
   async function finishRoll(r: Row, roll?: number, spendOnly = false) {
@@ -733,7 +777,8 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
               />
             )}
             {blocked?.key === r.key && <BlockedPrompt row={r} problem={blocked.problem} onChoose={(c) => void chooseBlocked(r, c)} />}
-            {prompt === r.key && r.activity && <RollPrompt row={r.activity} onDone={(roll, spendOnly) => void finishRoll(r, roll, spendOnly)} />}
+            {prompt === r.key && r.activity?.activity.fontOfMagic && <FontPrompt row={r.activity} onDone={() => setPrompt(undefined)} />}
+            {prompt === r.key && r.activity && !r.activity.activity.fontOfMagic && <RollPrompt row={r.activity} onDone={(roll, spendOnly) => void finishRoll(r, roll, spendOnly)} />}
           </li>
         ))}
       </ul>

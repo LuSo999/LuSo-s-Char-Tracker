@@ -172,6 +172,8 @@ export const Activity = z.object({
   perTurn: z.number().int().min(1).optional(),
   /** At most one activity of this group per attack (e.g. "maneuver"). */
   perAttack: z.string().optional(),
+  /** Font of Magic: turn Sorcery Points into a spell slot ("create") or a slot into points ("convert"). */
+  fontOfMagic: z.enum(['create', 'convert']).optional(),
   /** Pool features (Lay on Hands): the player enters how many points to spend; with a heal roll that many HP are restored. */
   spendInput: z.boolean().default(false),
   /** An attack or a rider on a hit (Flurry of Blows, Sneak Attack): listed with the attacks. */
@@ -232,6 +234,8 @@ export const GrantedSpell = z.object({
   abilityFromChoice: z.string().optional(),
   /** Resource id for casting it without a slot (e.g. once per Long Rest). */
   freeCast: z.string().optional(),
+  /** Cast without a slot as often as you like (Eldritch Invocations: Armor of Shadows, Mask of Many Faces…). */
+  atWill: z.boolean().optional(),
 })
 export type GrantedSpell = z.infer<typeof GrantedSpell>
 

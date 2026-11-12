@@ -41,8 +41,9 @@ export function Dots({ remaining, max, label, onSet }: { remaining: number; max:
   }
   return (
     <span className="inline-flex gap-1" aria-label={label ?? `${remaining} / ${max}`}>
-      {Array.from({ length: max }, (_, i) => {
-        const cls = `h-3 w-3 rounded-full border border-accent ${i < remaining ? 'bg-accent' : 'bg-transparent'}`
+      {/* Extra uses above the maximum (a slot made by Font of Magic) show as violet dots. */}
+      {Array.from({ length: Math.max(max, remaining) }, (_, i) => {
+        const cls = `h-3 w-3 rounded-full border ${i >= max ? 'border-violet-500 bg-violet-500' : `border-accent ${i < remaining ? 'bg-accent' : 'bg-transparent'}`}`
         return onSet ? (
           <button key={i} className={`${cls} hover:ring-2 hover:ring-accent/40`} aria-label={`${i + 1}`} onClick={() => onSet(i < remaining ? i : i + 1)} />
         ) : (

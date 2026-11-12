@@ -43,6 +43,12 @@ function rechargeResources(char: Character, sheet: Sheet, on: RechargeOn, change
   const resourcesUsed = { ...char.resourcesUsed }
   const inventory = char.inventory.map((e) => ({ ...e }))
   for (const r of sheet.resources) {
+    // Slots created by Font of Magic (negative "used") vanish on a Long Rest.
+    if (r.used < 0 && on === 'longRest') {
+      resourcesUsed[r.key] = 0
+      changes.push({ kind: 'resource', key: r.key, name: r.resource.name, before: r.remaining, after: r.max, max: r.max })
+      continue
+    }
     const back = regained(r, on, sheet, rolls)
     if (back <= 0) continue
     const after = r.used - back

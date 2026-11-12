@@ -361,7 +361,9 @@
       "spellForgotten": "Odebráno: {{name}} ({{class}})",
       "choice": "{{what}}: {{before}} → {{after}}",
       "favoriteOn": "★ {{name}}",
-      "favoriteOff": "☆ {{name}}"
+      "favoriteOff": "☆ {{name}}",
+      "slotCreated": "Vytvořen spell slot (level {{level}}) ze Sorcery Points",
+      "slotConverted": "Spell slot (level {{level}}) přeměněn na Sorcery Points"
     },
     "attackAction": "Attack action"
   },
@@ -659,5 +661,9 @@
       "saved": "Uloženo",
       "howTo": "Jak to nastavit (2 minuty)"
     }
+  },
+  "font": {
+    "create": "Vytvořit spell slot:",
+    "convert": "Přeměnit spell slot na Sorcery Points:"
   }
 }
