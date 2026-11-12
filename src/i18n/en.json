@@ -222,7 +222,13 @@
     "magazineEmpty": "{{name}} is empty: reload first.",
     "unknownEntity": "Not found in the content.",
     "alreadyHave": "The character already has {{name}}.",
-    "nameRequired": "Give it a name."
+    "nameRequired": "Give it a name.",
+    "slotTooLow": "That slot is lower than the spell.",
+    "noSlot": "No level {{level}} slot left.",
+    "notRitual": "This spell can’t be cast as a ritual here.",
+    "spellTooHigh": "Level {{level}} is too high for this class now.",
+    "limitCantrips": "Cantrip limit reached ({{max}}).",
+    "limitSpells": "Spell limit reached ({{max}})."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -276,7 +282,9 @@
       "reload": "Reload",
       "settings": "Settings",
       "edit": "Manual change",
-      "extras": "Features"
+      "extras": "Features",
+      "cast": "Spell",
+      "spells": "Spells"
     },
     "items": {
       "damage": "Took {{amount}} damage: HP {{before}} → {{after}}",
@@ -334,7 +342,17 @@
       "extraAdded": "Added: {{name}} {{note}}",
       "extraRemoved": "Removed: {{name}}",
       "reminderAdded": "Reminder added: {{text}}",
-      "reminderRemoved": "Reminder removed: {{text}}"
+      "reminderRemoved": "Reminder removed: {{text}}",
+      "cast": "Cast {{name}} (level {{level}})",
+      "castRitual": "Cast {{name}} as a ritual",
+      "concentrationStart": "Concentrating on {{name}}",
+      "concentrationEnd": "Concentration on {{name}} ended",
+      "concentrationCheck": "Concentration on {{name}}: save DC {{dc}}",
+      "spellPrepared": "Prepared {{name}} ({{class}})",
+      "spellUnprepared": "Unprepared {{name}} ({{class}})",
+      "spellLearned": "Learned {{name}} ({{class}})",
+      "spellForgotten": "Removed {{name}} ({{class}})",
+      "choice": "{{what}}: {{before}} → {{after}}"
     },
     "attackAction": "Attack action"
   },
@@ -474,5 +492,36 @@
   },
   "reminders": {
     "placeholder": "Own reminder, e.g. “Owes the Zhentarim 50 GP”"
+  },
+  "spells": {
+    "title": "Spellcasting",
+    "cantrips": "Cantrips",
+    "level": "Level {{level}}",
+    "cast": "Cast",
+    "castAt": "Level {{level}} slot",
+    "castPact": "Pact slot (level {{level}})",
+    "castFree": "Free",
+    "castRitual": "As a ritual (+10 min)",
+    "noSlots": "No slot left for this spell.",
+    "ritualHint": "Takes 10 minutes longer and uses no slot.",
+    "toHit": "to hit",
+    "always": "always prepared",
+    "ritualOnly": "ritual only (not prepared)",
+    "search": "Search spells…",
+    "chooseListFirst": "Choose the spell list first.",
+    "known": "Known",
+    "prepared": "Prepared",
+    "spellbook": "Spellbook",
+    "knownShort": "known",
+    "preparedShort": "prepared",
+    "overLimit": "This goes over the class limit (or the spell level is too high). Add it anyway, e.g. because the DM allows it?",
+    "manage": "Manage spells",
+    "addDm": "Add a spell (from the DM)",
+    "addDmHint": "Always prepared and not counted against your limits.",
+    "pactShort": "Pact L{{level}}",
+    "concentrating": "Concentrating on {{name}}",
+    "endConcentration": "End concentration",
+    "concentrationSave": "Concentration on {{name}}: Constitution save DC {{dc}}",
+    "none": "No spells yet. Use “Manage spells” to choose them."
   }
 }

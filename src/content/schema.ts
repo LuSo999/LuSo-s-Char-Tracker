@@ -172,7 +172,7 @@ export const Choice = z.object({
   id: z.string(),
   label: z.string(),
   count: Scaled.default(1),
-  kind: z.enum(['entity', 'skill', 'ability', 'abilityPoints', 'weaponMastery', 'language', 'tool', 'subclass']),
+  kind: z.enum(['entity', 'skill', 'ability', 'abilityPoints', 'weaponMastery', 'language', 'tool', 'subclass', 'spell', 'option']),
   /** For kind "entity": allowed ids or filter by type/tags. */
   from: z
     .object({
@@ -189,8 +189,33 @@ export const Choice = z.object({
   scoreCap: z.number().optional(),
   /** When the selection may be changed later. */
   changeable: z.enum(['never', 'levelUp', 'longRest']).default('never'),
+  /** For kind "spell": spell level and class lists to pick from (or the lists picked in another choice). */
+  spellLevel: z.number().int().min(0).max(9).optional(),
+  spellClasses: z.array(z.string()).optional(),
+  classesFromChoice: z.string().optional(),
+  /** For kind "skill": grants expertise instead of proficiency. */
+  expertise: z.boolean().optional(),
 })
 export type Choice = z.infer<typeof Choice>
+
+/**
+ * Spells an entity grants outside the class spell lists (Magic Initiate,
+ * species traits, subclass spells, a spell from the DM): always prepared,
+ * never counted against the class limits.
+ */
+export const GrantedSpell = z.object({
+  /** A fixed spell, or every spell selected in one of the entity's choices. */
+  id: z.string().optional(),
+  fromChoice: z.string().optional(),
+  /** Class level (or character level for non-class entities) from which it is granted. */
+  minLevel: z.number().optional(),
+  /** Spellcasting ability: fixed, or picked in a choice ("ability" kind). */
+  ability: Ability.optional(),
+  abilityFromChoice: z.string().optional(),
+  /** Resource id for casting it without a slot (e.g. once per Long Rest). */
+  freeCast: z.string().optional(),
+})
+export type GrantedSpell = z.infer<typeof GrantedSpell>
 
 const base = {
   id: z.string(),
@@ -209,6 +234,7 @@ const base = {
   resources: z.array(Resource).default([]),
   activities: z.array(Activity).default([]),
   choices: z.array(Choice).default([]),
+  spells: z.array(GrantedSpell).default([]),
   tags: z.array(z.string()).default([]),
 }
 
@@ -262,6 +288,21 @@ export const Class = z.object({
   /** Extra class-table columns (e.g. second_wind_uses), for display and cross-checks. */
   progression: z.record(z.string(), z.record(z.string(), z.number())).default({}),
   spellcasting: SpellcastingProgression.default('none'),
+  /** How the class casts: ability, prepared vs known spells, spellbook, rituals. */
+  caster: z
+    .object({
+      ability: Ability,
+      /** "known": a fixed list (5e Bard…); "prepared": chosen from the class list (count from the table or formula). */
+      mode: z.enum(['known', 'prepared']),
+      spellbook: z.boolean().default(false),
+      /** 5e prepared casters: number of prepared spells as a formula (e.g. "int + level"). */
+      preparedFormula: z.string().optional(),
+      /** Which spells can be cast as rituals: prepared/known ones, any in the spellbook, or none. */
+      ritual: z.enum(['none', 'prepared', 'book']),
+    })
+    .optional(),
+  /** Per class level: cantrips known, spells known/prepared, slots of levels 1–9 (Pact Magic: slots of one level). */
+  spellTable: z.record(z.string(), z.object({ cantrips: z.number(), known: z.number().optional(), prepared: z.number().optional(), slots: z.array(z.number()) })).default({}),
 })
 export type Class = z.infer<typeof Class>
 
@@ -320,6 +361,8 @@ export const Background = z.object({
   abilityOptions: z.array(Ability).default([]),
   /** 2024 origin feat id. */
   feat: z.string().optional(),
+  /** Fixed selections of the origin feat's choices (Sage: Magic Initiate from the Wizard list). */
+  featPresets: z.record(z.string(), z.array(z.string())).optional(),
   features: z.array(z.string()).default([]),
 })
 export type Background = z.infer<typeof Background>
@@ -414,6 +457,12 @@ export const Spell = z.object({
   ritual: z.boolean(),
   classes: z.array(z.string()).default([]),
   higherLevels: z.string().optional(),
+  /** Spell attack (melee/ranged) or the saving throw the target makes. */
+  attack: z.enum(['melee', 'ranged']).optional(),
+  save: Ability.optional(),
+  /** Damage dice by slot level or by character level (cantrips). */
+  damage: z.object({ type: z.string(), by: z.enum(['slot', 'character']), dice: z.record(z.string(), z.string()) }).optional(),
+  heal: z.record(z.string(), z.string()).optional(),
 })
 export type Spell = z.infer<typeof Spell>
 

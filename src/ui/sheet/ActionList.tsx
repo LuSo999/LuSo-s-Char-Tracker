@@ -7,6 +7,8 @@ import { makeAttack, performActivity } from '../../engine/actions'
 import { pickUpThrown, recoverAmmo, reload } from '../../engine/inventory'
 import { offhandEligible } from '../../engine/items'
 import type { ActivityRow, AttackRow } from '../../engine/derive'
+import { spellDice, type SpellRow } from '../../engine/spells'
+import { CastPrompt } from '../spells/CastPrompt'
 import { RuleRef } from '../rules/RuleRef'
 import { useSettings } from '../../state/settings'
 import { centerOf, fx } from '../fx/fx'
@@ -31,9 +33,32 @@ type Row = {
   order: number
   attack?: AttackRow
   activity?: ActivityRow
+  spellRow?: SpellRow
 }
 
-const sectionOrder = { attack: 0, activity: 1, item: 2 }
+const sectionOrder = { attack: 0, activity: 1, spell: 2, item: 3 }
+
+function spellRow(r: SpellRow, characterLevel: number, mod: number): Row {
+  const s = r.spell
+  const dice = spellDice(s, Math.max(1, s.level), characterLevel, mod)
+  const details: React.ReactNode[] = [<span key="lvl" className="text-xs text-muted">{s.level === 0 ? 'Cantrip' : `L${s.level}`}</span>]
+  if (s.attack) details.push(<strong key="hit">{signed(r.attackBonus)}</strong>)
+  if (s.save) details.push(<strong key="dc">DC {r.dc} {s.save.toUpperCase()}</strong>)
+  if (dice.damage) details.push(<span key="dmg">{dice.damage}</span>)
+  if (dice.heal) details.push(<span key="heal">❤️ {dice.heal}</span>)
+  details.push(<span key="range" className="text-xs text-muted">{s.range}</span>)
+  if (s.concentration) details.push(<span key="c" className="text-xs">🔮</span>)
+  return {
+    key: `spell:${r.key}`,
+    name: s.name,
+    entity: s,
+    actionType: s.actionType,
+    details,
+    available: true,
+    order: sectionOrder.spell,
+    spellRow: r,
+  }
+}
 
 function attackRow(a: AttackRow, content: ContentIndex): Row {
   const details: React.ReactNode[] = [
@@ -276,7 +301,13 @@ export function ActionList() {
   const [prompt, setPrompt] = useState<string>()
   const [blocked, setBlocked] = useState<{ key: string; problem: Problem; at?: { x: number; y: number } }>()
   const [denied, setDenied] = useState<{ key: string; at: number }>()
-  const rows = [...sheet.attacks.map((a) => attackRow(a, content)), ...sheet.activities.map(activityRow)].sort((a, b) => a.order - b.order)
+  const rows = [
+    ...sheet.attacks.map((a) => attackRow(a, content)),
+    ...sheet.activities.map(activityRow),
+    // Prepared spells and cantrips (rituals only castable out of combat stay in the Spellcasting panel).
+    ...sheet.spellcasting.rows.filter((r) => !r.ritualOnly).map((r) => spellRow(r, sheet.characterLevel, sheet.mods[r.ability])),
+  ].sort((a, b) => a.order - b.order)
+  const [casting, setCasting] = useState<string>()
   const visible = rows.filter((r) => filter === 'all' || r.actionType === filter)
   const filters: Filter[] = ['all', 'action', 'bonusAction', 'reaction', 'other']
   const count = (f: Filter) => rows.filter((r) => f === 'all' || r.actionType === f).length
@@ -292,7 +323,7 @@ export function ActionList() {
     const slots: Slot[] = []
     if (attackLike(r) && attacksLeft(turn) === 0) slots.push('action')
     const type = r.actionType
-    if (r.activity && type !== 'other' && !(attackLike(r) && type === 'action')) slots.push(type)
+    if ((r.activity || r.spellRow) && type !== 'other' && !(attackLike(r) && type === 'action')) slots.push(type)
     return slots
   }
   const limitKey = (r: Row) => `activity:${r.key}`
@@ -350,6 +381,10 @@ export function ActionList() {
         fx('deny')
         return setBlocked({ key: r.key, problem, at })
       }
+    }
+    if (r.spellRow) {
+      // Casting pays the slot; the turn slot is spent when the cast succeeds.
+      return setCasting(r.key)
     }
     if (r.activity?.activity.roll?.kind === 'heal') return setPrompt(r.key)
     await perform(r, undefined, at, undefined, thrown)
@@ -466,7 +501,7 @@ export function ActionList() {
                 <span aria-hidden>{actionTypeIcon[r.actionType]}</span> {actionTypeShort[r.actionType]}
               </span>
               <div className="min-w-0 flex-1">
-                <RuleRef entity={r.entity} content={content} className="font-semibold" editable={!r.attack}>
+                <RuleRef entity={r.entity} content={content} className="font-semibold" editable={!r.attack && !r.spellRow}>
                   {r.name}
                 </RuleRef>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">{r.details}</div>
@@ -525,6 +560,15 @@ export function ActionList() {
                 </span>
               )}
             </div>
+            {casting === r.key && r.spellRow && (
+              <CastPrompt
+                row={r.spellRow}
+                onDone={(cast) => {
+                  setCasting(undefined)
+                  if (cast && mode !== 'off') for (const s of slotsOf(r)) turn.use(s)
+                }}
+              />
+            )}
             {blocked?.key === r.key && <BlockedPrompt row={r} problem={blocked.problem} onChoose={(c) => void chooseBlocked(r, c)} />}
             {prompt === r.key && r.activity && <RollPrompt row={r.activity} onDone={(roll) => void finishRoll(r, roll)} />}
           </li>

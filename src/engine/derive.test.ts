@@ -50,7 +50,7 @@ describe('Valdric (2024 Goliath Fighter 4, SRD stand-ins)', () => {
 
   it('has the right resources at level 4', () => {
     const max = Object.fromEntries(sheet.resources.map((r) => [r.key, r.max]))
-    expect(max).toEqual({ 'second-wind': 3, 'action-surge': 1, 'giant-ancestry': 2 })
+    expect(max).toEqual({ 'second-wind': 3, 'action-surge': 1, 'giant-ancestry': 2, 'magic-initiate': 1 })
   })
 
   it('lists actions with action types from the edition', () => {

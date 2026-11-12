@@ -222,7 +222,13 @@
     "magazineEmpty": "{{name}} je prázdná: nejdřív přebij.",
     "unknownEntity": "V obsahu nenalezeno.",
     "alreadyHave": "Postava už má {{name}}.",
-    "nameRequired": "Zadej název."
+    "nameRequired": "Zadej název.",
+    "slotTooLow": "Ten slot je nižší než kouzlo.",
+    "noSlot": "Nezbývá slot levelu {{level}}.",
+    "notRitual": "Tohle kouzlo tu nejde seslat jako rituál.",
+    "spellTooHigh": "Level {{level}} je pro tuhle classu zatím moc vysoký.",
+    "limitCantrips": "Limit cantripů dosažen ({{max}}).",
+    "limitSpells": "Limit kouzel dosažen ({{max}})."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -276,7 +282,9 @@
       "reload": "Přebití",
       "settings": "Nastavení",
       "edit": "Ruční úprava",
-      "extras": "Schopnosti"
+      "extras": "Schopnosti",
+      "cast": "Kouzlo",
+      "spells": "Kouzla"
     },
     "items": {
       "damage": "Zranění {{amount}}: HP {{before}} → {{after}}",
@@ -334,7 +342,17 @@
       "extraAdded": "Přidáno: {{name}} {{note}}",
       "extraRemoved": "Odebráno: {{name}}",
       "reminderAdded": "Přidána připomínka: {{text}}",
-      "reminderRemoved": "Odebrána připomínka: {{text}}"
+      "reminderRemoved": "Odebrána připomínka: {{text}}",
+      "cast": "Sesláno: {{name}} (level {{level}})",
+      "castRitual": "Sesláno jako rituál: {{name}}",
+      "concentrationStart": "Koncentrace: {{name}}",
+      "concentrationEnd": "Konec koncentrace: {{name}}",
+      "concentrationCheck": "Koncentrace na {{name}}: save DC {{dc}}",
+      "spellPrepared": "Připraveno: {{name}} ({{class}})",
+      "spellUnprepared": "Odebráno z připravených: {{name}} ({{class}})",
+      "spellLearned": "Naučeno: {{name}} ({{class}})",
+      "spellForgotten": "Odebráno: {{name}} ({{class}})",
+      "choice": "{{what}}: {{before}} → {{after}}"
     },
     "attackAction": "Attack action"
   },
@@ -474,5 +492,36 @@
   },
   "reminders": {
     "placeholder": "Vlastní připomínka, např. „Dlužím Zhentarimům 50 GP“"
+  },
+  "spells": {
+    "title": "Kouzla",
+    "cantrips": "Cantripy",
+    "level": "Level {{level}}",
+    "cast": "Seslat",
+    "castAt": "Slot levelu {{level}}",
+    "castPact": "Pact slot (level {{level}})",
+    "castFree": "Zdarma",
+    "castRitual": "Jako rituál (+10 min)",
+    "noSlots": "Na tohle kouzlo už nezbývá slot.",
+    "ritualHint": "Trvá o 10 minut déle a nespotřebuje slot.",
+    "toHit": "k zásahu",
+    "always": "vždy připravené",
+    "ritualOnly": "jen jako rituál (nepřipravené)",
+    "search": "Hledat kouzla…",
+    "chooseListFirst": "Nejdřív vyber seznam kouzel.",
+    "known": "Známá",
+    "prepared": "Připravená",
+    "spellbook": "Spellbook",
+    "knownShort": "známé",
+    "preparedShort": "připravené",
+    "overLimit": "Tím překročíš limit classy (nebo je kouzlo moc vysokého levelu). Přidat i tak, třeba protože to DM povolil?",
+    "manage": "Spravovat kouzla",
+    "addDm": "Přidat kouzlo (od DM)",
+    "addDmHint": "Vždy připravené a nepočítá se do limitů.",
+    "pactShort": "Pact L{{level}}",
+    "concentrating": "Koncentrace: {{name}}",
+    "endConcentration": "Ukončit koncentraci",
+    "concentrationSave": "Koncentrace na {{name}}: Constitution save DC {{dc}}",
+    "none": "Zatím žádná kouzla. Vyber je ve „Spravovat kouzla“."
   }
 }

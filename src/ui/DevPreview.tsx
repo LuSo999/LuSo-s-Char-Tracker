@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ContentIndex } from '../content'
 import { OfficialContent, Pack } from '../content/schema'
-import { sampleChampion } from '../data/samples'
+import { sampleChampion, sampleWizard } from '../data/samples'
 import { loadSrd } from '../data/srd'
 import { Character } from '../engine/character'
 import { useMemoryStore } from '../state/history'
@@ -23,9 +23,9 @@ export default function DevPreview() {
       const [srd, other] = await Promise.all([loadSrd('2024'), loadSrd('2014')])
       const official = privateFiles['../../private/official-content.json']
       const valdric = privateFiles['../../private/valdric.json']
-      const usePrivate = official !== undefined && valdric !== undefined && !location.hash.includes('sample')
+      const usePrivate = official !== undefined && valdric !== undefined && !location.hash.includes('sample') && !location.hash.includes('wizard')
       const packs = usePrivate ? OfficialContent.parse((await official!()).default).packs : []
-      const input = usePrivate ? (await valdric!()).default : sampleChampion
+      const input = location.hash.includes('wizard') ? sampleWizard : usePrivate ? (await valdric!()).default : sampleChampion
       const character = Character.parse({ id: 'dev', ...(input as object) })
       // #/dev?level=5 previews a higher level (e.g. Extra Attack).
       const level = Number(/level=(\d+)/.exec(location.hash)?.[1])

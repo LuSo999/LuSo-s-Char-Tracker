@@ -95,6 +95,14 @@ export const Character = z.object({
   inventory: z.array(InventoryEntry).default([]),
   currency: Currency.default({ cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 }),
   xp: z.number().int().min(0).default(0),
+  /**
+   * Spells per class: cantrips and spells known (the spellbook for a Wizard)
+   * and the prepared ones. Spells from feats, species, subclasses or the DM
+   * are granted by those entities and not stored here.
+   */
+  spells: z.record(z.string(), z.object({ known: z.array(z.string()).default([]), prepared: z.array(z.string()).default([]) })).default({}),
+  /** The spell the character is concentrating on. */
+  concentration: z.object({ spellId: z.string(), name: z.string() }).optional(),
   /** Ammunition fired since the last "Recover ammunition", per ammunition entry. */
   ammoSpent: z.record(z.string(), z.number().int().min(0)).default({}),
   /** Thrown weapons lying on the battlefield, per weapon entry. */

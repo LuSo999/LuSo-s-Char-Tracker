@@ -7,6 +7,7 @@ import type { ActiveEntity, Sheet } from '../../engine/derive'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
 import { addReminder, removeReminder } from '../../engine/edits'
+import { endConcentration } from '../../engine/spellActions'
 import { removeExtra } from '../../engine/extras'
 import { AddFeatureDialog } from './AddFeatureDialog'
 import { useRun, useSheet } from './context'
@@ -87,6 +88,16 @@ export function ConditionsPanel() {
             </li>
           )
         })}
+        {character.concentration && (
+          <li className="flex items-center rounded-full border border-violet-500 text-sm text-violet-700 dark:text-violet-300">
+            <RuleRef entity={content.get(character.concentration.spellId)} content={content} className="pl-2">
+              🔮 {character.concentration.name}
+            </RuleRef>
+            <button className="px-1.5" aria-label={t('spells.endConcentration')} title={t('spells.endConcentration')} onClick={() => void run(endConcentration(character))}>
+              ×
+            </button>
+          </li>
+        )}
         <li className="flex items-center gap-1 text-sm">
           <RuleRef entity={exhaustion} content={content} className={character.exhaustion ? 'font-semibold text-danger' : 'text-muted'}>
             Exhaustion {character.exhaustion}

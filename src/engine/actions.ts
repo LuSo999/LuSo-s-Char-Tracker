@@ -7,6 +7,7 @@
 import type { Character } from './character'
 import type { ActivityRow, AttackRow, Sheet } from './derive'
 import { trackShot } from './inventory'
+import { concentrationDc, incapacitating } from './spellActions'
 import type { RestChange } from './rest'
 
 export type HistoryKind = 'game' | 'sheet'
@@ -63,7 +64,13 @@ export function takeDamage(char: Character, sheet: Sheet, amount: number, critic
   } else if (current === 0 && before > 0) {
     items.push({ type: 'unconscious' })
   }
-  return ok({ ...char, hp: { current, temp }, deathSaves }, 'damage', items)
+  if (char.concentration) {
+    if (current === 0) items.push({ type: 'concentrationEnd', params: { name: char.concentration.name } })
+    else items.push({ type: 'concentrationCheck', params: { name: char.concentration.name, dc: concentrationDc(amount, char.edition) } })
+  }
+  // Dropping to 0 HP (Unconscious) ends Concentration.
+  const concentration = current === 0 ? undefined : char.concentration
+  return ok({ ...char, hp: { current, temp }, deathSaves, concentration }, 'damage', items)
 }
 
 /** Healing: up to the HP maximum; any healing at 0 HP resets death saves. */
@@ -223,7 +230,14 @@ export function makeAttack(char: Character, attack: AttackRow, label?: string, o
 export function toggleCondition(char: Character, conditionId: string, name: string): ActionResult {
   const has = char.conditions.includes(conditionId)
   const conditions = has ? char.conditions.filter((c) => c !== conditionId) : [...char.conditions, conditionId]
-  return ok({ ...char, conditions }, 'condition', [{ type: has ? 'conditionRemoved' : 'conditionAdded', params: { name }, entity: conditionId }])
+  const items: HistoryItem[] = [{ type: has ? 'conditionRemoved' : 'conditionAdded', params: { name }, entity: conditionId }]
+  // Becoming Incapacitated ends Concentration.
+  let concentration = char.concentration
+  if (!has && concentration && incapacitating.has(conditionId)) {
+    items.push({ type: 'concentrationEnd', params: { name: concentration.name } })
+    concentration = undefined
+  }
+  return ok({ ...char, conditions, concentration }, 'condition', items)
 }
 
 export function setExhaustion(char: Character, level: number): ActionResult {

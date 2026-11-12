@@ -66,6 +66,11 @@ const overlay2014: Record<string, Patch> = {
   'martial-archetype-improvement-2': { upgradeOf: 'martial-archetype' },
   'martial-archetype-improvement-3': { upgradeOf: 'martial-archetype' },
   'martial-archetype-improvement-4': { upgradeOf: 'martial-archetype' },
+  // Wizard
+  'arcane-recovery': {
+    resources: [{ id: 'arcane-recovery', name: 'Arcane Recovery', max: 1, recharge: longOnly }],
+    activities: [{ id: 'use', name: 'Arcane Recovery', actionType: 'other', cost: [{ resource: 'arcane-recovery' }], roll: { bonus: 'ceil(level / 2)', kind: 'other' }, summary: 'After a Short Rest: recover spell slots with this combined level (none 6th+). Restore them on the slot dots.' }],
+  },
   // Champion
   'improved-critical': { effects: [{ target: 'critRange', op: 'min', value: 19, when: 'weaponAttack' }] },
   'superior-critical': { upgradeOf: 'improved-critical', effects: [{ target: 'critRange', op: 'min', value: 18, when: 'weaponAttack' }] },
@@ -145,6 +150,31 @@ const overlay2024: Record<string, Patch> = {
   'fighter-epic-boon': {
     choices: [{ id: 'feat', label: 'Epic Boon', kind: 'entity', from: { type: 'feat', tags: ['epic-boon'] } }],
   },
+  // Wizard
+  'wizard-arcane-recovery': {
+    resources: [{ id: 'arcane-recovery', name: 'Arcane Recovery', max: 1, recharge: longOnly }],
+    activities: [{ id: 'use', name: 'Arcane Recovery', actionType: 'other', cost: [{ resource: 'arcane-recovery' }], roll: { bonus: 'ceil(level / 2)', kind: 'other' }, summary: 'After a Short Rest: recover spell slots with this combined level (none level 6+). Restore them on the slot dots.' }],
+  },
+  'wizard-scholar': {
+    choices: [{ id: 'skill', label: 'Expertise', kind: 'skill', expertise: true, options: ['arcana', 'history', 'investigation', 'medicine', 'nature', 'religion'] }],
+  },
+  // Magic Initiate: two cantrips and a level 1 spell from one list, cast once per Long Rest for free.
+  'magic-initiate': {
+    repeatable: true,
+    choices: [
+      { id: 'list', label: 'Spell list', kind: 'option', options: ['cleric', 'druid', 'wizard'] },
+      { id: 'cantrips', label: 'Cantrips', kind: 'spell', count: 2, spellLevel: 0, classesFromChoice: 'list' },
+      { id: 'spell', label: 'Level 1 spell', kind: 'spell', count: 1, spellLevel: 1, classesFromChoice: 'list' },
+      { id: 'ability', label: 'Spellcasting ability', kind: 'ability', options: ['int', 'wis', 'cha'] },
+    ],
+    spells: [
+      { fromChoice: 'cantrips', abilityFromChoice: 'ability' },
+      { fromChoice: 'spell', abilityFromChoice: 'ability', freeCast: 'magic-initiate' },
+    ],
+    resources: [{ id: 'magic-initiate', name: 'Magic Initiate (free cast)', max: 1, recharge: longOnly }],
+  },
+  acolyte: { featPresets: { list: ['cleric'] } },
+  sage: { featPresets: { list: ['wizard'] } },
   // Champion
   'champion-improved-critical': { effects: [{ target: 'critRange', op: 'min', value: 19 }] },
   'champion-superior-critical': { upgradeOf: 'champion-improved-critical', effects: [{ target: 'critRange', op: 'min', value: 18 }] },
@@ -278,6 +308,12 @@ export function applyOverlay(edition: Edition, byId: Map<string, Raw>): string[]
     checkTable(byId, 'fighter', 'indomitable_uses', { 9: 1, 13: 2, 17: 3 }, problems)
     checkTable(byId, 'fighter', 'extra_attacks', { 5: 1, 11: 2, 20: 3 }, problems)
   } else {
+    // Every class's Ability Score Improvement grants a general feat, Epic Boon an epic boon feat.
+    for (const e of byId.values()) {
+      if (e.type !== 'feature' || e.choices?.length) continue
+      if (/-ability-score-improvement$/.test(e.id)) e.choices = [{ id: 'feat', label: 'Feat', kind: 'entity', from: { type: 'feat', tags: ['general'] } }]
+      if (/-epic-boon$/.test(e.id)) e.choices = [{ id: 'feat', label: 'Epic Boon', kind: 'entity', from: { type: 'feat', tags: ['epic-boon'] } }]
+    }
     epicBoons(byId)
     for (const [id, a] of Object.entries(giantAncestry)) {
       // The trait shares its id with the subspecies in the source data.

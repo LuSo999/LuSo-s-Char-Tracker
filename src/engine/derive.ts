@@ -20,6 +20,7 @@ import type { AbilityScores, Character, InventoryEntry } from './character'
 import { editionRules } from './editions'
 import { resolveScaled, type FormulaVars } from './formula'
 import { carryingCapacity, offhandEligible, resolveEntry, totalWeight, type ResolvedEntry } from './items'
+import { computeSpellcasting, type Spellcasting } from './spells'
 
 /** One contribution to a number, for the breakdown shown in previews. */
 export type Part = { label: string; value: number }
@@ -42,6 +43,8 @@ export type ActiveEntity = {
   /** Upgrade features are folded into their base feature in the UI. */
   hidden: boolean
   item?: InventoryEntry
+  /** Fixed selections for this entity's choices (e.g. a background's origin feat). */
+  presets?: Record<string, string[]>
 }
 
 export type ResourceState = {
@@ -133,6 +136,7 @@ export type Sheet = {
   weight: { total: number; capacity: number }
   /** Inventory entries resolved to what they are in play. */
   items: ResolvedEntry[]
+  spellcasting: Spellcasting
 }
 
 // ---------------------------------------------------------------------------
@@ -155,14 +159,19 @@ export function choiceKey(grantKey: string, choiceId: string) {
   return `${grantKey}/${choiceId}`
 }
 
+/** What the player picked for a choice, or the entity's fixed preset. */
+export function selections(char: Character, ae: ActiveEntity, choiceId: string): string[] {
+  return char.choices[choiceKey(ae.grantKey, choiceId)] ?? ae.presets?.[choiceId] ?? []
+}
+
 /** Collect every entity that currently applies to the character. */
 export function collectActive(char: Character, content: ContentIndex): ActiveEntity[] {
   const characterLevel = char.classes.reduce((s, c) => s + c.level, 0)
   const out: ActiveEntity[] = []
-  const push = (entity: Entity | undefined, grantKey: string, classLevel: number, classId?: string, item?: InventoryEntry) => {
+  const push = (entity: Entity | undefined, grantKey: string, classLevel: number, classId?: string, item?: InventoryEntry, presets?: Record<string, string[]>) => {
     if (!entity) return
     const hidden = entity.type === 'feature' && entity.upgradeOf !== undefined
-    out.push({ entity, grantKey, classLevel, classId, hidden, item })
+    out.push({ entity, grantKey, classLevel, classId, hidden, item, presets })
   }
 
   for (const entry of char.classes) {
@@ -202,7 +211,7 @@ export function collectActive(char: Character, content: ContentIndex): ActiveEnt
 
   const bg = content.require(char.backgroundId, 'background')
   push(bg, bg.id, characterLevel)
-  if (bg.feat) push(content.get(bg.feat), `${bg.id}/feat`, characterLevel)
+  if (bg.feat) push(content.get(bg.feat), `${bg.id}/feat`, characterLevel, undefined, undefined, bg.featPresets)
   for (const f of bg.features) push(content.get(f), f, characterLevel)
 
   // Extras: granted by the DM, from the backstory, or the character's own features.
@@ -404,7 +413,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
         const isPrimary = ae.entity.id === primary.id
         if ((choice.id === 'skills') !== isPrimary) continue
       }
-      for (const s of char.choices[choiceKey(ae.grantKey, choice.id)] ?? []) skillProf.set(s as Skill, Math.max(skillProf.get(s as Skill) ?? 0, 1))
+      const level = choice.expertise ? 2 : 1
+      for (const s of char.choices[choiceKey(ae.grantKey, choice.id)] ?? []) skillProf.set(s as Skill, Math.max(skillProf.get(s as Skill) ?? 0, level))
     }
   }
   for (const { effect, ae } of allEffects) {
@@ -553,6 +563,23 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       const die = resource.die === undefined ? undefined : resolveScaled(resource.die, vars(ae))
       resources.push({ key, resource, source: ae, max, maxComputed, maxOverridden: typeof ov === 'number', used, remaining: max - used, die })
     }
+  }
+
+  // --- Spellcasting: slots become resources so rests restore them -------------
+  const spellcasting = computeSpellcasting(char, content, active, {
+    pb,
+    mods,
+    characterLevel,
+    dcBonus: applyEffects('spellDc', 0, '', vars).value,
+    attackBonus: applyEffects('spellAttack', 0, '', vars).value,
+  })
+  const casterAe = active.find((ae) => ae.entity.type === 'class') ?? active[0]
+  for (const resource of spellcasting.resources) {
+    const ov = char.overrides[`resource:${resource.id}:max`]
+    const maxComputed = resource.max as number
+    const max = typeof ov === 'number' ? ov : maxComputed
+    const used = Math.min(max, char.resourcesUsed[resource.id] ?? 0)
+    resources.push({ key: resource.id, resource, source: casterAe, max, maxComputed, maxOverridden: typeof ov === 'number', used, remaining: max - used })
   }
 
   // --- Weapon masteries (2024) ------------------------------------------------
@@ -730,5 +757,6 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     notes,
     weight,
     items,
+    spellcasting,
   }
 }

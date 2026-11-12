@@ -11,6 +11,7 @@ import { rememberCharacter } from '../../state/lastCharacter'
 import { useOfficial } from '../../state/official'
 import { HistoryDrawer } from '../history/HistoryDrawer'
 import { InventoryDrawer } from '../inventory/InventoryDrawer'
+import { SpellcastingDrawer } from '../spells/SpellcastingDrawer'
 import { groupSummary } from '../history/text'
 import { RuleRef } from '../rules/RuleRef'
 import { toast } from '../toast'
@@ -88,9 +89,10 @@ export function SheetView({ character, content, store }: { character: Character;
   )
 }
 
-function TopBar({ onRest, onHistory, onInventory }: { onRest: (kind: 'short' | 'long') => void; onHistory: () => void; onInventory: () => void }) {
+function TopBar({ onRest, onHistory, onInventory, onSpells }: { onRest: (kind: 'short' | 'long') => void; onHistory: () => void; onInventory: () => void; onSpells: () => void }) {
   const { t } = useTranslation()
-  const { character, content, store } = useSheet()
+  const { character, content, store, sheet } = useSheet()
+  const edit = useEditMode((s) => s.on)
   const last = undoable(store.history)
   const classes = character.classes.map((c) => ({ entry: c, cls: content.getTyped(c.classId, 'class'), sub: c.subclassId ? content.getTyped(c.subclassId, 'subclass') : undefined }))
   const button = 'rounded border border-border px-3 py-1.5 text-sm hover:bg-bg disabled:opacity-50 disabled:hover:bg-transparent'
@@ -153,6 +155,11 @@ function TopBar({ onRest, onHistory, onInventory }: { onRest: (kind: 'short' | '
         >
           ↶ {t('undo')}
         </button>
+        {(sheet.spellcasting.any || edit) && (
+          <button className={`${button} hidden sm:inline-block`} onClick={onSpells}>
+            ✨ {t('spells.title')}
+          </button>
+        )}
         <button className={`${button} hidden sm:inline-block`} onClick={onInventory}>
           🎒 {t('inventory.title')}
         </button>
@@ -244,10 +251,11 @@ function SheetLayout() {
   const [rest, setRest] = useState<'short' | 'long'>()
   const [history, setHistory] = useState(false)
   const [inventory, setInventory] = useState(false)
+  const [spells, setSpells] = useState(false)
 
   return (
     <div className="mx-auto w-full max-w-[1920px] px-3 py-3">
-      <TopBar onRest={setRest} onHistory={() => setHistory(true)} onInventory={() => setInventory(true)} />
+      <TopBar onRest={setRest} onHistory={() => setHistory(true)} onInventory={() => setInventory(true)} onSpells={() => setSpells(true)} />
       <EditBanner />
       <EntityEditHost />
 
@@ -275,9 +283,15 @@ function SheetLayout() {
       {rest && <RestDialog kind={rest} onClose={() => setRest(undefined)} />}
       {history && <HistoryDrawer onClose={() => setHistory(false)} />}
       {inventory && <InventoryDrawer onClose={() => setInventory(false)} />}
+      {spells && <SpellcastingDrawer onClose={() => setSpells(false)} />}
 
       {/* Phone: panels open full screen from a bottom bar. */}
       <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-card sm:hidden">
+        {sheet.spellcasting.any && (
+          <button className="flex-1 border-r border-border py-2.5 text-sm font-semibold" onClick={() => setSpells(true)}>
+            ✨ {t('spells.title')}
+          </button>
+        )}
         <button className="flex-1 py-2.5 text-sm font-semibold" onClick={() => setInventory(true)}>
           🎒 {t('inventory.title')}
         </button>

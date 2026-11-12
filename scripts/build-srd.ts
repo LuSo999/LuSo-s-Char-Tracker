@@ -98,6 +98,29 @@ const spellcastingByClass: Record<string, 'full' | 'half' | 'pact' | 'none'> = {
   paladin: 'half', ranger: 'half', warlock: 'pact',
 }
 
+/**
+ * How each class casts. 2014 (SRD 5.1): Bard, Ranger, Sorcerer and Warlock know
+ * a fixed number of spells; Cleric, Druid, Paladin and Wizard prepare
+ * "ability + level" (Paladin: half level) from their list; Bard, Cleric,
+ * Druid cast prepared/known rituals, the Wizard any ritual in the spellbook.
+ * 2024 (SRD 5.2.1): every class prepares the number in its table; rituals
+ * need the spell prepared (Rules Glossary), the Wizard's Ritual Adept allows
+ * any ritual in the spellbook.
+ */
+function casterInfo(edition: Edition, classId: string, ability: string | undefined) {
+  if (!ability || !spellcastingByClass[classId]) return undefined
+  const known2014 = ['bard', 'ranger', 'sorcerer', 'warlock'].includes(classId)
+  const formula2014: Record<string, string> = { cleric: 'wis + level', druid: 'wis + level', wizard: 'int + level', paladin: 'cha + floor(level / 2)' }
+  const ritual2014: Record<string, string> = { bard: 'prepared', cleric: 'prepared', druid: 'prepared', wizard: 'book' }
+  return {
+    ability,
+    mode: edition === '2014' && known2014 ? 'known' : 'prepared',
+    spellbook: classId === 'wizard',
+    preparedFormula: edition === '2014' ? formula2014[classId] : undefined,
+    ritual: classId === 'wizard' ? 'book' : edition === '2014' ? (ritual2014[classId] ?? 'none') : 'prepared',
+  }
+}
+
 function actionTypeOf(castingTime: string): 'action' | 'bonusAction' | 'reaction' | 'other' {
   const t = castingTime.toLowerCase()
   if (t.includes('bonus action')) return 'bonusAction'
@@ -272,6 +295,23 @@ async function build(edition: Edition) {
       levels: own.map((l) => ({ level: l.level, features: (l.features ?? []).map((f: Raw) => f.index) })),
       progression,
       spellcasting: spellcastingByClass[c.index] ?? 'none',
+      caster: casterInfo(edition, c.index, c.spellcasting?.spellcasting_ability?.index),
+      spellTable: Object.fromEntries(
+        own
+          .filter((l) => l.spellcasting)
+          .map((l) => {
+            const sc = l.spellcasting
+            return [
+              l.level,
+              {
+                cantrips: sc.cantrips_known ?? 0,
+                known: sc.spells_known,
+                prepared: sc.prepared_spells,
+                slots: Array.from({ length: 9 }, (_, i) => sc[`spell_slots_level_${i + 1}`] ?? 0),
+              },
+            ]
+          }),
+      ),
       choices,
     })
   }
@@ -491,8 +531,42 @@ async function build(edition: Edition) {
   magicItemMechanics(entities, problems)
 
   for (const s of files.Spells) {
+    const text = textOf(s)
+    // 2014 data names the save and attack; 2024 only has them in the text.
+    const save = s.dc?.dc_type?.index ?? /(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) saving throw/.exec(text)?.[1]
+    const attack = s.attack_type ?? /(melee|ranged) spell attack/i.exec(text)?.[1]?.toLowerCase()
+    const dmg = Array.isArray(s.damage) ? s.damage[0] : s.damage
+    let dmgBy: 'character' | 'slot' | undefined = dmg?.damage_at_character_level ? 'character' : dmg?.damage_at_slot_level ? 'slot' : undefined
+    let dmgDice: Record<string, string> | undefined = dmgBy === 'character' ? dmg.damage_at_character_level : dmg?.damage_at_slot_level
+    let heal: Record<string, string> | undefined = s.heal_at_slot_level
+    // 2024 data lists only the base dice; scaling is in the text.
+    if (edition === '2024' && dmgDice) {
+      const base = Object.values(dmgDice)[0]
+      const m = /^(\d+)d(\d+)$/.exec(base)
+      if (s.level === 0 && m && /Cantrip Upgrade/i.test(text)) {
+        // "The damage increases by 1d10 when you reach levels 5 (2d10), 11 (3d10), and 17 (4d10)."
+        dmgBy = 'character'
+        dmgDice = Object.fromEntries([1, 5, 11, 17].map((lvl, i) => [lvl, `${Number(m[1]) * (i + 1)}d${m[2]}`]))
+      } else if (s.level > 0 && m) {
+        const step = /increases by (\d+)d(\d+) for each spell slot level above (\d)/.exec(text + ' ' + (s.higher_level ?? ''))
+        if (step && step[2] === m[2]) {
+          dmgDice = Object.fromEntries(Array.from({ length: 10 - s.level }, (_, i) => [s.level + i, `${Number(m[1]) + Number(step[1]) * i}d${m[2]}`]))
+        }
+      }
+    }
+    if (edition === '2024' && !heal) {
+      const h = /regains? (?:a number of )?Hit Points equal to (\d+)d(\d+) plus your spellcasting ability modifier/.exec(text)
+      if (h) {
+        const step = /healing increases by (\d+)d(\d+) for each spell slot level above (\d)/.exec(text)
+        heal = Object.fromEntries(Array.from({ length: 10 - s.level }, (_, i) => [s.level + i, `${Number(h[1]) + (step ? Number(step[1]) * i : 0)}d${h[2]} + MOD`]))
+      }
+    }
     entities.push({
       ...base(s),
+      save: save ? abilityOf(save.slice(0, 3)) : undefined,
+      attack,
+      damage: dmgBy && dmg.damage_type && dmgDice ? { type: dmg.damage_type.index, by: dmgBy, dice: dmgDice } : undefined,
+      heal,
       type: 'spell',
       level: s.level,
       school: s.school.index,

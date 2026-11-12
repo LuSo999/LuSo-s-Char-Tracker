@@ -71,6 +71,8 @@ export function useRun() {
     }
     const group = await store.commit(result, { actionId: opts.actionId })
     effectFor(result.groupType, result.items)
+    const check = result.items.find((i) => i.type === 'concentrationCheck')
+    if (check) toast(`🔮 ${t('spells.concentrationSave', { dc: check.params?.dc, name: check.params?.name })}`, { tone: 'error', key: 'concentration' })
     if (!opts.quiet) {
       toast(groupSummary(t, group), {
         key: 'undo',
