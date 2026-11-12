@@ -23,6 +23,6 @@ describe('docs/samples/wizard-level-4-2024.json', () => {
   it('every id in the file exists in the content', () => {
     const ids = [...c.spells.wizard.known, ...c.inventory.map((e) => e.itemId), c.speciesId, c.subspeciesId!, c.backgroundId, 'evoker']
     expect(ids.filter((id) => !content.get(id))).toEqual([])
-    expect(s.spellcasting.rows.filter((r) => r.always).map((r) => r.spell.id).sort()).toEqual(['find-familiar', 'light', 'minor-illusion'])
+    expect(s.spellcasting.rows.filter((r) => r.always).map((r) => r.spell.id).sort()).toEqual(['detect-magic', 'find-familiar', 'light', 'minor-illusion', 'prestidigitation'])
   })
 })

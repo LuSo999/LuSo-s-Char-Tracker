@@ -50,6 +50,7 @@ export const sampleWizard: Omit<CharacterInput, 'id'> = {
     'wizard-scholar/skill': ['arcana'],
     'wizard-ability-score-improvement@wizard:4/feat': ['ability-score-improvement'],
     'wizard-ability-score-improvement@wizard:4/feat=ability-score-improvement/asi': ['int+1', 'dex+1'],
+    'elven-lineage-high-elf/ability': ['int'],
     'sage/feat/cantrips': ['light', 'minor-illusion'],
     'sage/feat/spell': ['find-familiar'],
     'sage/feat/ability': ['int'],

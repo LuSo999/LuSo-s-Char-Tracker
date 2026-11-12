@@ -13,10 +13,11 @@ import { cleric } from './overlay/cleric.ts'
 import { druid } from './overlay/druid.ts'
 import { sorcerer } from './overlay/sorcerer.ts'
 import { warlock } from './overlay/warlock.ts'
+import { species } from './overlay/species.ts'
 import { rogue } from './overlay/rogue.ts'
 
 /** Per-class overlays (scripts/overlay/*.ts). */
-const classOverlays: ClassOverlay[] = [barbarian, monk, rogue, paladin, ranger, bard, cleric, druid, sorcerer, warlock]
+const classOverlays: ClassOverlay[] = [barbarian, monk, rogue, paladin, ranger, bard, cleric, druid, sorcerer, warlock, species]
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = any

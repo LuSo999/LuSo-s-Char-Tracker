@@ -249,3 +249,20 @@ describe('Warlock', () => {
     expect(okR(performActivity(c, s, blessing, 0)).hp.temp).toBe(3 + 3)
   })
 })
+
+describe('Species spells', () => {
+  it('2024 High Elf: Prestidigitation, Detect Magic at level 3 (free once per Long Rest), Misty Step at 5, chosen ability', () => {
+    const elf = (level: number) =>
+      hero('2024', 'fighter', level, { speciesId: 'elf', subspeciesId: 'elven-lineage-high-elf', choices: { 'elven-lineage-high-elf/ability': ['wis'] } })
+    const ids = (level: number) => computeSheet(elf(level), c24).spellcasting.rows.map((r) => r.spell.id).sort()
+    expect(ids(1)).toEqual(['prestidigitation'])
+    expect(ids(3)).toEqual(['detect-magic', 'prestidigitation'])
+    const row = computeSheet(elf(5), c24).spellcasting.rows.find((r) => r.spell.id === 'misty-step')!
+    expect(row).toMatchObject({ ability: 'wis', freeCast: 'lineage-5' })
+  })
+
+  it('2014 Tiefling: Thaumaturgy, Hellish Rebuke at 3, Darkness at 5 (Charisma)', () => {
+    const t = hero('2014', 'fighter', 5, { speciesId: 'tiefling' })
+    expect(computeSheet(t, c14).spellcasting.rows.map((r) => r.spell.id).sort()).toEqual(['darkness', 'hellish-rebuke', 'thaumaturgy'])
+  })
+})
