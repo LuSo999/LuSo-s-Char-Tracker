@@ -160,7 +160,7 @@
   },
   "admin": {
     "title": "Správa obsahu",
-    "intro": "Nahraj private/official-content.json (vytváří ho scripts/merge-packs.ts). Nahradí veškerý sdílený oficiální obsah.",
+    "intro": "Nahraj private/official-content.json (vytváří ho scripts/merge-packs.ts) nebo jednu knihu z private/packs/. Vyber, které knihy nahrát.",
     "current": "Nahraná verze: {{version}}",
     "nothing": "Zatím není nahraný žádný sdílený obsah.",
     "upload": "Nahrát",
@@ -179,7 +179,13 @@
     "deleted": "Sdílený obsah je smazaný.",
     "deletePack": "Smazat {{name}}",
     "deletePackConfirm": "Smazat {{name}} ze sdíleného obsahu? Postavy, které ho používají, přijdou o jeho obsah, dokud ho znovu nenahraješ.",
-    "packDeleted": "{{name}} smazáno."
+    "packDeleted": "{{name}} smazáno.",
+    "uploadPicked": "Nahrát vybrané ({{count}}), ostatní knihy ponechat",
+    "uploadReplaceAll": "Nahradit vše vybranými",
+    "uploadHint": "„Nahrát vybrané“ přidá nové knihy a aktualizuje existující; knihy, které v souboru nejsou, zůstanou. Jde vybrat i soubor jedné knihy z private/packs/.",
+    "willUpdate": "(aktualizace)",
+    "willAdd": "(nová)",
+    "replaceAllConfirm": "Nahradit všechen sdílený obsah? Knihy, které tu nejsou vybrané, se smažou."
   },
   "undo": "Zpět",
   "cancel": "Zrušit",

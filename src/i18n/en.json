@@ -160,7 +160,7 @@
   },
   "admin": {
     "title": "Content admin",
-    "intro": "Upload private/official-content.json (built by scripts/merge-packs.ts). It replaces all shared official content.",
+    "intro": "Upload private/official-content.json (made by scripts/merge-packs.ts) or a single book from private/packs/. Pick which books to upload.",
     "current": "Uploaded version: {{version}}",
     "nothing": "No shared content uploaded yet.",
     "upload": "Upload",
@@ -179,7 +179,13 @@
     "deleted": "Shared content deleted.",
     "deletePack": "Delete {{name}}",
     "deletePackConfirm": "Delete {{name}} from the shared content? Characters using it lose its content until you upload it again.",
-    "packDeleted": "{{name}} deleted."
+    "packDeleted": "{{name}} deleted.",
+    "uploadPicked": "Upload selected ({{count}}), keep the other books",
+    "uploadReplaceAll": "Replace everything with the selected",
+    "uploadHint": "“Upload selected” adds new books and updates existing ones; books not in the file stay. You can also pick a single book file from private/packs/.",
+    "willUpdate": "(update)",
+    "willAdd": "(new)",
+    "replaceAllConfirm": "Replace all shared content? Books not selected here will be removed."
   },
   "undo": "Undo",
   "cancel": "Cancel",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { OfficialContent } from '../content/schema'
-import { getAccess, getOfficialMeta, setAccess, uploadOfficial, type Access, deleteOfficial, deleteOfficialPack } from '../state/official'
+import { OfficialContent, Pack } from '../content/schema'
+import { deleteOfficial, deleteOfficialPack, getAccess, getOfficialMeta, setAccess, uploadOfficial, uploadOfficialPacks, type Access } from '../state/official'
 import { BackToSheet } from './BackToSheet'
 import { Card } from './Card'
 
@@ -15,7 +15,11 @@ function parseFile(text: string): Parsed {
     return { ok: false, errors: [`Not valid JSON: ${(e as Error).message}`] }
   }
   const r = OfficialContent.safeParse(json)
-  return r.success ? { ok: true, value: r.data } : { ok: false, errors: r.error.issues.slice(0, 20).map((i) => `${i.path.join('.')}: ${i.message}`) }
+  if (r.success) return { ok: true, value: r.data }
+  // A single book file (private/packs/<book>.json) works too.
+  const one = Pack.safeParse(json)
+  if (one.success) return { ok: true, value: { version: new Date().toISOString(), packs: [one.data] } }
+  return { ok: false, errors: r.error.issues.slice(0, 20).map((i) => `${i.path.join('.')}: ${i.message}`) }
 }
 
 export function AdminPage() {
@@ -26,6 +30,8 @@ export function AdminPage() {
   const [access, setAccessState] = useState<Access>()
   const [invitedText, setInvitedText] = useState('')
   const [saved, setSaved] = useState(false)
+  // Books of the chosen file to upload (all by default).
+  const [picked, setPicked] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     void getOfficialMeta().then(setMeta)
@@ -35,11 +41,15 @@ export function AdminPage() {
     })
   }, [])
 
-  async function upload() {
+  async function upload(mode: 'replaceAll' | 'merge') {
     if (!parsed?.ok) return
+    if (mode === 'replaceAll' && meta && !confirm(t('admin.replaceAllConfirm'))) return
     setProgress(t('admin.uploading', { done: 0, total: '…' }))
     try {
-      await uploadOfficial(parsed.value, (done, total) => setProgress(t('admin.uploading', { done, total })))
+      const packs = parsed.value.packs.filter((p) => picked.has(p.id))
+      const onProgress = (done: number, total: number) => setProgress(t('admin.uploading', { done, total }))
+      if (mode === 'merge') await uploadOfficialPacks(packs, onProgress)
+      else await uploadOfficial({ ...parsed.value, packs }, onProgress)
       setProgress(t('admin.uploaded'))
       setMeta(await getOfficialMeta())
       setAccessState(await getAccess())
@@ -97,7 +107,9 @@ export function AdminPage() {
           onChange={async (e) => {
             const f = e.target.files?.[0]
             setProgress(undefined)
-            setParsed(f ? parseFile(await f.text()) : undefined)
+            const p = f ? parseFile(await f.text()) : undefined
+            setParsed(p)
+            setPicked(new Set(p?.ok ? p.value.packs.map((x) => x.id) : []))
           }}
         />
         {parsed && !parsed.ok && (
@@ -111,14 +123,33 @@ export function AdminPage() {
           <div className="mt-3 text-sm">
             <ul className="list-disc pl-5">
               {parsed.value.packs.map((p) => (
-                <li key={p.id}>
-                  {p.name} ({p.edition}) — {p.entities.length}, {t('admin.unverified', { count: p.entities.filter((x) => !x.verified).length })}
+                <li key={p.id} className="list-none">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={picked.has(p.id)}
+                      onChange={(e) => {
+                        const next = new Set(picked)
+                        if (e.target.checked) next.add(p.id)
+                        else next.delete(p.id)
+                        setPicked(next)
+                      }}
+                    />
+                    {p.name} ({p.edition}) — {p.entities.length}, {t('admin.unverified', { count: p.entities.filter((x) => !x.verified).length })}
+                    <span className="text-xs text-muted">{meta?.packs.some((m) => m.id === p.id) ? t('admin.willUpdate') : t('admin.willAdd')}</span>
+                  </label>
                 </li>
               ))}
             </ul>
-            <button className="mt-3 rounded bg-accent px-4 py-2 font-medium text-accent-text" onClick={() => void upload()}>
-              {t('admin.upload')}
-            </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button className="rounded bg-accent px-4 py-2 font-medium text-accent-text disabled:opacity-50" disabled={!picked.size} onClick={() => void upload('merge')}>
+                {t('admin.uploadPicked', { count: picked.size })}
+              </button>
+              <button className="rounded border border-border px-4 py-2 hover:bg-bg disabled:opacity-50" disabled={!picked.size} onClick={() => void upload('replaceAll')}>
+                {t('admin.uploadReplaceAll')}
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-muted">{t('admin.uploadHint')}</p>
           </div>
         )}
         {progress && <p className="mt-2 text-sm">{progress}</p>}

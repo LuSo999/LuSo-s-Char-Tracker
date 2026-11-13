@@ -92,6 +92,43 @@ export async function uploadOfficial(content: OfficialContent, onProgress?: (don
   await loadOfficial(true)
 }
 
+/**
+ * Admin: upload some books (packs) and keep the others: replaces those packs
+ * if they're already there, adds them otherwise.
+ */
+export async function uploadOfficialPacks(packs: Pack[], onProgress?: (done: number, total: number) => void) {
+  const meta = await getOfficialMeta()
+  const ids = new Set(packs.map((p) => p.id))
+  const parts: { id: string; pack: string; data: string }[] = []
+  for (const pack of packs) {
+    const s = JSON.stringify(pack)
+    for (let i = 0, n = 0; i < s.length; i += PART_SIZE, n++) parts.push({ id: `${pack.id}__${n}`, pack: pack.id, data: s.slice(i, i + PART_SIZE) })
+  }
+  const stale = (meta?.parts ?? []).filter((p) => ids.has(p.pack) && !parts.some((x) => x.id === p.id))
+  const total = parts.length + stale.length
+  let done = 0
+  for (const p of parts) {
+    await setDoc(doc(partsCol(), p.id), { pack: p.pack, data: p.data })
+    onProgress?.(++done, total)
+  }
+  for (const p of stale) {
+    await deleteDoc(doc(partsCol(), p.id))
+    onProgress?.(++done, total)
+  }
+  const next: Meta = {
+    version: new Date().toISOString(),
+    parts: [...(meta?.parts ?? []).filter((p) => !ids.has(p.pack)), ...parts.map(({ id, pack }) => ({ id, pack }))],
+    packs: [
+      ...(meta?.packs ?? []).filter((p) => !ids.has(p.id)),
+      ...packs.map((p) => ({ id: p.id, name: p.name, edition: p.edition, entities: p.entities.length })),
+    ].sort((a, b) => a.id.localeCompare(b.id)),
+  }
+  const access = await getDoc(accessDoc())
+  if (!access.exists()) await setDoc(accessDoc(), { restricted: true, invited: [] })
+  await setDoc(officialDoc(), { ...next, uploadedAt: serverTimestamp() })
+  await loadOfficial(true)
+}
+
 /** Admin: remove one book (pack); the others stay. Clients reload because the version changes. */
 export async function deleteOfficialPack(packId: string) {
   const meta = await getOfficialMeta()
