@@ -115,3 +115,17 @@ describe('Options added by books', () => {
     expect(choiceOptions(c, content, s, style.ae, style.choice).map((o) => o.id)).toContain('x-blind-fighting')
   })
 })
+
+describe('Attack ability', () => {
+  it('attackAbility:int replaces Str/Dex for weapons while a toggle is on', () => {
+    const c = withFeature(
+      { effects: [{ target: 'attackAbility:int', value: 1, when: [{ toggle: 'Bladesong' }, 'meleeWeapon'] }] },
+      { inventory: [{ uid: 'r', itemId: 'rapier', quantity: 1, equipped: true }] },
+    )
+    const off = computeSheet(c, c24).attacks.find((a) => a.key === 'r')!
+    expect(off.ability).toBe('dex')
+    const key = computeSheet(c, c24).toggles.find((t) => t.label === 'Bladesong')!.key
+    const on = computeSheet({ ...c, toggles: [key] }, c24).attacks.find((a) => a.key === 'r')!
+    expect(on.ability).toBe('int')
+  })
+})

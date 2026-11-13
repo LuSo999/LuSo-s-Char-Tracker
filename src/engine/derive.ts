@@ -701,7 +701,15 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const props = w?.properties ?? []
     const ranged = w?.range === 'ranged'
     const monk = martialArts && (!w || isMonkWeapon(w, char.edition))
-    const ability: Ability = natural?.ability ?? (ranged ? 'dex' : (props.includes('finesse') || monk) && mods.dex > mods.str ? 'dex' : 'str')
+    let ability: Ability = natural?.ability ?? (ranged ? 'dex' : (props.includes('finesse') || monk) && mods.dex > mods.str ? 'dex' : 'str')
+    // "attackAbility:<ability>": that ability may be used instead when it's higher (Hex Warrior: Cha; Bladesong: Int).
+    if (!natural?.ability) {
+      const probe: EffectContext = { ...baseCtx, weapon: w ?? ({ range: 'melee' } as Weapon), ability, unarmed: !w }
+      for (const { effect, ae } of allEffects) {
+        const m = /^attackAbility:(str|dex|con|int|wis|cha)$/.exec(effect.target)
+        if (m && effectApplies(effect, ae, probe, toggleSet) && mods[m[1] as Ability] > mods[ability]) ability = m[1] as Ability
+      }
+    }
     // Natural weapons and attacks a feature gives are always proficient.
     const proficient = w && !natural ? isProficient(w) : true
     const ctx: EffectContext = { ...baseCtx, weapon: w ?? ({ range: 'melee' } as Weapon), ability, unarmed: !w }

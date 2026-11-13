@@ -123,6 +123,7 @@ export type EffectWhen = z.infer<typeof EffectWhen>
  *   martialArtsDie (die size of Unarmed Strikes and Monk weapons, op "max"),
  *   martialArts (1 = Dex may replace Str for those attacks),
  *   unarmedDamage (flat damage die size for Unarmed Strike, op "max"),
+ *   attackAbility:<ability> (weapon attacks may use it when higher; narrow with when / a toggle),
  *   sense:<darkvision|blindsight|tremorsense|truesight> (feet; op "max", or "add" to extend),
  *   speed:<fly|swim|climb|burrow> (feet; value "walk" = equal to Speed),
  *   resistance:<damage type>, immunity:<damage type>, conditionImmunity:<condition>,
