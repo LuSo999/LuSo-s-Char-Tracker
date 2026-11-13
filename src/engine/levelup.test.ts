@@ -322,3 +322,17 @@ describe('Proficiencies and text prerequisites', () => {
     expect(opts['boon-of-fate']).toBeUndefined()
   })
 })
+
+describe('Level up history', () => {
+  it('lists what else changed: PB, Extra Attack, Hit Dice, feature dice, slots, cantrip damage', () => {
+    const fr = levelUp(hero('2024', 'fighter', 4), c24, 'fighter', null)
+    const types = fr.ok ? fr.items.map((i) => i.type) : []
+    expect(types).toEqual(expect.arrayContaining(['pbChange', 'attacksPerAction', 'hitDiceTotal']))
+    const rogue = levelUp(hero('2024', 'rogue', 2), c24, 'rogue', null)
+    expect(rogue.ok && rogue.items.find((i) => i.type === 'activityDice')).toMatchObject({ before: '1d6', after: '2d6' })
+    const wiz = hero('2024', 'wizard', 4, { spells: { wizard: { known: ['fire-bolt'], prepared: [] } } })
+    const w = levelUp(wiz, c24, 'wizard', null)
+    expect(w.ok && w.items.find((i) => i.type === 'slotMax' && i.params?.level === 3)).toMatchObject({ before: 0, after: 2 })
+    expect(w.ok && w.items.find((i) => i.type === 'cantripDice')).toMatchObject({ before: expect.stringMatching(/^1d10/), after: expect.stringMatching(/^2d10/) })
+  })
+})

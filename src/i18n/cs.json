@@ -438,7 +438,16 @@
       "companionHp": "{{name}} HP",
       "companionTempHp": "{{name}} dočasné HP",
       "xp": "XP {{before}} → {{after}}",
-      "hitDiceLeft": "Zbývající Hit Dice d{{die}}"
+      "hitDiceLeft": "Zbývající Hit Dice d{{die}}",
+      "pbChange": "Proficiency bonus",
+      "hitDiceTotal": "Hit Dice d{{die}}",
+      "resourceMax": "{{name}}: použití",
+      "resourceDie": "{{name}}: kostka",
+      "activityDice": "{{name}}: kostky",
+      "attacksPerAction": "Útoky v akci Attack",
+      "slotMax": "Spell sloty úrovně {{level}}",
+      "pactSlots": "Pact Magic sloty",
+      "cantripDice": "{{name}}: zranění"
     },
     "attackAction": "Attack action"
   },

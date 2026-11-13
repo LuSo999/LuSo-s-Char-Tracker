@@ -438,7 +438,16 @@
       "companionHp": "{{name}} HP",
       "companionTempHp": "{{name}} temporary HP",
       "xp": "XP {{before}} → {{after}}",
-      "hitDiceLeft": "Hit Dice d{{die}} left"
+      "hitDiceLeft": "Hit Dice d{{die}} left",
+      "pbChange": "Proficiency bonus",
+      "hitDiceTotal": "Hit Dice d{{die}}",
+      "resourceMax": "{{name}}: uses",
+      "resourceDie": "{{name}}: die",
+      "activityDice": "{{name}}: dice",
+      "attacksPerAction": "Attacks per Attack action",
+      "slotMax": "Level {{level}} spell slots",
+      "pactSlots": "Pact Magic slots",
+      "cantripDice": "{{name}}: damage"
     },
     "attackAction": "Attack action"
   },

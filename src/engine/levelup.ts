@@ -82,7 +82,7 @@ export function allChoices(char: Character, sheet: Sheet): PendingChoice[] {
   return out
 }
 
-import { spellbookFree } from './spells'
+import { spellbookFree, spellDice } from './spells'
 export { spellbookSize } from './spells'
 
 /**
@@ -420,7 +420,50 @@ export function levelUp(char: Character, content: ContentIndex, classId: string,
     if (had.has(ae.grantKey) || ae.hidden || ae.entity.type === 'class' || ae.item) continue
     items.push({ type: 'featureGained', params: { name: ae.entity.name }, entity: ae.entity.id })
   }
+  items.push(...levelChanges(before, after))
   return { ok: true, character: next, items, groupType: 'levelUp', kind: 'sheet' }
+}
+
+/**
+ * What else a level changed, for the history and the summary: proficiency bonus, Hit Dice,
+ * uses and dice of resources (Rage, Superiority Dice d8 → d10), dice of features (Sneak Attack),
+ * Extra Attack, spell slots and cantrip damage.
+ */
+export function levelChanges(before: Sheet, after: Sheet): HistoryItem[] {
+  const items: HistoryItem[] = []
+  if (after.pb.value !== before.pb.value) items.push({ type: 'pbChange', before: before.pb.value, after: after.pb.value })
+  for (const pool of after.hitDice) {
+    const old = before.hitDice.find((p) => p.die === pool.die)?.total ?? 0
+    if (old !== pool.total) items.push({ type: 'hitDiceTotal', params: { die: pool.die }, before: old, after: pool.total })
+  }
+  for (const r of after.resources) {
+    if (r.key.startsWith('slot:') || r.key === 'pact' || r.resource.hidden) continue
+    const old = before.resources.find((x) => x.key === r.key)
+    if (!old) continue // a new feature's pool: the feature itself is listed
+    if (old.max !== r.max) items.push({ type: 'resourceMax', params: { name: r.resource.name }, before: old.max, after: r.max, entity: r.source.entity.id })
+    if (old.die && r.die && old.die !== r.die) items.push({ type: 'resourceDie', params: { name: r.resource.name }, before: `d${old.die}`, after: `d${r.die}`, entity: r.source.entity.id })
+  }
+  for (const a of after.activities) {
+    const old = before.activities.find((x) => x.key === a.key)
+    if (old?.rollDice && a.rollDice && old.rollDice !== a.rollDice) items.push({ type: 'activityDice', params: { name: a.activity.name }, before: old.rollDice, after: a.rollDice, entity: a.source.entity.id })
+  }
+  const perAction = (s: Sheet) => s.attacks[0]?.attacksPerAction ?? 1
+  if (perAction(after) !== perAction(before)) items.push({ type: 'attacksPerAction', before: perAction(before), after: perAction(after) })
+  const slots = (s: Sheet) => new Map(s.spellcasting.slots.map((x) => [x.level, x.max]))
+  const [sb, sa] = [slots(before), slots(after)]
+  for (const [level, max] of sa) if ((sb.get(level) ?? 0) !== max) items.push({ type: 'slotMax', params: { level }, before: sb.get(level) ?? 0, after: max })
+  const pact = (s: Sheet) => (s.spellcasting.pact ? `${s.spellcasting.pact.max} × L${s.spellcasting.pact.level}` : '')
+  if (pact(after) !== pact(before)) items.push({ type: 'pactSlots', before: pact(before) || '—', after: pact(after) })
+  // Cantrips that deal more dice at this character level.
+  for (const row of after.spellcasting.rows) {
+    if (row.spell.level !== 0 || row.spell.damage?.by !== 'character') continue
+    const old = before.spellcasting.rows.find((x) => x.key === row.key)
+    if (!old) continue
+    const dice = (s: Sheet, r: typeof row) => spellDice(r.spell, 0, s.characterLevel, s.mods[r.ability], r.damageBonus).damage
+    const [d0, d1] = [dice(before, old), dice(after, row)]
+    if (d0 && d1 && d0 !== d1) items.push({ type: 'cantripDice', params: { name: row.spell.name }, before: d0, after: d1, entity: row.spell.id })
+  }
+  return items
 }
 
 /** Level order for characters made before it was recorded: class after class. */
