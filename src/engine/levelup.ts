@@ -120,7 +120,12 @@ export function isOpen(p: Pending, char: Character): boolean {
 
 /** Everything the player still has to decide: open choices, a missing subclass, spells to pick. */
 export function pendingChoices(char: Character, content: ContentIndex, sheet: Sheet): Pending[] {
-  return allDecisions(char, content, sheet).filter((p) => isOpen(p, char))
+  return allDecisions(char, content, sheet).filter((p) => {
+    if (!isOpen(p, char)) return false
+    // Nothing left to pick (every skill already proficient…): not something the player can do.
+    if (p.kind !== 'choice' || p.choice.kind === 'abilityPoints') return true
+    return choiceOptions(char, content, sheet, p.ae, p.choice).some((o) => !o.blocked && !p.chosen.includes(o.id))
+  })
 }
 
 /** Stable id of a decision (to keep it on screen after it is made). */
@@ -254,6 +259,7 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
       return content
         .all('spell')
         .filter((s) => (choice.options ? choice.options.includes(s.id) : levelOk(s.level) && (!lists.length || s.classes.some((k) => lists.includes(k)))))
+        .filter((s) => (!choice.spellSchools || choice.spellSchools.includes(s.school.toLowerCase())) && (!choice.ritualOnly || s.ritual))
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((s) => ({ id: s.id, label: s.name, entity: s, blocked: known && !known.has(s.id) && !chosen.has(s.id) ? 'notKnown' : undefined }))
     }

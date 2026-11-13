@@ -256,14 +256,15 @@ export function computeSpellcasting(
     for (const g of grants) {
       if ('minLevel' in g && g.minLevel !== undefined && ae.classLevel < g.minLevel) continue
       const ids = g.id ? [g.id] : 'fromChoice' in g && g.fromChoice ? selections(char, ae, g.fromChoice) : []
-      const chosen = 'abilityFromChoice' in g && g.abilityFromChoice ? (selections(char, ae, g.abilityFromChoice)[0] as Ability | undefined) : undefined
+      // The ability picked in a choice: an "ability" choice, or the ability raised by a feat's increase ("int+1").
+      const chosen = 'abilityFromChoice' in g && g.abilityFromChoice ? (selections(char, ae, g.abilityFromChoice)[0]?.split('+')[0] as Ability | undefined) : undefined
       const ability: Ability = ('ability' in g && g.ability) || chosen || bestCasterAbility || bestMental
       for (const id of ids) {
         const spell = content.getTyped(id, 'spell')
         if (!spell) continue
         rows.push({
           key: `${ae.grantKey}:${id}`, spell, grantedBy: ae, ability, dc: dcFor(ability), attackBonus: atkFor(ability),
-          castable: true, always: true, ritualOnly: false, canRitual: spell.ritual,
+          castable: !('ritualOnly' in g && g.ritualOnly), always: true, ritualOnly: 'ritualOnly' in g && !!g.ritualOnly, canRitual: spell.ritual,
           freeCast: 'freeCast' in g ? g.freeCast : undefined,
           atWill: 'atWill' in g ? g.atWill : undefined,
           limit: 'limit' in g ? g.limit : undefined,

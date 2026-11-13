@@ -94,6 +94,13 @@ const WhenSingle = z.union([
     'notHeavyArmor',
     /** Unarmed Strike or a Monk weapon (Martial Arts). */
     'martialArts',
+    /** Attack with a Heavy / Thrown weapon (Great Weapon Master, Thrown Weapon Fighting). */
+    'heavyWeapon',
+    'thrownWeapon',
+    /** No weapon and no shield equipped (Unarmed Fighting d8). */
+    'emptyHands',
+    /** Wearing Medium armor (Medium Armor Master). */
+    'wearingMediumArmor',
   ]),
   z.object({ toggle: z.string() }),
 ])
@@ -116,6 +123,9 @@ export type EffectWhen = z.infer<typeof EffectWhen>
  *   martialArtsDie (die size of Unarmed Strikes and Monk weapons, op "max"),
  *   martialArts (1 = Dex may replace Str for those attacks),
  *   unarmedDamage (flat damage die size for Unarmed Strike, op "max"),
+ *   sense:<darkvision|blindsight|tremorsense|truesight> (feet; op "max", or "add" to extend),
+ *   speed:<fly|swim|climb|burrow> (feet; value "walk" = equal to Speed),
+ *   resistance:<damage type>, immunity:<damage type>, conditionImmunity:<condition>,
  *   note (a reminder line in the notes; text in `note`).
  */
 export const Effect = z.object({
@@ -188,6 +198,8 @@ export const Activity = z.object({
   fontOfMagic: z.enum(['create', 'convert']).optional(),
   /** Pool features (Lay on Hands): the player enters how many points to spend; with a heal roll that many HP are restored. */
   spendInput: z.boolean().default(false),
+  /** With spendInput: the points are dice (Healing Light d6s): the player then rolls that many and the roll heals. */
+  spendDice: z.number().int().optional(),
   /** An attack or a rider on a hit (Flurry of Blows, Sneak Attack): listed with the attacks. */
   attack: z.boolean().default(false),
   /** Using it switches on this toggle of the same entity (Rage → "Raging"); rests switch it off. */
@@ -229,6 +241,9 @@ export const Choice = z.object({
   expertise: z.boolean().optional(),
   /** For kind "spell": only spells the character already knows may be picked. */
   knownOnly: z.boolean().optional(),
+  /** For kind "spell": only these schools (Fey Touched: divination, enchantment) / only Ritual spells (Ritual Caster). */
+  spellSchools: z.array(z.string()).optional(),
+  ritualOnly: z.boolean().optional(),
   /** Either this choice or the named one is made (2014: a feat instead of the Ability Score Improvement). */
   alternativeTo: z.string().optional(),
 })
@@ -256,6 +271,8 @@ export const GrantedSpell = z.object({
   limit: z.string().optional(),
   /** Spell level of the free cast (2014 Infernal Legacy: Hellish Rebuke as a 2nd-level spell). */
   freeLevel: z.number().int().optional(),
+  /** Can only be cast as a Ritual (Animal Speaker, Ritual Caster outside the free cast). */
+  ritualOnly: z.boolean().optional(),
 })
 export type GrantedSpell = z.infer<typeof GrantedSpell>
 

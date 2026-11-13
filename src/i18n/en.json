@@ -120,7 +120,9 @@
       "languages": "Languages",
       "senses": "Senses",
       "resistances": "Resistances",
-      "saveNotes": "Saves"
+      "saveNotes": "Saves",
+      "speeds": "Other speeds",
+      "immunities": "Immunities"
     }
   },
   "settings": {
@@ -218,7 +220,8 @@
     "spendPrompt": "How many points? (max {{max}})",
     "healPoints": "Heal {{n}} HP",
     "spendOnly": "Only spend",
-    "temp": "= {{total}} Temp HP"
+    "temp": "= {{total}} Temp HP",
+    "diceCount": "Dice to spend (max {{max}}):"
   },
   "errors": {
     "positiveAmount": "Enter a positive number.",

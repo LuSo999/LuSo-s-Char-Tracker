@@ -93,7 +93,9 @@ function Proficiencies({ sheet }: { sheet: Sheet }) {
     [t('sheet.prof.tools'), sheet.toolProficiencies.map(name)],
     [t('sheet.prof.languages'), sheet.languages.map((l) => l.replace(/-/g, ' '))],
     ...(Object.keys(sheet.senses).length ? [[t('sheet.prof.senses'), Object.entries(sheet.senses).map(([k, v]) => `${k} ${v} ft`)] as [string, string[]]] : []),
+    ...(Object.keys(sheet.speeds).length ? [[t('sheet.prof.speeds'), Object.entries(sheet.speeds).map(([k, v]) => `${k} ${v} ft`)] as [string, string[]]] : []),
     ...(sheet.resistances.length ? [[t('sheet.prof.resistances'), sheet.resistances]] as [string, string[]][] : []),
+    ...(sheet.immunities.length || sheet.conditionImmunities.length ? [[t('sheet.prof.immunities'), [...sheet.immunities, ...sheet.conditionImmunities]]] as [string, string[]][] : []),
     ...(sheet.saveNotes.length ? [[t('sheet.prof.saveNotes'), sheet.saveNotes.map((n) => n.note)]] as [string, string[]][] : []),
   ]
   return (

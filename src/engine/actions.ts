@@ -199,12 +199,13 @@ export function performActivity(
   sheet: Sheet,
   row: ActivityRow,
   roll?: number,
-  opts: { spendOnly?: boolean; slotKey?: string; recover?: number[] } = {},
+  opts: { spendOnly?: boolean; slotKey?: string; recover?: number[]; spent?: number } = {},
 ): ActionResult {
   let next = char
   const name = row.source.entity.type === 'item' ? `${row.source.entity.name}` : row.activity.name
   const items: HistoryItem[] = [{ type: 'use', params: { name }, entity: row.source.entity.id }]
-  const spend = row.activity.spendInput && roll !== undefined ? Math.max(1, Math.round(roll)) : undefined
+  // Dice pools: `spent` dice, `roll` is their total; point pools: `roll` is the points.
+  const spend = row.activity.spendDice ? opts.spent : row.activity.spendInput && roll !== undefined ? Math.max(1, Math.round(roll)) : undefined
   for (const [i, cost] of row.costs.entries()) {
     const amount = i === 0 && spend !== undefined ? spend : cost.amount
     const r = remainingOf(next, sheet, cost.resourceKey)
@@ -250,7 +251,7 @@ export function performActivity(
   }
   const kind = row.activity.roll?.kind
   if (roll !== undefined && !opts.spendOnly && kind === 'heal') {
-    const total = spend ?? roll + (row.rollBonus ?? 0)
+    const total = row.activity.spendDice ? roll + (row.rollBonus ?? 0) : (spend ?? roll + (row.rollBonus ?? 0))
     const healed = heal(next, sheet, total, { name, entity: row.source.entity.id })
     if (healed.ok) {
       next = healed.character

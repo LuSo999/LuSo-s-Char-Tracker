@@ -142,8 +142,12 @@ export type Sheet = {
   toolProficiencies: string[]
   /** Darkvision etc. in feet. */
   senses: Record<string, number>
-  /** Damage types the character resists. */
+  /** Damage types the character resists / is immune to; conditions it can't get. */
   resistances: string[]
+  immunities: string[]
+  conditionImmunities: string[]
+  /** Other speeds in feet (fly, swim, climb, burrow). */
+  speeds: Record<string, number>
   /** Advantages on particular saves (against Poisoned, Charmed…). */
   saveNotes: { note: string; entity: Entity }[]
   languages: string[]
@@ -276,6 +280,8 @@ type EffectContext = {
   edition: Edition
   /** Reminders: conditions about a particular attack count as met. */
   anyAttack?: boolean
+  /** No weapon and no shield equipped. */
+  emptyHands?: boolean
 }
 
 /**
@@ -300,7 +306,7 @@ function effectApplies(effect: Effect, ae: ActiveEntity, ctx: EffectContext, tog
 function whenHolds(w: When, ae: ActiveEntity, ctx: EffectContext, toggles: Set<string>): boolean {
   if (Array.isArray(w)) return w.every((x) => whenHolds(x, ae, ctx, toggles))
   if (typeof w === 'object') return toggles.has(`${ae.grantKey}#${w.toggle}`)
-  if (ctx.anyAttack && ['rangedWeapon', 'meleeWeapon', 'weaponAttack', 'strengthAttack', 'martialArts', 'notProficient'].includes(w)) return true
+  if (ctx.anyAttack && ['rangedWeapon', 'meleeWeapon', 'weaponAttack', 'strengthAttack', 'martialArts', 'notProficient', 'heavyWeapon', 'thrownWeapon'].includes(w)) return true
   switch (w) {
     case 'wearingArmor':
       return ctx.armor !== undefined
@@ -330,6 +336,14 @@ function whenHolds(w: When, ae: ActiveEntity, ctx: EffectContext, toggles: Set<s
       return ctx.armor?.category !== 'heavy'
     case 'martialArts':
       return !!ctx.unarmed || isMonkWeapon(ctx.weapon, ctx.edition)
+    case 'heavyWeapon':
+      return !!ctx.weapon?.properties?.includes('heavy')
+    case 'thrownWeapon':
+      return !!ctx.weapon?.properties?.includes('thrown')
+    case 'emptyHands':
+      return !!ctx.emptyHands
+    case 'wearingMediumArmor':
+      return ctx.armor?.category === 'medium'
   }
 }
 
@@ -354,7 +368,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const bodyArmorEntry = equippedItems.find((r) => r.armor && r.armor.category !== 'shield')
   const bodyArmor = bodyArmorEntry?.armor
   const shield = equippedItems.find((r) => r.armor?.category === 'shield')?.armor
-  const baseCtx: EffectContext = { armor: bodyArmor, shield: shield !== undefined, bloodied: false, edition: char.edition }
+  const emptyHands = !shield && !equippedItems.some((r) => r.weapon)
+  const baseCtx: EffectContext = { armor: bodyArmor, shield: shield !== undefined, bloodied: false, edition: char.edition, emptyHands }
 
   // Effects keyed by the entity they come from, so formulas use the right level.
   const allEffects = active.flatMap((ae) => ae.entity.effects.map((effect) => ({ effect, ae })))
@@ -723,7 +738,10 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     }
 
     const baseDice = (twoHanded ? w?.versatileDamage : w?.damage?.dice) ?? '1'
-    const martialDice = monk && martialDie > dieSize(baseDice) ? `1d${martialDie}` : undefined
+    // Unarmed Strike: the best of its own die, Martial Arts and features like Unarmed Fighting / Tavern Brawler.
+    const unarmedDie = !w ? applyEffects('unarmedDamage', 0, '', vars, ctx).value : 0
+    const bestDie = Math.max(monk ? martialDie : 0, unarmedDie)
+    const martialDice = bestDie > dieSize(baseDice) ? `1d${bestDie}` : undefined
     return {
       key,
       name,
@@ -828,15 +846,31 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
 
   // Senses ("sense:darkvision", op max) and damage resistances ("resistance:fire").
+  // Senses: the longest range ("max"), then extensions ("add": Umbral Sight +60 ft).
   const senses: Record<string, number> = {}
+  const senseAdds: Record<string, number> = {}
   const resistances = new Set<string>()
+  const immunities = new Set<string>()
+  const conditionImmunities = new Set<string>()
+  const speeds: Record<string, number> = {}
   for (const { effect, ae } of allEffects) {
     if (!effectApplies(effect, ae, baseCtx, toggleSet)) continue
     const sense = /^sense:(\w+)$/.exec(effect.target)
-    if (sense) senses[sense[1]] = Math.max(senses[sense[1]] ?? 0, resolveScaled(effect.value, vars(ae)))
+    if (sense) {
+      const v = resolveScaled(effect.value, vars(ae))
+      if (effect.op === 'add') senseAdds[sense[1]] = (senseAdds[sense[1]] ?? 0) + v
+      else senses[sense[1]] = Math.max(senses[sense[1]] ?? 0, v)
+    }
     const res = /^resistance:(\w+)$/.exec(effect.target)
     if (res) resistances.add(res[1])
+    const imm = /^immunity:(\w+)$/.exec(effect.target)
+    if (imm) immunities.add(imm[1])
+    const cimm = /^conditionImmunity:(\w+)$/.exec(effect.target)
+    if (cimm) conditionImmunities.add(cimm[1])
+    const sp = /^speed:(fly|swim|climb|burrow)$/.exec(effect.target)
+    if (sp) speeds[sp[1]] = Math.max(speeds[sp[1]] ?? 0, effect.value === 'walk' ? speed.value : resolveScaled(effect.value, vars(ae)))
   }
+  for (const [k, v] of Object.entries(senseAdds)) senses[k] = (senses[k] ?? 0) + v
 
   // Carrying capacity: Strength × 15 (size-adjusted); Powerful Build counts as one size larger.
   const carrySize = applyEffects('carrySize', 0, '', vars).value
@@ -871,6 +905,9 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     toolProficiencies: [...toolProf],
     senses,
     resistances: [...resistances],
+    immunities: [...immunities],
+    conditionImmunities: [...conditionImmunities],
+    speeds,
     saveNotes,
     languages: [...languageSet],
     weaponMasteries,

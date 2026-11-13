@@ -423,10 +423,44 @@ const needsPrompt = (r: Row) => !!r.activity && (r.activity.activity.spendInput 
 /** Healing / Temp HP without dice (Dark One's Blessing): the bonus applies straight away. */
 const autoRoll = (r: Row) => (healing(r) && !r.activity?.rollDice ? 0 : undefined)
 
-function RollPrompt({ row, onDone }: { row: ActivityRow; onDone: (roll?: number, spendOnly?: boolean) => void }) {
+function RollPrompt({ row, onDone }: { row: ActivityRow; onDone: (roll?: number, spendOnly?: boolean, spent?: number) => void }) {
   const { t } = useTranslation()
   const [value, setValue] = useState('')
+  const [dice, setDice] = useState('')
   const n = Number.parseInt(value, 10)
+  if (row.activity.spendDice) {
+    // Dice pool: how many dice, then their rolled total.
+    const max = row.uses?.remaining ?? 0
+    const d = Number.parseInt(dice, 10)
+    const okDice = Number.isFinite(d) && d >= 1 && d <= max
+    const okRoll = okDice && Number.isFinite(n) && n >= d && n <= d * row.activity.spendDice
+    return (
+      <form
+        className="mt-1 flex flex-wrap items-center gap-2 rounded border border-accent bg-accent/5 p-2 text-sm"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (okRoll) onDone(n, false, d)
+        }}
+      >
+        <label className="flex items-center gap-2">
+          {t('roll.diceCount', { max })}
+          <input autoFocus inputMode="numeric" className="w-12 rounded border border-border bg-card px-1.5 py-0.5 text-center" value={dice} onChange={(e) => setDice(e.target.value.replace(/\D/g, ''))} />
+        </label>
+        {okDice && (
+          <label className="flex items-center gap-2">
+            {t('roll.prompt', { dice: `${d}d${row.activity.spendDice}${row.rollBonus ? ` + ${row.rollBonus}` : ''}` })}
+            <input inputMode="numeric" className="w-14 rounded border border-border bg-card px-1.5 py-0.5 text-center" value={value} onChange={(e) => setValue(e.target.value.replace(/\D/g, ''))} />
+          </label>
+        )}
+        <button type="submit" disabled={!okRoll} className="rounded bg-accent px-3 py-0.5 font-semibold text-accent-text disabled:opacity-50">
+          {t('roll.apply')}
+        </button>
+        <button type="button" className="text-muted underline" onClick={() => onDone(-1)}>
+          {t('cancel')}
+        </button>
+      </form>
+    )
+  }
   if (row.activity.spendInput) {
     const max = row.uses?.remaining ?? 0
     const ok = Number.isFinite(n) && n >= 1 && n <= max
@@ -553,7 +587,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     roll?: number,
     thrown = false,
     spendOnly = false,
-    slots: { slotKey?: string; recover?: number[] } = {},
+    slots: { slotKey?: string; recover?: number[]; spent?: number } = {},
   ) {
     const result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll, { spendOnly, ...slots })
     if (!result.ok) return void run(result)
@@ -621,10 +655,10 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     await perform(r, choice, at, autoRoll(r))
   }
 
-  async function finishRoll(r: Row, roll?: number, spendOnly = false) {
+  async function finishRoll(r: Row, roll?: number, spendOnly = false, spent?: number) {
     setPrompt(undefined)
     if (roll === -1) return
-    await perform(r, mode === 'strict' && problemOf(r) ? 'ignore' : undefined, undefined, roll, false, spendOnly)
+    await perform(r, mode === 'strict' && problemOf(r) ? 'ignore' : undefined, undefined, roll, false, spendOnly, { spent })
   }
 
   /** Cleave (2024 mastery): one extra attack per turn against a second creature. */
@@ -841,7 +875,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
                 }}
               />
             )}
-            {prompt === r.key && r.activity && !r.activity.activity.fontOfMagic && !slotPicker(r) && <RollPrompt row={r.activity} onDone={(roll, spendOnly) => void finishRoll(r, roll, spendOnly)} />}
+            {prompt === r.key && r.activity && !r.activity.activity.fontOfMagic && !slotPicker(r) && <RollPrompt row={r.activity} onDone={(roll, spendOnly, spent) => void finishRoll(r, roll, spendOnly, spent)} />}
           </li>
         ))}
       </ul>
