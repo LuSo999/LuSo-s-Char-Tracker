@@ -92,6 +92,21 @@ export async function uploadOfficial(content: OfficialContent, onProgress?: (don
   await loadOfficial(true)
 }
 
+/** Admin: remove one book (pack); the others stay. Clients reload because the version changes. */
+export async function deleteOfficialPack(packId: string) {
+  const meta = await getOfficialMeta()
+  if (!meta) return
+  for (const p of meta.parts.filter((x) => x.pack === packId)) await deleteDoc(doc(partsCol(), p.id))
+  const next: Meta = {
+    version: new Date().toISOString(),
+    parts: meta.parts.filter((x) => x.pack !== packId),
+    packs: meta.packs.filter((x) => x.id !== packId),
+  }
+  if (!next.packs.length) await deleteDoc(officialDoc())
+  else await setDoc(officialDoc(), { ...next, uploadedAt: serverTimestamp() })
+  await loadOfficial(true)
+}
+
 /** Admin: remove all shared official content (access settings stay). */
 export async function deleteOfficial(onProgress?: (done: number, total: number) => void) {
   const existing = await getDocs(partsCol())

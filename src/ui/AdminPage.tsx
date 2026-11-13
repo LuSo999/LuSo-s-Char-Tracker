@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { OfficialContent } from '../content/schema'
-import { getAccess, getOfficialMeta, setAccess, uploadOfficial, type Access, deleteOfficial } from '../state/official'
+import { getAccess, getOfficialMeta, setAccess, uploadOfficial, type Access, deleteOfficial, deleteOfficialPack } from '../state/official'
 import { BackToSheet } from './BackToSheet'
 import { Card } from './Card'
 
@@ -70,6 +70,19 @@ export function AdminPage() {
               {meta.packs.map((p) => (
                 <li key={p.id}>
                   {p.name} ({p.edition}) — {p.entities}
+                  <button
+                    className="ml-2 rounded border border-danger/60 px-1.5 text-xs text-danger hover:bg-danger/10"
+                    title={t('admin.deletePack', { name: p.name })}
+                    onClick={async () => {
+                      if (!confirm(t('admin.deletePackConfirm', { name: p.name }))) return
+                      setProgress(t('admin.deleting', { done: 0, total: 1 }))
+                      await deleteOfficialPack(p.id)
+                      setProgress(t('admin.packDeleted', { name: p.name }))
+                      setMeta(await getOfficialMeta())
+                    }}
+                  >
+                    🗑
+                  </button>
                 </li>
               ))}
             </ul>

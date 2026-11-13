@@ -176,7 +176,10 @@
     "delete": "Smazat sdílený obsah",
     "deleteConfirm": "Smazat všechen nahraný oficiální obsah? Postavy pak uvidí jen SRD, dokud ho znovu nenahraješ.",
     "deleting": "Mažu… {{done}}/{{total}}",
-    "deleted": "Sdílený obsah je smazaný."
+    "deleted": "Sdílený obsah je smazaný.",
+    "deletePack": "Smazat {{name}}",
+    "deletePackConfirm": "Smazat {{name}} ze sdíleného obsahu? Postavy, které ho používají, přijdou o jeho obsah, dokud ho znovu nenahraješ.",
+    "packDeleted": "{{name}} smazáno."
   },
   "undo": "Zpět",
   "cancel": "Zrušit",
