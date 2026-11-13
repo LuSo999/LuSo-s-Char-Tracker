@@ -501,6 +501,8 @@ export const Subclass = z.object({
   type: z.literal('subclass'),
   class: z.string(),
   levels: z.array(ClassLevel),
+  /** Who may take it (Path of the Battlerager: dwarves only). */
+  prerequisite: Prerequisite.optional(),
   /** Subclasses that cast spells for a non-caster class (Eldritch Knight, Arcane Trickster: "third"). */
   spellcasting: SpellcastingProgression.default('none'),
   caster: CasterInfo.optional(),

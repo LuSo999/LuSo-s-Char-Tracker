@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Ability, Choice } from '../../content/schema'
 import { choiceKey } from '../../engine/derive'
-import { choiceOptions, isComplete, setChoiceValues, setSubclass, type Option, type Pending, type PendingChoice } from '../../engine/levelup'
+import { choiceOptions, isComplete, setChoiceValues, setSubclass, unmetPrerequisites, type Option, type Pending, type PendingChoice } from '../../engine/levelup'
 import { RuleRef } from '../rules/RuleRef'
 import { useRun, useSheet } from '../sheet/context'
 import { ManageSpells } from '../spells/SpellcastingDrawer'
@@ -32,9 +32,10 @@ function Header({ title, done, children }: { title: React.ReactNode; done: boole
 
 export function SubclassCard({ classId, className }: { classId: string; className: string }) {
   const { t } = useTranslation()
-  const { character, content } = useSheet()
+  const { character, content, sheet } = useSheet()
   const run = useRun()
   const current = character.classes.find((c) => c.classId === classId)?.subclassId
+  const level = character.classes.find((c) => c.classId === classId)?.level ?? 1
   const subs = content.all('subclass').filter((s) => s.class === classId && s.edition === character.edition)
   return (
     <div className={`${card} ${current ? 'border-border' : 'border-accent/60 bg-accent/5'}`}>
@@ -43,11 +44,20 @@ export function SubclassCard({ classId, className }: { classId: string; classNam
         {subs.map((s) => (
           <li key={s.id}>
             <label className="flex cursor-pointer items-start gap-2">
-              <input type="radio" className="mt-1" checked={current === s.id} onChange={() => void run(setSubclass(character, content, classId, s.id))} />
+              <input
+                type="radio"
+                className="mt-1"
+                checked={current === s.id}
+                disabled={current !== s.id && unmetPrerequisites(s.prerequisite, character, sheet, level).length > 0}
+                onChange={() => void run(setSubclass(character, content, classId, s.id))}
+              />
               <span>
                 <RuleRef entity={s} content={content} className="font-semibold">
                   {s.name}
                 </RuleRef>
+                {unmetPrerequisites(s.prerequisite, character, sheet, level).length > 0 && current !== s.id && (
+                  <span className="ml-1.5 text-xs text-danger">{t('levelUp.blocked.needs', { what: unmetPrerequisites(s.prerequisite, character, sheet, level).join(', ') })}</span>
+                )}
                 {s.description && <span className="block text-xs text-muted">{s.description}</span>}
               </span>
             </label>
