@@ -11,5 +11,6 @@
     "border": "#d6c09b",
     "danger": "#a3241a"
   },
-  "cardOpacity": 0.88
+  "cardOpacity": 0.88,
+  "radius": "3px"
 }

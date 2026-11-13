@@ -1,20 +1,18 @@
 # Generates the ornate frames of the illustrated themes from their theme.json colors:
-#   src/themes/<id>/frame.svg    edges (9-slice, 120x120, slices of 40; top edge drawn at x 40..80)
+#   src/themes/<id>/frame.svg    edges (9-slice, corners of 40; top edge drawn at x 40..size-40, size 120 by default)
 #   src/themes/<id>/corners.svg  corners (top-left corner drawn at 0..40, rotated to the others)
 # Usage: python3 scripts/theme-frames.py src/themes
 import json, math, sys
 
 root = sys.argv[1]
-HEAD = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">'
 
 
-def rot(g, a):
-    return f'<g transform="rotate({a} 60 60)">{g}</g>'
-
-
-def frame(corner, edge, defs=''):
-    edges = HEAD + f'<defs>{defs}</defs>' + ''.join(rot(edge, a) for a in (0, 90, 180, 270)) + '</svg>'
-    corners = HEAD + f'<defs>{defs}</defs>' + ''.join(rot(corner, a) for a in (0, 90, 180, 270)) + '</svg>'
+def frame(corner, edge, defs='', size=120, joint=''):
+    """size > 120 makes the edge slice (x 40..size-40) longer, so its motif repeats less often."""
+    head = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" width="{size}" height="{size}"><defs>{defs}</defs>'
+    rot = lambda g, a: f'<g transform="rotate({a} {size / 2} {size / 2})">{g}</g>'
+    edges = head + ''.join(rot(joint + edge, a) for a in (0, 90, 180, 270)) + '</svg>'
+    corners = head + ''.join(rot(corner, a) for a in (0, 90, 180, 270)) + '</svg>'
     return edges, corners
 
 
@@ -77,32 +75,30 @@ out['magic'] = frame(
     f'<circle cx="60" cy="20" r="1" fill="{tx}"/><g fill="{a}"><circle cx="44.5" cy="20" r="0.7"/><circle cx="55" cy="20" r="0.6"/><circle cx="65" cy="20" r="0.6"/><circle cx="75.5" cy="20" r="0.7"/></g>',
     mdefs)
 
-# ---------------- Scroll: burnt torn paper, an inked rule with flourishes, a red wax seal with ribbons.
-c = T['scroll']; a, card = c['accent'], c['card']
-sdefs = (lin('sp', [(0, '#7a5530', 0.75), (0.45, '#b48c58', 0.5), (1, '#d9bf91', 0)])
-         + rad('sw', [(0, '#c4473a', 1), (0.7, '#9c2a22', 1), (1, '#6e1a14', 1)])
-         + rad('sc', [(0, '#7a5530', 0.7), (0.55, '#b48c58', 0.35), (1, '#d9bf91', 0)]))
-torn = 'M40 0 V6.5 L42.5 8 L45 5.8 L47.2 7.6 L50 5 L52.6 8.2 L55 6 L57.8 7.8 L60 5.2 L62.5 8 L65 5.6 L67.6 7.6 L70 5 L72.4 7.8 L75 5.8 L77.6 7.4 L80 6.5 V0 Z'
+# ---------------- Scroll: scorched paper edges and a double inked rule that run round the corners;
+# a red wax seal with ribbons and ink flourishes on the corners.
+c = T['scroll']; a = c['accent']
+sdefs = (lin('sp', [(0, '#7a5530', 0.6), (1, '#b48c58', 0)]) + rad('sw', [(0, '#c4473a', 1), (0.7, '#9c2a22', 1), (1, '#6e1a14', 1)])
+         + f'<radialGradient id="sk" cx="40" cy="40" r="40" gradientUnits="userSpaceOnUse"><stop offset="0.75" stop-color="#b48c58" stop-opacity="0"/><stop offset="1" stop-color="#7a5530" stop-opacity="0.6"/></radialGradient>')
 seal = star(14, 14, 7.6, 6.6, 14)
 out['scroll'] = frame(
-    f'<path d="M0 0 H40 V7 C30 5 21 9 15.5 15.5 C9 21 5 30 7 40 H0 Z" fill="url(#sc)"/>'
-    f'<path d="M7 40 C5 30 9 21 15.5 15.5 C21 9 30 5 40 7" fill="none" stroke="#5c3a1c" stroke-width="0.8" opacity="0.8"/>'
     f'<g fill="none" stroke="{a}" stroke-width="0.7" stroke-linecap="round">'
-    f'<path d="M40 12.5 C33 12.5 28 14 25.5 17.5 C23.5 20.5 26 23.5 28.5 22 C30.5 20.8 29 18.5 27.5 19.5"/>'
-    f'<path d="M12.5 40 C12.5 33 14 28 17.5 25.5 C20.5 23.5 23.5 26 22 28.5 C20.8 30.5 18.5 29 19.5 27.5"/>'
-    f'<path d="M40 15.5 C35 15.5 31.5 17 30 19" stroke-width="0.4"/><path d="M15.5 40 C15.5 35 17 31.5 19 30" stroke-width="0.4"/></g>'
+    f'<path d="M40 22 C34 22 30 24.5 28.5 28 C27.5 30.5 30 32.5 32 31 C33.4 30 32.4 28 31 28.8"/>'
+    f'<path d="M22 40 C22 34 24.5 30 28 28.5 C30.5 27.5 32.5 30 31 32 C30 33.4 28 32.4 28.8 31"/></g>'
     f'<path d="M17 17 L27 31 L24.5 30.8 L23.8 33.5 L14.5 19.5 Z" fill="#9c2a22" stroke="#6e1a14" stroke-width="0.4"/>'
     f'<path d="M17 17 L31 27 L30.8 24.5 L33.5 23.8 L19.5 14.5 Z" fill="#b5352b" stroke="#6e1a14" stroke-width="0.4"/>'
     f'<polygon points="{seal}" fill="url(#sw)" stroke="#6e1a14" stroke-width="0.5"/>'
     f'<circle cx="14" cy="14" r="4.6" fill="none" stroke="#e07a68" stroke-width="0.5" opacity="0.8"/>'
     f'<polygon points="{star(14, 14, 3.2, 1.3, 5)}" fill="#6e1a14" opacity="0.85"/>'
     f'<path d="M10 11 C11 9.6 12.6 9 14 9" fill="none" stroke="#f0a090" stroke-width="0.6" stroke-linecap="round" opacity="0.8"/>',
-    f'<path d="{torn}" fill="url(#sp)"/>'
-    f'<path d="M40 6.5 L42.5 8 L45 5.8 L47.2 7.6 L50 5 L52.6 8.2 L55 6 L57.8 7.8 L60 5.2 L62.5 8 L65 5.6 L67.6 7.6 L70 5 L72.4 7.8 L75 5.8 L77.6 7.4 L80 6.5" fill="none" stroke="#5c3a1c" stroke-width="0.7" opacity="0.75"/>'
-    f'<line x1="40" y1="12.5" x2="80" y2="12.5" stroke="{a}" stroke-width="0.7"/><line x1="40" y1="15.5" x2="80" y2="15.5" stroke="{a}" stroke-width="0.35"/>'
-    f'<g fill="none" stroke="{a}" stroke-width="0.5" stroke-linecap="round"><path d="M52 12.5 C54 9.5 57.5 9.5 60 12.5 C62.5 9.5 66 9.5 68 12.5"/><path d="M56 15.5 C57.5 18 62.5 18 64 15.5"/></g>'
-    f'<path d="M60 10.6 L61.2 12.5 L60 14.4 L58.8 12.5 Z" fill="{a}"/>',
-    sdefs)
+    f'<rect x="40" y="0" width="40" height="10" fill="url(#sp)"/>'
+    f'<line x1="40" y1="12.5" x2="80" y2="12.5" stroke="{a}" stroke-width="0.8"/><line x1="40" y1="15.5" x2="80" y2="15.5" stroke="{a}" stroke-width="0.4"/>'
+    f'<g fill="none" stroke="{a}" stroke-width="0.5" stroke-linecap="round"><path d="M52 15.5 C54 18.5 57.5 18.5 60 15.5 C62.5 18.5 66 18.5 68 15.5"/></g>'
+    f'<path d="M60 16.6 L61.2 18.5 L60 20.4 L58.8 18.5 Z" fill="{a}"/>',
+    sdefs,
+    joint=f'<path d="M0 0 H40 V40 H0 Z" fill="url(#sk)"/>'
+          f'<path d="M40 12.5 H24.5 A12 12 0 0 0 12.5 24.5 V40" fill="none" stroke="{a}" stroke-width="0.8"/>'
+          f'<path d="M40 15.5 H25.5 A10 10 0 0 0 15.5 25.5 V40" fill="none" stroke="{a}" stroke-width="0.4"/>')
 
 # ---------------- Battlefield: a round shield over crossed axe and spear; bunting of war banners on the edges.
 c = T['battlefield']; a = c['accent']
@@ -133,28 +129,47 @@ out['battlefield'] = frame(
     f'<g fill="#e8d5a8"><circle cx="48.4" cy="15.6" r="0.6"/><circle cx="71.6" cy="15.6" r="0.6"/></g>',
     bdefs)
 
-# ---------------- Forest: a curling branch with veined leaves, berries and a small mushroom; a flowering vine.
-c = T['forest']; a = c['accent']; d1, bark = '#4f7a32', '#5b4632'
-fdefs = (lin('fl', [(0, a, 1), (1, d1, 1)], 1, 1) + lin('fb', [(0, '#7a5f44', 1), (1, '#4a3826', 1)], 1, 1)
-         + rad('fr', [(0, '#e0606a', 1), (1, '#8a1f3a', 1)]))
-L = lambda x, y, ang, s=1, f='url(#fl)': leaf(x, y, ang, s, f, '#2f4a1e')
-berries = ''.join(f'<circle cx="{x}" cy="{y}" r="1.7" fill="url(#fr)" stroke="#5a1426" stroke-width="0.3"/><circle cx="{x - 0.5}" cy="{y - 0.6}" r="0.45" fill="#fff" opacity="0.7"/>' for x, y in [(31, 30), (33.5, 31.8), (30.6, 33)])
-flower = lambda x, y, r=1.6: ''.join(f'<circle cx="{px:.2f}" cy="{py:.2f}" r="{r * 0.7:.2f}" fill="#f2e6b8" stroke="#c9b26a" stroke-width="0.25"/>' for px, py in pts(x, y, r, 5)) + f'<circle cx="{x}" cy="{y}" r="{r * 0.55:.2f}" fill="#e2b13c"/>'
+# ---------------- Forest (fairy): pastel blossoms, curling tendrils, a fern frond and sparkles; a vine with
+# one big blossom per (long) edge tile.
+c = T['forest']; vine, vine2 = '#9cc76a', '#5f8a3c'
+fdefs = (rad('fp', [(0, '#fff3f8', 1), (0.55, '#f6bdd8', 1), (1, '#d97fb0', 1)]) + rad('fv', [(0, '#f7f1ff', 1), (0.55, '#cdb8f2', 1), (1, '#9d82d8', 1)])
+         + rad('fw', [(0, '#ffffff', 1), (0.6, '#fbf3df', 1), (1, '#e3d3a8', 1)]) + rad('fc', [(0, '#fff3b0', 1), (1, '#e0b13c', 1)])
+         + lin('fl', [(0, '#b9dc86', 1), (1, '#6f9e40', 1)], 1, 1) + rad('fg', [(0, '#fff8d8', 0.55), (1, '#fff8d8', 0)]))
+def blossom(x, y, r, petal, rotate=0, n=5):
+    p = f'M0 0 C{-r * 0.62:.2f} {-r * 0.35:.2f} {-r * 0.55:.2f} {-r:.2f} 0 {-r:.2f} C{r * 0.55:.2f} {-r:.2f} {r * 0.62:.2f} {-r * 0.35:.2f} 0 0 Z'
+    petals = ''.join(f'<path d="{p}" transform="rotate({rotate + i * 360 / n:.1f})" fill="url(#{petal})" stroke="#b07aa0" stroke-width="0.25" stroke-opacity="0.6"/>' for i in range(n))
+    veins = ''.join(f'<path d="M0 {-r * 0.25:.2f} V{-r * 0.7:.2f}" transform="rotate({rotate + i * 360 / n:.1f})" stroke="#ffffff" stroke-width="0.3" opacity="0.7"/>' for i in range(n))
+    dots = ''.join(f'<circle cx="{px:.2f}" cy="{py:.2f}" r="{r * 0.06:.2f}" fill="#c98a1c"/>' for px, py in pts(0, 0, r * 0.2, 6))
+    return f'<g transform="translate({x} {y})">{petals}{veins}<circle r="{r * 0.28:.2f}" fill="url(#fc)"/>{dots}</g>'
+def bud(x, y, ang, s, f='fv'):
+    return (f'<g transform="translate({x} {y}) rotate({ang}) scale({s})"><path d="M0 0 C-1.8 -1.5 -1.6 -4.6 0 -5.8 C1.6 -4.6 1.8 -1.5 0 0 Z" fill="url(#{f})" stroke="#9d82d8" stroke-width="0.25"/>'
+            f'<path d="M0 0.4 C-1.4 -0.6 -1.3 -2 -0.8 -2.4 M0 0.4 C1.4 -0.6 1.3 -2 0.8 -2.4" fill="none" stroke="{vine2}" stroke-width="0.5"/></g>')
+sparkle = lambda x, y, r: f'<circle cx="{x}" cy="{y}" r="{r * 1.6}" fill="url(#fg)"/><path d="M{x} {y - r} L{x + r * 0.25} {y - r * 0.25} L{x + r} {y} L{x + r * 0.25} {y + r * 0.25} L{x} {y + r} L{x - r * 0.25} {y + r * 0.25} L{x - r} {y} L{x - r * 0.25} {y - r * 0.25} Z" fill="#fffbe6"/>'
+FL = lambda x, y, ang, s=1: leaf(x, y, ang, s, 'url(#fl)', '#4f7a32')
+fern = ''.join(f'<path d="M0 0 C1 -1.2 2.6 -1.4 3.4 -0.6 C2.6 0 1.2 0.2 0 0 Z" transform="translate({x:.2f} {y:.2f}) rotate({ang}) scale({sc})" fill="url(#fl)"/>'
+               for x, y, ang, sc in [(31, 30.2, -80, 1), (29, 31.4, 170, 1), (33.6, 28, -70, 0.85), (31.4, 28.6, 160, 0.85), (36, 26.4, -60, 0.7), (34, 26.6, 150, 0.7), (37.6, 25.4, -50, 0.55)])
 out['forest'] = frame(
-    f'<path d="M40 19 C31 18 22 17.5 17 21.5 C12.5 25 14 31 18.5 31 C22 31 22.5 26.5 19.5 26" fill="none" stroke="url(#fb)" stroke-width="2.1" stroke-linecap="round"/>'
-    f'<path d="M19 40 C18 31 17.5 22 21.5 17 C25 12.5 31 14 31 18.5" fill="none" stroke="url(#fb)" stroke-width="2.1" stroke-linecap="round"/>'
-    f'<path d="M17 21.5 C10 17 5 11 6 4.5 M21.5 17 C17 10 11 5 4.5 6" fill="none" stroke="{bark}" stroke-width="1.1" stroke-linecap="round"/>'
-    + L(6, 4.5, -95, 0.85) + L(4.5, 6, 175, 0.85) + L(11, 10.5, -150, 0.8, '#6f9e40') + L(10.5, 11, 120, 0.8, '#6f9e40')
-    + L(33, 18.4, -40, 0.85) + L(18.4, 33, 130, 0.85) + L(27, 17.6, -115, 0.75, '#6f9e40') + L(17.6, 27, 205, 0.75, '#6f9e40')
-    + berries
-    + '<path d="M7.6 31 C7.6 27.6 13.4 27.6 13.4 31 Z" fill="#b5442e" stroke="#6b2414" stroke-width="0.35"/><rect x="9.6" y="31" width="1.8" height="3.4" rx="0.6" fill="#efe4c8"/>'
-    + '<g fill="#f6efe0"><circle cx="9.4" cy="29.6" r="0.45"/><circle cx="11.6" cy="29.2" r="0.4"/><circle cx="12.4" cy="30.4" r="0.3"/></g>'
-    + flower(25, 8, 1.7) + flower(8, 25, 1.4),
-    f'<path d="M40 20 C46 14.5 54 14.5 60 20 C66 25.5 74 25.5 80 20" fill="none" stroke="url(#fb)" stroke-width="1.4"/>'
-    f'<path d="M48 16.2 C47 13 48.5 11 50.5 10.5 M72 23.8 C73 27 71.5 29 69.5 29.5" fill="none" stroke="{bark}" stroke-width="0.6"/>'
-    + L(50.5, 10.5, -30, 0.6) + L(48, 16.4, -150, 0.62, '#6f9e40') + L(69.5, 29.5, 150, 0.6) + L(72, 23.6, 30, 0.62, '#6f9e40')
-    + flower(60, 20, 1.5) + f'<circle cx="54.5" cy="15.8" r="0.8" fill="url(#fr)"/><circle cx="65.5" cy="24.2" r="0.8" fill="url(#fr)"/>',
-    fdefs)
+    # tendrils curling along both sides
+    f'<g fill="none" stroke="{vine}" stroke-width="0.9" stroke-linecap="round">'
+    f'<path d="M40 14.5 C32 13.5 25 15 22 19 C19.5 22.5 22 26 25 24.5 C27 23.4 26 21 24.4 21.8"/>'
+    f'<path d="M14.5 40 C13.5 32 15 25 19 22 C22.5 19.5 26 22 24.5 25 C23.4 27 21 26 21.8 24.4" />'
+    f'<path d="M40 20 C35 19 31 20 29 22 M20 40 C19 35 20 31 22 29" stroke-width="0.6"/></g>'
+    f'<path d="M24 34 C27 32 30 29.5 32 27.5 C34 25.5 36 24.5 38.5 24.6" fill="none" stroke="{vine2}" stroke-width="0.5"/>{fern}'
+    + FL(28, 13.8, -20, 0.62) + FL(13.8, 28, 110, 0.62) + FL(33, 15, 10, 0.5) + FL(15, 33, 80, 0.5)
+    + blossom(25, 6.5, 5.2, 'fv', 20) + blossom(6.5, 25, 5.2, 'fw', 5)
+    + blossom(12, 12, 10.5, 'fp', -10)
+    + bud(34.5, 12.6, 70, 0.9) + bud(12.6, 34.5, 200, 0.9, 'fp')
+    + sparkle(30.5, 6, 1.6) + sparkle(6, 31, 1.3) + sparkle(23, 25, 0.9) + sparkle(3, 3.5, 1.1),
+    # one wave of vine over the long tile: a big blossom in the middle, small ones and buds on the way
+    f'<path d="M40 20 C73 10 107 10 140 20 C173 30 207 30 240 20" fill="none" stroke="{vine}" stroke-width="1.2"/>'
+    f'<path d="M40 20 C73 10 107 10 140 20 C173 30 207 30 240 20" fill="none" stroke="{vine2}" stroke-width="0.4" transform="translate(0 0.8)"/>'
+    f'<g fill="none" stroke="{vine}" stroke-width="0.7" stroke-linecap="round"><path d="M104 13 C105 8.5 109.5 7.5 111.2 10 C112.3 11.8 110 13.2 109.2 11.8"/><path d="M176 27 C175 31.5 170.5 32.5 168.8 30 C167.7 28.2 170 26.8 170.8 28.2"/></g>'
+    + FL(56, 16.2, -35, 0.75) + FL(118, 14, 215, 0.75) + FL(162, 26, 25, 0.75) + FL(224, 23.8, 145, 0.75)
+    + bud(72, 13.6, -25, 1.25, 'fp') + bud(208, 26.4, 155, 1.25, 'fp')
+    + blossom(140, 20, 13, 'fp', 12)
+    + blossom(92, 12.2, 5.4, 'fv', 30) + blossom(188, 27.8, 5.4, 'fw', 0)
+    + sparkle(124, 28, 1.6) + sparkle(156, 11, 1.6) + sparkle(48, 12.5, 1.1) + sparkle(232, 28, 1.1),
+    fdefs, 280)
 
 # ---------------- Holy: a radiant gold sun with a cross in a beaded halo; a gilded band with fleurs-de-lis.
 c = T['holy']; a, card = c['accent'], c['card']
