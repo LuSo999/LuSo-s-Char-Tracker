@@ -162,7 +162,7 @@ const textChecks: [RegExp, (sheet: Sheet) => boolean][] = [
 /** A text-only prerequisite the app can't check, if any. */
 export function uncheckedPrerequisite(pre: Prerequisite | undefined): string | undefined {
   // Texts that only restate the checked fields ("Warlock 5, Pact of the Blade", "level 5") need no warning.
-  if (!pre?.text || pre.features || pre.spells || pre.anyTag || pre.noTag || pre.anyOf || /^(level|[A-Z][a-z]+) \d+$/.test(pre.text)) return undefined
+  if (!pre?.text || pre.features || pre.spells || pre.anyTag || pre.noTag || pre.anyOf || pre.weaponProficiency || /^(level|[A-Z][a-z]+) \d+$/.test(pre.text)) return undefined
   return textChecks.some(([re]) => re.test(pre.text!)) ? undefined : pre.text
 }
 
@@ -182,6 +182,7 @@ export function unmetPrerequisites(pre: Prerequisite | undefined, char: Characte
   const tags = new Set(sheet.active.flatMap((ae) => ae.entity.tags))
   if (pre.anyTag?.length && !pre.anyTag.some((t) => tags.has(t))) out.push(pre.anyTag.join(' / '))
   if (pre.noTag?.some((t) => tags.has(t))) out.push(`no ${pre.noTag.join(' / ')}`)
+  if (pre.weaponProficiency?.length && !pre.weaponProficiency.some((w) => sheet.weaponProficiencies.includes(w))) out.push(`${pre.weaponProficiency.join(' / ')} weapons`)
   const check = pre.text ? textChecks.find(([re]) => re.test(pre.text!)) : undefined
   if (check && !check[1](sheet)) out.push(pre.text!)
   return out
@@ -193,8 +194,15 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
   switch (choice.kind) {
     case 'entity': {
       const from = choice.from ?? {}
+      // Options a book adds to an existing choice name its owner in `optionOf` (Tasha's fighting styles, invocations…).
+      const added = (): Entity[] => {
+        const entityChoices = ae.entity.choices.filter((c) => c.kind === 'entity' && c.from?.ids)
+        const ids = new Set(from.ids)
+        const owns = entityChoices.length === 1 || from.ids!.some((id) => content.get(id)?.type === 'feature' && (content.get(id) as { optionOf?: string }).optionOf === ae.entity.id)
+        return owns ? content.all('feature').filter((f) => f.optionOf === ae.entity.id && !ids.has(f.id)) : []
+      }
       let pool: Entity[] = from.ids
-        ? from.ids.map((id) => content.get(id)).filter((e): e is Entity => !!e)
+        ? [...from.ids.map((id) => content.get(id)).filter((e): e is Entity => !!e), ...added()]
         : from.type
           ? (content.all(from.type as Entity['type']) as Entity[]).filter((e) => (from.tags ?? []).every((t) => e.tags.includes(t)))
           : []

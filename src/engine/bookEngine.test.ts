@@ -98,3 +98,20 @@ describe('Granted attack scaling', () => {
     expect(g.damageBonus).toBe(0 + 3)
   })
 })
+
+describe('Options added by books', () => {
+  it('a feature with optionOf the choice owner joins that choice', async () => {
+    const { ContentIndex } = await import('../content')
+    const { Pack } = await import('../content/schema')
+    const { srd: srdPack } = await import('./fixtures')
+    void srdPack
+    const base = (await import('../data/srd/2014.json')).default
+    const pack = Pack.parse({ id: 'x', name: 'X', edition: '2014', book: 'x', entities: [{ id: 'x-blind-fighting', edition: '2014', type: 'feature', name: 'Blind Fighting', source: { book: 'x' }, optionOf: 'fighter-fighting-style' }] })
+    const content = new ContentIndex('2014', [Pack.parse(base), pack])
+    const c = makeCharacter({ edition: '2014', classes: [{ classId: 'fighter', level: 1 }], speciesId: 'human', backgroundId: 'acolyte', baseScores: { str: 15, dex: 14, con: 14, int: 10, wis: 10, cha: 10 }, hp: { current: 12 } })
+    const s = computeSheet(c, content)
+    const { allChoices, choiceOptions } = await import('./levelup')
+    const style = allChoices(c, s).find((p) => p.ae.entity.id === 'fighter-fighting-style')!
+    expect(choiceOptions(c, content, s, style.ae, style.choice).map((o) => o.id)).toContain('x-blind-fighting')
+  })
+})

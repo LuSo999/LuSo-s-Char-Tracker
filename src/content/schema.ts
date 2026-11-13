@@ -348,6 +348,8 @@ export const Prerequisite: z.ZodType<Prerequisite> = z.object({
   /** Needs an entity with one of these tags (Greater Mark: "dragonmark"); or must not have one (a second Dragonmark). */
   anyTag: z.array(z.string()).optional(),
   noTag: z.array(z.string()).optional(),
+  /** Proficiency with one of these weapon categories / weapons ("martial"). */
+  weaponProficiency: z.array(z.string()).optional(),
   /** Shown to the player; a requirement the app can't check, or the wording of the ones it does. */
   text: z.string().optional(),
   /** At least one of these must be met as well (a feat OR Martial weapon training). */
@@ -360,6 +362,7 @@ export type Prerequisite = {
   spells?: string[]
   anyTag?: string[]
   noTag?: string[]
+  weaponProficiency?: string[]
   text?: string
   anyOf?: Prerequisite[]
 }
