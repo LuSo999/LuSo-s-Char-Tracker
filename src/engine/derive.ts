@@ -925,7 +925,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const cimm = /^conditionImmunity:(\w+)$/.exec(effect.target)
     if (cimm) conditionImmunities.add(cimm[1])
     const sp = /^speed:(fly|swim|climb|burrow)$/.exec(effect.target)
-    if (sp) speeds[sp[1]] = Math.max(speeds[sp[1]] ?? 0, effect.value === 'walk' ? speed.value : resolveScaled(effect.value, vars(ae)))
+    if (sp) speeds[sp[1]] = Math.max(speeds[sp[1]] ?? 0, resolveScaled(effect.value, { ...vars(ae), walk: speed.value }))
   }
   for (const [k, v] of Object.entries(senseAdds)) senses[k] = (senses[k] ?? 0) + v
 
