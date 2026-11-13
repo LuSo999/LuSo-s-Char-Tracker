@@ -399,7 +399,8 @@
       "subclass": "Subclass ({{class}})",
       "multiclassRule": "Multiclass povolen",
       "spellCopied": "Zkopírováno {{name}} do spellbooku ({{gp}} GP, {{hours}} h)",
-      "books": "Povolené knihy"
+      "books": "Povolené knihy",
+      "legacySubclasses": "Subclassy z 5e povoleny"
     },
     "attackAction": "Attack action"
   },
@@ -853,6 +854,8 @@
     "hint": "Nabízí se obsah z těchto knih (volby, level up, kouzla). SRD je vždy zapnuté.",
     "srd": "SRD (vždy)",
     "unofficial": "neoficiální / playtest",
-    "none": "Zatím nejsou nahrané žádné knihy; je k dispozici jen SRD."
+    "none": "Zatím nejsou nahrané žádné knihy; je k dispozici jen SRD.",
+    "legacy": "Povolit subclassy z 5e (2014)",
+    "legacyHint": "Pravidla 2024 se souhlasem DM dovolují starší subclassy: featury před 3. levelem se získají na 3. levelu, Ki čerpá z Focus Points a kouzla se berou ve verzi 2024, pokud existuje."
   }
 }

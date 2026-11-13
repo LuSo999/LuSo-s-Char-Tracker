@@ -399,7 +399,8 @@
       "subclass": "Subclass ({{class}})",
       "multiclassRule": "Multiclassing allowed",
       "spellCopied": "Copied {{name}} into the spellbook ({{gp}} GP, {{hours}} h)",
-      "books": "Allowed books"
+      "books": "Allowed books",
+      "legacySubclasses": "5e subclasses allowed"
     },
     "attackAction": "Attack action"
   },
@@ -853,6 +854,8 @@
     "hint": "Content from these books is offered (choices, level up, spells). SRD is always on.",
     "srd": "SRD (always)",
     "unofficial": "unofficial / playtest",
-    "none": "No books are uploaded yet; only SRD content is available."
+    "none": "No books are uploaded yet; only SRD content is available.",
+    "legacy": "Allow 5e (2014) subclasses",
+    "legacyHint": "With the DM's OK, the 2024 rules allow older subclasses: their features before level 3 come at level 3; Ki uses Focus Points; spells use the 2024 versions where they exist."
   }
 }

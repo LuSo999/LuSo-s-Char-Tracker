@@ -148,8 +148,10 @@ export const Character = z.object({
     .object({
       multiclass: z.boolean().default(true),
       trackAmmunition: z.boolean().default(true),
+      /** 5.5e character: 2014 subclasses may be chosen (with the 2024 class). */
+      legacySubclasses: z.boolean().default(false),
     })
-    .default({ multiclass: true, trackAmmunition: true }),
+    .default({ multiclass: true, trackAmmunition: true, legacySubclasses: false }),
   notes: z.string().default(''),
 })
 export type Character = z.infer<typeof Character>

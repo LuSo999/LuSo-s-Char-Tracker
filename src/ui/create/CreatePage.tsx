@@ -67,8 +67,9 @@ function Wizard({
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>('basics')
   const [books, setBooks] = useState<string[]>([])
-  // Only the allowed books are offered.
-  const content = useMemo(() => allContent.withBooks(books), [allContent, books])
+  const [legacy, setLegacy] = useState(false)
+  // Only the allowed books are offered (and 2014 subclasses when allowed).
+  const content = useMemo(() => allContent.withLegacySubclasses(legacy).withBooks(books), [allContent, books, legacy])
   const [level, setLevel] = useState(1)
   const classes = content.all('class').filter((c) => c.edition === edition)
   const allSpecies = content.all('species').filter((s) => s.edition === edition)
@@ -104,11 +105,11 @@ function Wizard({
   // The character as it stands (level 1), for choices and the summary.
   const character = useMemo(() => {
     try {
-      return buildCharacter(content, { ...draft, books })
+      return buildCharacter(content, { ...draft, books, legacySubclasses: legacy })
     } catch {
       return undefined
     }
-  }, [content, draft, books])
+  }, [content, draft, books, legacy])
   const sheet = useMemo(() => (character ? computeSheet(character, content) : undefined), [character, content])
   const onDraftChange = useCallback((c: Character) => setDraft((d) => ({ ...d, choices: c.choices, spells: c.spells })), [])
 
@@ -135,7 +136,7 @@ function Wizard({
   async function create() {
     if (!character) return
     setSaving(true)
-    const final = buildCharacter(content, { ...draft, books, inventory: gearInventory(content, gear), gp: gear.gp })
+    const final = buildCharacter(content, { ...draft, books, legacySubclasses: legacy, inventory: gearInventory(content, gear), gp: gear.gp })
     if (onCreate) return onCreate({ ...final, xp: XP_FOR_LEVEL[level] }, level)
     const { id: _id, ...rest } = { ...final, xp: XP_FOR_LEVEL[level] }
     void _id
@@ -202,7 +203,7 @@ function Wizard({
           <div>
             <h2 className="mb-1 font-semibold">{t('books.title')}</h2>
             <p className="mb-1 text-xs text-muted">{t('books.hint')}</p>
-            <BooksPicker content={allContent} books={books} onChange={setBooks} />
+            <BooksPicker content={allContent} books={books} onChange={setBooks} legacy={{ on: legacy, onChange: setLegacy }} />
           </div>
         </section>
       )}

@@ -99,3 +99,9 @@ export function setBooks(char: Character, books: string[]): ActionResult {
   if (JSON.stringify(char.books) === JSON.stringify(books)) return { ok: false, error: 'noChange' }
   return { ok: true, character: { ...char, books }, items: [{ type: 'books', before: char.books.join(', ') || '*', after: books.join(', ') || '*' }], groupType: 'edit', kind: 'sheet' }
 }
+
+/** 5.5e character: allow 2014 subclasses (the 2024 rules permit older subclasses with the DM's OK). */
+export function setLegacySubclasses(char: Character, on: boolean): ActionResult {
+  if (char.settings.legacySubclasses === on) return { ok: false, error: 'noChange' }
+  return { ok: true, character: { ...char, settings: { ...char.settings, legacySubclasses: on } }, items: [{ type: 'legacySubclasses', before: String(char.settings.legacySubclasses), after: String(on) }], groupType: 'edit', kind: 'sheet' }
+}
