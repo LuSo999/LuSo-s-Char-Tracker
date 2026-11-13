@@ -451,7 +451,9 @@
       "cantripDice": "{{name}}: damage",
       "contentChanged": "Homebrew changed: {{name}}"
     },
-    "attackAction": "Attack action"
+    "attackAction": "Attack action",
+    "undoPastConfirm": "Undo “{{what}}”? Changes made after it stay (HP, uses and dice are recounted).",
+    "undoPastHint": "Undo this even though other things happened after it"
   },
   "backTo": "Back to {{name}}",
   "inventory": {

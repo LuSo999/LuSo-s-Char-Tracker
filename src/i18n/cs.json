@@ -451,7 +451,9 @@
       "cantripDice": "{{name}}: zranění",
       "contentChanged": "Změněný homebrew: {{name}}"
     },
-    "attackAction": "Attack action"
+    "attackAction": "Attack action",
+    "undoPastConfirm": "Vrátit „{{what}}“? Změny provedené potom zůstanou (HP, použití a kostky se přepočítají).",
+    "undoPastHint": "Vrátit, i když potom proběhly další změny"
   },
   "backTo": "Zpět na {{name}}",
   "inventory": {

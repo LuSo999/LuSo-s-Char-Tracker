@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { HistoryGroup } from '../../engine/history'
+import { makeUndoGroup, pastUndoable, undoPast, type HistoryGroup } from '../../engine/history'
+import { pruneChoices } from '../../engine/levelup'
 import { RuleRef } from '../rules/RuleRef'
 import { useSheet } from '../sheet/context'
 import { groupTitle, itemText } from './text'
@@ -26,7 +27,7 @@ function blocks(list: HistoryGroup[]): (HistoryGroup | { groups: HistoryGroup[] 
 export function HistoryDrawer({ onClose }: { onClose: () => void }) {
   useBackClose(onClose)
   const { t, i18n } = useTranslation()
-  const { store, content } = useSheet()
+  const { store, content, character } = useSheet()
   const [showGame, setShowGame] = useState(true)
   const [showSheet, setShowSheet] = useState(true)
   const [type, setType] = useState('')
@@ -48,6 +49,15 @@ export function HistoryDrawer({ onClose }: { onClose: () => void }) {
 
   const time = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'short', timeStyle: 'short' })
   const undone = useMemo(() => new Set(store.history.filter((g) => g.undoes).map((g) => g.undoes)), [store.history])
+  // The last rest and the last level up can be undone later, keeping what happened since.
+  const canUndoPast = useMemo(() => pastUndoable(store.history), [store.history])
+  async function undoOld(g: HistoryGroup) {
+    if (!confirm(t('history.undoPastConfirm', { what: groupTitle(t, g) }))) return
+    let next = undoPast(character, g, store.history)
+    if (g.groupType === 'levelUp') next = pruneChoices(next, content)
+    const undo = makeUndoGroup(g)
+    await store.commit({ ok: true, character: next, items: undo.items, groupType: 'undo', kind: g.kind }, { undoes: g.id })
+  }
   const types = useMemo(() => [...new Set(store.history.map((g) => g.groupType))].filter((x) => x !== 'session'), [store.history])
 
   const texts = (g: HistoryGroup) => [groupTitle(t, g), ...g.items.map((i) => itemText(t, i))].join(' ').toLowerCase()
@@ -87,6 +97,11 @@ export function HistoryDrawer({ onClose }: { onClose: () => void }) {
         </span>
         <span className="text-xs text-muted">
           {wasUndone && <span className="mr-1 rounded bg-border px-1">{t('history.undone')}</span>}
+          {canUndoPast.has(g.id) && (
+            <button className="mr-1 rounded border border-border px-1.5 text-xs text-text hover:bg-bg" title={t('history.undoPastHint')} onClick={() => void undoOld(g)}>
+              ↶ {t('undo')}
+            </button>
+          )}
           {time.format(g.at)}
         </span>
       </span>

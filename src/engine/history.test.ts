@@ -32,3 +32,27 @@ describe('history', () => {
     ])
   })
 })
+
+describe('Undo an older rest or level up', () => {
+  it('takes back the rest but keeps damage taken after it', async () => {
+    const { makeCharacter, srd } = await import('./fixtures')
+    const { longRest } = await import('./rest')
+    const { takeDamage } = await import('./actions')
+    const { computeSheet } = await import('./derive')
+    const { diff, undoPast, pastUndoable } = await import('./history')
+    const content = srd('2024')
+    const c0 = makeCharacter({ edition: '2024', classes: [{ classId: 'fighter', level: 5 }], speciesId: 'human', backgroundId: 'soldier', baseScores: { str: 16, dex: 14, con: 14, int: 8, wis: 10, cha: 10 }, hp: { current: 10 }, resourcesUsed: { 'second-wind': 2 } })
+    const c1 = longRest(c0, content).character
+    const rest = { id: 'r', at: 1, kind: 'game' as const, groupType: 'longRest', items: [], revert: diff(c0, c1).revert }
+    const hit = takeDamage(c1, computeSheet(c1, content), 5)
+    if (!hit.ok) throw new Error()
+    const c2 = hit.character
+    const dmg = { id: 'd', at: 2, kind: 'game' as const, groupType: 'damage', items: [], revert: diff(c1, c2).revert }
+    const history = [dmg, rest]
+    expect(pastUndoable(history).has('r')).toBe(true)
+    const back = undoPast(c2, rest, history)
+    // Before the rest: 10 HP; the 5 damage after it still counts.
+    expect(back.hp.current).toBe(5)
+    expect(back.resourcesUsed['second-wind']).toBe(2)
+  })
+})
