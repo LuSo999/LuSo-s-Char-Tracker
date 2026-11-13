@@ -400,7 +400,8 @@
       "multiclassRule": "Multiclass povolen",
       "spellCopied": "Zkopírováno {{name}} do spellbooku ({{gp}} GP, {{hours}} h)",
       "books": "Povolené knihy",
-      "legacySubclasses": "Subclassy z 5e povoleny"
+      "legacySubclasses": "Subclassy z 5e povoleny",
+      "legacyOrigins": "Rasy a featy z 5e povoleny"
     },
     "attackAction": "Attack action"
   },
@@ -856,6 +857,10 @@
     "unofficial": "neoficiální / playtest",
     "none": "Zatím nejsou nahrané žádné knihy; je k dispozici jen SRD.",
     "legacy": "Povolit subclassy z 5e (2014)",
-    "legacyHint": "Pravidla 2024 se souhlasem DM dovolují starší subclassy: featury před 3. levelem se získají na 3. levelu, Ki čerpá z Focus Points a kouzla se berou ve verzi 2024, pokud existuje."
+    "legacyHint": "Pravidla 2024 se souhlasem DM dovolují starší subclassy: featury před 3. levelem se získají na 3. levelu, Ki čerpá z Focus Points a kouzla se berou ve verzi 2024, pokud existuje.",
+    "legacyOrigins": "Povolit rasy a featy z 5e (2014)",
+    "legacyOriginsHint": "Obsah z jiné edice, označený ⚠️ 5e. Starší rasy v pravidlech 2024 nedávají zvýšení vlastností (to dává background); starší featy se berou jako general featy (od 4. levelu).",
+    "otherEdition": "5e (2014)",
+    "otherEditionHint": "Z jiné edice (5e 2014): domluv se s DM, pravidla 2024 můžou fungovat jinak."
   }
 }

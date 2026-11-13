@@ -125,8 +125,8 @@ export class ContentIndex {
    * level 3, Ki becomes Focus Points, spells map to this edition's spell of
    * the same name when there is one.
    */
-  withLegacySubclasses(on: boolean): ContentIndex {
-    if (!on || this.edition !== '2024' || this.legacy) return this
+  withLegacySubclasses(on: boolean, origins = false): ContentIndex {
+    if ((!on && !origins) || this.edition !== '2024' || this.legacy) return this
     const view = Object.create(ContentIndex.prototype) as ContentIndex
     Object.assign(view, this, { byId: new Map(this.byId), packOf: new Map(this.packOf), legacy: true })
     const old = new Map<string, { e: Entity; pack: Pack }>()
@@ -138,8 +138,10 @@ export class ContentIndex {
     // Only these fields hold references to other entities (resource ids, toggles, effect targets don't).
     const refs = (e: Entity): string[] => {
       const out: string[] = []
-      const x = e as Entity & { levels?: { features: string[] }[]; optionOf?: string; upgradeOf?: string }
+      const x = e as Entity & { levels?: { features: string[] }[]; optionOf?: string; upgradeOf?: string; traits?: string[]; subspecies?: string[]; species?: string }
       for (const l of x.levels ?? []) out.push(...l.features)
+      out.push(...(x.traits ?? []), ...(x.subspecies ?? []))
+      if (e.type === 'subspecies' && x.species) out.push(x.species)
       if (x.optionOf) out.push(x.optionOf)
       if (x.upgradeOf) out.push(x.upgradeOf)
       for (const c of e.choices) out.push(...(c.from?.ids ?? []), ...(c.kind === 'spell' || c.kind === 'entity' ? (c.options ?? []) : []))
@@ -156,7 +158,11 @@ export class ContentIndex {
       take.add(id)
       refs(o.e).forEach(visit)
     }
-    for (const { e } of old.values()) if (e.type === 'subclass' && this.byId.get(e.class)?.type === 'class') visit(e.id)
+    for (const { e } of old.values()) {
+      if (on && e.type === 'subclass' && this.byId.get(e.class)?.type === 'class') visit(e.id)
+      // 2014 species and feats (the 2024 rules allow older ones with the DM's OK).
+      if (origins && (e.type === 'species' || e.type === 'subspecies' || e.type === 'feat')) visit(e.id)
+    }
     const mapId = (id: string): string => {
       const o = old.get(id)
       if (!o) return id
@@ -170,6 +176,15 @@ export class ContentIndex {
       if (c.optionOf) c.optionOf = mapId(c.optionOf)
       if (c.upgradeOf) c.upgradeOf = mapId(c.upgradeOf)
       if (c.parent) c.parent = mapId(c.parent)
+      const sp = c as Entity & { traits?: string[]; subspecies?: string[]; species?: string; abilityBonuses?: unknown[] }
+      if (sp.traits) sp.traits = sp.traits.map(mapId)
+      if (sp.subspecies) sp.subspecies = sp.subspecies.map(mapId)
+      if (c.type === 'subspecies' && sp.species) sp.species = mapId(sp.species)
+      // 2024: ability increases come from the background, so older species give none.
+      if (c.type === 'species' || c.type === 'subspecies') {
+        sp.abilityBonuses = []
+        c.choices = c.choices.filter((ch) => ch.kind !== 'abilityPoints')
+      }
       c.choices = c.choices.map((ch) => ({
         ...ch,
         ...(ch.from?.ids ? { from: { ...ch.from, ids: ch.from.ids.map(mapId) } } : {}),
@@ -192,6 +207,14 @@ export class ContentIndex {
       copy.id = `2014:${id}`
       ;(copy as { edition: Edition }).edition = this.edition
       copy.tags = [...e.tags, 'legacy-2014']
+      if (e.type === 'species' || e.type === 'subspecies' || e.type === 'feat') copy.name = `${e.name} (2014)`
+      if (e.type === 'feat') {
+        // Offered where 2024 general feats are (Ability Score Improvement), from level 4.
+        const f = copy as Entity & { category?: string; prerequisite?: { level?: number } }
+        f.category = 'general'
+        copy.tags = [...new Set([...copy.tags, 'general'])]
+        f.prerequisite = { ...(f.prerequisite ?? {}), level: f.prerequisite?.level ?? 4 }
+      }
       if (e.type === 'subclass') {
         copy.name = `${e.name} (2014)`
         // 2024 classes gain their subclass at level 3: earlier features come at 3.

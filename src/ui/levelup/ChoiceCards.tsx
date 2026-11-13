@@ -6,6 +6,7 @@ import { choiceOptions, isComplete, setChoiceValues, setSubclass, unmetPrerequis
 import { RuleRef } from '../rules/RuleRef'
 import { useRun, useSheet } from '../sheet/context'
 import { ManageSpells } from '../spells/SpellcastingDrawer'
+import { OtherEditionBadge } from '../sheet/BooksPicker'
 import { spellbookFree } from '../../engine/spells'
 
 const card = 'rounded border p-2.5 text-sm'
@@ -55,6 +56,7 @@ export function SubclassCard({ classId, className }: { classId: string; classNam
                 <RuleRef entity={s} content={content} className="font-semibold">
                   {s.name}
                 </RuleRef>
+                <OtherEditionBadge tags={s.tags} />
                 {unmetPrerequisites(s.prerequisite, character, sheet, level).length > 0 && current !== s.id && (
                   <span className="ml-1.5 text-xs text-danger">{t('levelUp.blocked.needs', { what: unmetPrerequisites(s.prerequisite, character, sheet, level).join(', ') })}</span>
                 )}
@@ -202,6 +204,7 @@ function Options({ p, choice, count, chosen }: { p: PendingChoice; choice: Choic
                   <RuleRef entity={o.entity} content={content} className="font-semibold">
                     {o.label}
                   </RuleRef>
+                  {o.entity && <OtherEditionBadge tags={o.entity.tags} />}
                   {copies(o.id) > 1 && <span className="ml-1 text-xs font-semibold">×{copies(o.id)}</span>}
                   {o.repeatable && chosen.includes(o.id) && chosen.length < count && (
                     <button

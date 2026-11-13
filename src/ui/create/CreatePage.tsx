@@ -28,7 +28,7 @@ import { RuleRef } from '../rules/RuleRef'
 import { DraftSheet } from '../levelup/DraftSheet'
 import { DecisionList } from '../levelup/LevelUpDialog'
 import { signed } from '../sheet/format'
-import { BooksPicker } from '../sheet/BooksPicker'
+import { BooksPicker, OtherEditionBadge } from '../sheet/BooksPicker'
 
 type Step = 'basics' | 'class' | 'species' | 'background' | 'abilities' | 'choices' | 'equipment' | 'details'
 const STEPS: Step[] = ['basics', 'class', 'species', 'background', 'abilities', 'choices', 'equipment', 'details']
@@ -68,8 +68,9 @@ function Wizard({
   const [step, setStep] = useState<Step>('basics')
   const [books, setBooks] = useState<string[]>([])
   const [legacy, setLegacy] = useState(false)
-  // Only the allowed books are offered (and 2014 subclasses when allowed).
-  const content = useMemo(() => allContent.withLegacySubclasses(legacy).withBooks(books), [allContent, books, legacy])
+  const [legacyOrigins, setLegacyOrigins] = useState(false)
+  // Only the allowed books are offered (and 2014 subclasses / species / feats when allowed).
+  const content = useMemo(() => allContent.withLegacySubclasses(legacy, legacyOrigins).withBooks(books), [allContent, books, legacy, legacyOrigins])
   const [level, setLevel] = useState(1)
   const classes = content.all('class').filter((c) => c.edition === edition)
   const allSpecies = content.all('species').filter((s) => s.edition === edition)
@@ -105,11 +106,11 @@ function Wizard({
   // The character as it stands (level 1), for choices and the summary.
   const character = useMemo(() => {
     try {
-      return buildCharacter(content, { ...draft, books, legacySubclasses: legacy })
+      return buildCharacter(content, { ...draft, books, legacySubclasses: legacy, legacyOrigins })
     } catch {
       return undefined
     }
-  }, [content, draft, books, legacy])
+  }, [content, draft, books, legacy, legacyOrigins])
   const sheet = useMemo(() => (character ? computeSheet(character, content) : undefined), [character, content])
   const onDraftChange = useCallback((c: Character) => setDraft((d) => ({ ...d, choices: c.choices, spells: c.spells })), [])
 
@@ -136,7 +137,7 @@ function Wizard({
   async function create() {
     if (!character) return
     setSaving(true)
-    const final = buildCharacter(content, { ...draft, books, legacySubclasses: legacy, inventory: gearInventory(content, gear), gp: gear.gp })
+    const final = buildCharacter(content, { ...draft, books, legacySubclasses: legacy, legacyOrigins, inventory: gearInventory(content, gear), gp: gear.gp })
     if (onCreate) return onCreate({ ...final, xp: XP_FOR_LEVEL[level] }, level)
     const { id: _id, ...rest } = { ...final, xp: XP_FOR_LEVEL[level] }
     void _id
@@ -203,7 +204,7 @@ function Wizard({
           <div>
             <h2 className="mb-1 font-semibold">{t('books.title')}</h2>
             <p className="mb-1 text-xs text-muted">{t('books.hint')}</p>
-            <BooksPicker content={allContent} books={books} onChange={setBooks} legacy={{ on: legacy, onChange: setLegacy }} />
+            <BooksPicker content={allContent} books={books} onChange={setBooks} legacy={{ on: legacy, onChange: setLegacy }} legacyOrigins={{ on: legacyOrigins, onChange: setLegacyOrigins }} />
           </div>
         </section>
       )}
@@ -240,6 +241,7 @@ function Wizard({
                     <RuleRef entity={s} content={content} className="font-semibold">
                       {s.name}
                     </RuleRef>
+                    <OtherEditionBadge tags={s.tags} />
                     <span className="ml-2 text-xs text-muted">
                       {s.size} · {s.speed} ft
                       {s.abilityBonuses.length > 0 && ` · ${s.abilityBonuses.map((b) => `${b.ability.toUpperCase()} ${signed(b.bonus)}`).join(', ')}`}
@@ -250,6 +252,7 @@ function Wizard({
               </li>
             ))}
           </ul>
+          {species?.tags.includes('legacy-2014') && <p className="rounded border border-amber-500/60 bg-amber-500/10 p-2 text-xs">⚠️ {t('books.otherEditionHint')} {t('books.legacyOriginsHint')}</p>}
           {subspecies.length > 0 && (
             <div>
               <h2 className="mb-1 text-sm font-semibold">{t('create.subspecies', { species: species?.name })}</h2>
@@ -262,6 +265,7 @@ function Wizard({
                         <RuleRef entity={s} content={content} className="font-semibold">
                           {s.name}
                         </RuleRef>
+                        <OtherEditionBadge tags={s.tags} />
                         {s.abilityBonuses.length > 0 && <span className="ml-2 text-xs text-muted">{s.abilityBonuses.map((b) => `${b.ability.toUpperCase()} ${signed(b.bonus)}`).join(', ')}</span>}
                         <span className="block text-xs text-muted">{s.description}</span>
                       </span>

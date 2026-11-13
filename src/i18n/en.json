@@ -400,7 +400,8 @@
       "multiclassRule": "Multiclassing allowed",
       "spellCopied": "Copied {{name}} into the spellbook ({{gp}} GP, {{hours}} h)",
       "books": "Allowed books",
-      "legacySubclasses": "5e subclasses allowed"
+      "legacySubclasses": "5e subclasses allowed",
+      "legacyOrigins": "5e species and feats allowed"
     },
     "attackAction": "Attack action"
   },
@@ -856,6 +857,10 @@
     "unofficial": "unofficial / playtest",
     "none": "No books are uploaded yet; only SRD content is available.",
     "legacy": "Allow 5e (2014) subclasses",
-    "legacyHint": "With the DM's OK, the 2024 rules allow older subclasses: their features before level 3 come at level 3; Ki uses Focus Points; spells use the 2024 versions where they exist."
+    "legacyHint": "With the DM's OK, the 2024 rules allow older subclasses: their features before level 3 come at level 3; Ki uses Focus Points; spells use the 2024 versions where they exist.",
+    "legacyOrigins": "Allow 5e (2014) species and feats",
+    "legacyOriginsHint": "Content of another edition, marked ⚠️ 5e. Older species give no ability increases in 2024 (they come from the background); older feats count as general feats (level 4+).",
+    "otherEdition": "5e (2014)",
+    "otherEditionHint": "From another edition (5e 2014): check with your DM; the 2024 rules may work differently."
   }
 }

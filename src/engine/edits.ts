@@ -105,3 +105,9 @@ export function setLegacySubclasses(char: Character, on: boolean): ActionResult 
   if (char.settings.legacySubclasses === on) return { ok: false, error: 'noChange' }
   return { ok: true, character: { ...char, settings: { ...char.settings, legacySubclasses: on } }, items: [{ type: 'legacySubclasses', before: String(char.settings.legacySubclasses), after: String(on) }], groupType: 'edit', kind: 'sheet' }
 }
+
+/** 5.5e character: allow 2014 species and feats (marked as another edition). */
+export function setLegacyOrigins(char: Character, on: boolean): ActionResult {
+  if (char.settings.legacyOrigins === on) return { ok: false, error: 'noChange' }
+  return { ok: true, character: { ...char, settings: { ...char.settings, legacyOrigins: on } }, items: [{ type: 'legacyOrigins', before: String(char.settings.legacyOrigins), after: String(on) }], groupType: 'edit', kind: 'sheet' }
+}

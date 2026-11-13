@@ -21,7 +21,7 @@ import { ActionList } from './ActionList'
 import { SheetContext, undoGroup, useRun, useSheet } from './context'
 import { useEditMode } from './editMode'
 import { EntityEditHost } from './EntityEditDialog'
-import { resetAllOverrides, setBooks as setBooksAction, setLegacySubclasses, setName } from '../../engine/edits'
+import { resetAllOverrides, setBooks as setBooksAction, setLegacyOrigins, setLegacySubclasses, setName } from '../../engine/edits'
 import { EquippedPanel } from './EquippedPanel'
 import { Dialog, RestDialog } from './RestDialog'
 import { BooksPicker } from './BooksPicker'
@@ -68,7 +68,11 @@ export function SheetView({ character, content, store }: { character: Character;
   const { t } = useTranslation()
   const official = useOfficial()
   // The character's own names, summaries and links apply everywhere on the sheet.
-  const view = useMemo(() => content.withLegacySubclasses(character.settings.legacySubclasses).withBooks(character.books).withCustomizations(character.customizations), [content, character.settings.legacySubclasses, character.books, character.customizations])
+  const { legacySubclasses, legacyOrigins } = character.settings
+  const view = useMemo(
+    () => content.withLegacySubclasses(legacySubclasses, legacyOrigins).withBooks(character.books).withCustomizations(character.customizations),
+    [content, legacySubclasses, legacyOrigins, character.books, character.customizations],
+  )
   const result = useMemo(() => {
     try {
       return { sheet: computeSheet(character, view) }
@@ -260,6 +264,7 @@ function EditBanner() {
             books={character.books}
             onChange={(b) => void run(setBooksAction(character, b))}
             legacy={{ on: character.settings.legacySubclasses, onChange: (on) => void run(setLegacySubclasses(character, on)) }}
+            legacyOrigins={{ on: character.settings.legacyOrigins, onChange: (on) => void run(setLegacyOrigins(character, on)) }}
           />
         </Dialog>
       )}

@@ -121,8 +121,9 @@ export type Draft = {
   notes: string
   /** Allowed books (empty: every official book). */
   books?: string[]
-  /** 5.5e: allow 2014 subclasses. */
+  /** 5.5e: allow 2014 subclasses / species and feats. */
   legacySubclasses?: boolean
+  legacyOrigins?: boolean
 }
 
 /** A level 1 character from the draft, at full HP. */
@@ -145,7 +146,7 @@ export function buildCharacter(content: ContentIndex, d: Draft): Character {
     hp: { current: 1, temp: 0 },
     notes: d.notes,
     books: d.books ?? [],
-    settings: { multiclass: true, trackAmmunition: true, legacySubclasses: !!d.legacySubclasses },
+    settings: { multiclass: true, trackAmmunition: true, legacySubclasses: !!d.legacySubclasses, legacyOrigins: !!d.legacyOrigins },
   }
   const c = Character.parse(input)
   return { ...c, hp: { current: computeSheet(c, content).hpMax.value, temp: 0 } }

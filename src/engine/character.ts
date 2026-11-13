@@ -150,8 +150,10 @@ export const Character = z.object({
       trackAmmunition: z.boolean().default(true),
       /** 5.5e character: 2014 subclasses may be chosen (with the 2024 class). */
       legacySubclasses: z.boolean().default(false),
+      /** 5.5e character: 2014 species and feats may be chosen (marked as another edition). */
+      legacyOrigins: z.boolean().default(false),
     })
-    .default({ multiclass: true, trackAmmunition: true, legacySubclasses: false }),
+    .default({ multiclass: true, trackAmmunition: true, legacySubclasses: false, legacyOrigins: false }),
   notes: z.string().default(''),
 })
 export type Character = z.infer<typeof Character>
