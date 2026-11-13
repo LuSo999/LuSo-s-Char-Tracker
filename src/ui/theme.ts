@@ -5,6 +5,10 @@ import { themeById, type Theme } from '../themes'
 /** A character's theme, set while its sheet is shown (undefined: the account's). */
 export const useThemeOverride = create<{ id?: string; frames?: boolean }>(() => ({}))
 
+/** The open character's theme settings, edited by the 🎨 button in the header (none: the account's). */
+export type ThemeTarget = { theme?: string; frames?: boolean; setTheme: (id: string | undefined) => void; setFrames: (v: boolean | undefined) => void }
+export const useThemeTarget = create<{ target?: ThemeTarget }>(() => ({}))
+
 const vars: Record<keyof Theme['colors'], string> = {
   bg: '--color-bg',
   card: '--color-card',

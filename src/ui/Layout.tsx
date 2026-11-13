@@ -4,6 +4,7 @@ import { signOut } from '../firebase'
 import { languages, setLanguage, type Language } from '../i18n'
 import { useAuth } from '../state/auth'
 import { ShortcutsButton } from './ShortcutsButton'
+import { ThemeButton } from './ThemePicker'
 import { AdminBulb } from './feedback/AdminBulb'
 import { FeedbackButton } from './feedback/FeedbackButton'
 
@@ -35,6 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ))}
             </select>
           </label>
+          <ThemeButton />
           {user && (
             <>
               <Link to="/settings" className="text-sm text-muted hover:underline">

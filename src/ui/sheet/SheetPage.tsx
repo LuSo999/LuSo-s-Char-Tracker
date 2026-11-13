@@ -22,9 +22,7 @@ import { SheetContext, undoGroup, useRun, useSheet } from './context'
 import { useEditMode } from './editMode'
 import { EntityEditHost } from './EntityEditDialog'
 import { resetAllOverrides, setBooks as setBooksAction, setCharacterFrames, setCharacterTheme, setLegacyOrigins, setLegacySubclasses, setName } from '../../engine/edits'
-import { useSettings } from '../../state/settings'
-import { FramesToggle, ThemePicker } from '../ThemePicker'
-import { useThemeOverride } from '../theme'
+import { useThemeOverride, useThemeTarget } from '../theme'
 import { EquippedPanel } from './EquippedPanel'
 import { Dialog, RestDialog } from './RestDialog'
 import { BooksPicker } from './BooksPicker'
@@ -177,7 +175,6 @@ function TopBar({
         <button className={button} onClick={onLevelUp}>
           ⬆️ {t('sheet.buttons.levelUp')}
         </button>
-        <ThemeButton className={button} />
         <EditToggle className={button} />
         <button
           className={button}
@@ -210,28 +207,22 @@ function LevelQueue({ active, onNext }: { active: boolean; onNext: () => void })
   return null
 }
 
-/** 🎨: this character's theme (or the account's). */
-function ThemeButton({ className }: { className: string }) {
-  const { t } = useTranslation()
+/** While the sheet is open, the 🎨 button in the header edits this character's theme. */
+function ThemeTarget() {
   const { character } = useSheet()
   const run = useRun()
-  const account = useSettings((s) => s.theme)
-  const accountFrames = useSettings((s) => s.frames)
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <button className={className} title={t('theme.title')} aria-label={t('theme.title')} onClick={() => setOpen(true)}>
-        🎨
-      </button>
-      {open && (
-        <Dialog title={t('theme.title')} onClose={() => setOpen(false)} wide>
-          <p className="mb-3 text-sm text-muted">{t('theme.characterHint')}</p>
-          <ThemePicker value={character.settings.theme} inherit={account} onChange={(id) => void run(setCharacterTheme(character, id), { quiet: true })} />
-          <FramesToggle value={character.settings.frames} inherit={accountFrames} onChange={(v) => void run(setCharacterFrames(character, v), { quiet: true })} />
-        </Dialog>
-      )}
-    </>
-  )
+  useEffect(() => {
+    useThemeTarget.setState({
+      target: {
+        theme: character.settings.theme,
+        frames: character.settings.frames,
+        setTheme: (id) => void run(setCharacterTheme(character, id), { quiet: true }),
+        setFrames: (v) => void run(setCharacterFrames(character, v), { quiet: true }),
+      },
+    })
+  }, [character, run])
+  useEffect(() => () => useThemeTarget.setState({ target: undefined }), [])
+  return null
 }
 
 function EditToggle({ className }: { className: string }) {
@@ -345,6 +336,7 @@ function SheetLayout() {
       {!spells && (sheet.spellcasting.any || edit) && <EdgeHandle side="left" icon="✨" label={t('spells.title')} onClick={() => setSpells(true)} />}
       {!inventory && <EdgeHandle side="right" icon="🎒" label={t('inventory.title')} onClick={() => setInventory(true)} />}
       <EditBanner />
+      <ThemeTarget />
       <EntityEditHost />
 
       {/* On large screens the columns fill the viewport and scroll inside, so nothing important needs page scrolling. */}

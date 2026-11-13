@@ -1,8 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSettings } from '../state/settings'
+import { useAuth } from '../state/auth'
+import { saveSettings, useSettings } from '../state/settings'
 import { themeById, themes } from '../themes'
-import { applyTheme, useThemeOverride } from './theme'
+import { Dialog } from './sheet/RestDialog'
+import { applyTheme, useThemeOverride, useThemeTarget } from './theme'
 
 /** Keeps the page in the account's theme, or the open character's own. */
 export function ThemeApplier() {
@@ -70,5 +72,40 @@ export function FramesToggle({ value, onChange, inherit }: { value: boolean | un
       </label>
       <p className="mt-0.5 pl-6 text-xs text-muted">{t('theme.framesHint')}</p>
     </div>
+  )
+}
+
+/** 🎨 in the header: the open character's theme on its sheet, the account's elsewhere. */
+export function ThemeButton() {
+  const { t } = useTranslation()
+  const uid = useAuth((s) => s.user?.uid)
+  const settings = useSettings()
+  const target = useThemeTarget((s) => s.target)
+  const [open, setOpen] = useState(false)
+  if (!uid && !target) return null
+  return (
+    <>
+      <button className="text-sm text-muted hover:underline" title={t('theme.title')} aria-label={t('theme.title')} onClick={() => setOpen(true)}>
+        <span aria-hidden>🎨 </span>
+        <span className="hidden sm:inline">{t('theme.title')}</span>
+      </button>
+      {open && (
+        <Dialog title={t('theme.title')} onClose={() => setOpen(false)} wide>
+          {target ? (
+            <>
+              <p className="mb-3 text-sm text-muted">{t('theme.characterHint')}</p>
+              <ThemePicker value={target.theme} inherit={settings.theme} onChange={target.setTheme} />
+              <FramesToggle value={target.frames} inherit={settings.frames} onChange={target.setFrames} />
+            </>
+          ) : (
+            <>
+              <p className="mb-3 text-sm text-muted">{t('theme.accountHint')}</p>
+              <ThemePicker value={settings.theme} onChange={(id) => uid && void saveSettings(uid, { theme: id ?? 'system' })} />
+              <FramesToggle value={settings.frames} onChange={(v) => uid && void saveSettings(uid, { frames: !!v })} />
+            </>
+          )}
+        </Dialog>
+      )}
+    </>
   )
 }
