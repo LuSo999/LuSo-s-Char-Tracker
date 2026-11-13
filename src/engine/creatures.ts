@@ -86,12 +86,16 @@ export const crLabel = (cr: number) => (cr === 0.125 ? '1/8' : cr === 0.25 ? '1/
 /** Wild Shape limits from effects (shape:maxCr, shape:fly, shape:swim, shape:forms). */
 export type ShapeRules = { maxCr: number; fly: boolean; swim: boolean; forms?: number; extra?: string[] }
 
+/** Stat blocks made for one spell or feature (spirits, primal beasts): never ordinary forms or familiars. */
+const isSpecial = (c: Creature) => c.tags.includes('summon') || c.tags.includes('companion')
+
 /** Beasts the druid could turn into under these rules. */
 export function eligibleShapes(content: ContentIndex, rules: ShapeRules): Creature[] {
   return content
     .all('creature')
     .filter((c) => {
       if (rules.extra?.includes(c.id)) return true
+      if (isSpecial(c)) return false
       const speeds = c.speed as Record<string, unknown>
       return c.creatureType === 'beast' && c.cr <= rules.maxCr && (rules.fly || !speeds.fly) && (rules.swim || !speeds.swim)
     })
@@ -103,7 +107,7 @@ export function grantCreatures(grant: CompanionGrant, content: ContentIndex): Cr
   const listed = grant.creatures.map((id) => content.getTyped(id, 'creature')).filter((c): c is Creature => !!c)
   const f = grant.filter
   const filtered = f
-    ? content.all('creature').filter((c) => (!f.creatureType || c.creatureType === f.creatureType) && (f.maxCr === undefined || c.cr <= f.maxCr) && (!f.tag || c.tags.includes(f.tag)))
+    ? content.all('creature').filter((c) => !isSpecial(c) && (!f.creatureType || c.creatureType === f.creatureType) && (f.maxCr === undefined || c.cr <= f.maxCr) && (!f.tag || c.tags.includes(f.tag)))
     : []
   const seen = new Set<string>()
   return [...listed, ...filtered].filter((c) => !seen.has(c.id) && seen.add(c.id)).sort((a, b) => a.cr - b.cr || a.name.localeCompare(b.name))
