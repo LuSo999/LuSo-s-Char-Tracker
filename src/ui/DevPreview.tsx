@@ -48,6 +48,8 @@ export default function DevPreview() {
             { uid: 'w1', itemId: 'greataxe', quantity: 1, equipped: true },
             { uid: 'w2', itemId: 'shortsword', quantity: 1, equipped: true },
             { uid: 'w3', itemId: 'shortbow', quantity: 1, equipped: false },
+            { uid: 'w4', itemId: 'javelin', quantity: 5, equipped: true },
+            { uid: 'w5', itemId: 'arrows', quantity: 20, equipped: false },
           ],
         })
       }

@@ -760,7 +760,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
             <div
               role="button"
               tabIndex={0}
-              className="flex cursor-pointer items-start gap-3 rounded px-1 hover:bg-bg"
+              className="flex cursor-pointer items-start gap-2 rounded px-1 hover:bg-bg sm:gap-3"
               onClick={(e) => void activate(r, e.currentTarget)}
               onKeyDown={(e) => {
                 if (e.key !== 'Enter' && e.key !== ' ') return
@@ -768,7 +768,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
                 void activate(r, e.currentTarget)
               }}
             >
-              <span className={`mt-0.5 w-20 shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-semibold ${actionTypeClass[r.actionType]}`}>
+              <span className={`mt-0.5 w-16 shrink-0 rounded px-1 py-0.5 text-center text-[11px] sm:w-20 sm:px-1.5 font-semibold ${actionTypeClass[r.actionType]}`}>
                 {actionTypeTerm(r.actionType, !!r.spellRow) ? (
                   <Term id={actionTypeTerm(r.actionType, !!r.spellRow)!}>
                     <span aria-hidden>{actionTypeIcon[r.actionType]}</span> {actionTypeShort[r.actionType]}
@@ -779,86 +779,89 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
                   </>
                 )}
               </span>
-              <span className="mt-0.5 w-6 shrink-0 text-center text-lg leading-none" title={t(`actionCategory.${r.category}`)} aria-label={t(`actionCategory.${r.category}`)}>
+              <span className="mt-0.5 w-5 shrink-0 text-center text-lg leading-none sm:w-6" title={t(`actionCategory.${r.category}`)} aria-label={t(`actionCategory.${r.category}`)}>
                 {categoryIcon[r.category]}
               </span>
               <div className="min-w-0 flex-1">
                 <RuleRef entity={r.entity} content={content} className="font-semibold" editable={!r.attack && !r.spellRow}>
                   {r.name}
                 </RuleRef>
-                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">{r.details}</div>
+                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm [&>*]:whitespace-nowrap">{r.details}</div>
                 {r.brief && (
                   <p className="truncate text-xs text-muted" title={r.brief}>
                     {r.brief}
                   </p>
                 )}
               </div>
-              {meleeThrown(r) && (
-                <button
-                  className="shrink-0 rounded border border-border px-2 py-0.5 text-xs font-semibold hover:bg-bg disabled:opacity-40"
-                  disabled={!r.available}
-                  title={t('turn.throwHint')}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    void activate(r, e.currentTarget, true)
-                  }}
-                >
-                  🎯 {t('turn.throw')}
-                </button>
-              )}
-              {offhandAllowed(r) && (
-                <button
-                  className="shrink-0 rounded border border-amber-500 px-2 py-0.5 text-xs font-semibold text-amber-700 hover:bg-amber-500 hover:text-white dark:text-amber-300"
-                  title={t('turn.offhandHint', { damage: `${r.attack!.damageDice}${r.attack!.offhand!.damageBonus ? signed(r.attack!.offhand!.damageBonus) : ''}` })}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    void offhand(r, e.currentTarget)
-                  }}
-                >
-                  {nickAvailable(r) ? `🗡️ Nick` : `✨ ${t('turn.offhand')}`}
-                </button>
-              )}
-              {r.attack?.loaded && (
-                <button
-                  className="shrink-0 rounded border border-border px-2 py-0.5 text-xs font-semibold hover:bg-bg"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    void run(reload(character, r.attack!))
-                  }}
-                >
-                  🔄 {t('turn.reload')}
-                </button>
-              )}
-              {r.attack?.mastery === 'cleave' && (
-                <button
-                  className="shrink-0 rounded border border-accent px-2 py-0.5 text-xs font-semibold text-accent hover:bg-accent hover:text-accent-text"
-                  title={t('turn.cleaveHint')}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    void cleave(r, e.currentTarget)
-                  }}
-                >
-                  ↯ Cleave
-                </button>
-              )}
-              {r.spellRow && castOptions(r.spellRow, sheet).length > 1 && (
-                <button
-                  className="shrink-0 rounded border border-violet-500/60 px-1.5 py-0.5 text-xs font-semibold text-violet-700 hover:bg-violet-500/10 dark:text-violet-300"
-                  title={t('spells.castHow')}
-                  aria-label={t('spells.castHow')}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setCasting(casting === r.key ? undefined : r.key)
-                  }}
-                >
-                  ▾
-                </button>
-              )}
-              {r.uses && (
-                <span className="shrink-0 pt-1 text-sm" title={t('sheet.usesLeft')}>
-                  {r.uses.max === r.uses.remaining && r.uses.max > 10 ? `${r.uses.remaining}` : <Dots remaining={r.uses.remaining} max={r.uses.max} />}
-                </span>
-              )}
+              {/* Extra buttons wrap into a narrow column on small phones instead of squeezing the name. */}
+              <div className="flex shrink-0 flex-wrap items-start justify-end gap-1 max-sm:max-w-[5.5rem]">
+                {meleeThrown(r) && (
+                  <button
+                    className="shrink-0 rounded border border-border px-2 py-0.5 text-xs font-semibold hover:bg-bg disabled:opacity-40"
+                    disabled={!r.available}
+                    title={t('turn.throwHint')}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void activate(r, e.currentTarget, true)
+                    }}
+                  >
+                    🎯 {t('turn.throw')}
+                  </button>
+                )}
+                {offhandAllowed(r) && (
+                  <button
+                    className="shrink-0 rounded border border-amber-500 px-2 py-0.5 text-xs font-semibold text-amber-700 hover:bg-amber-500 hover:text-white dark:text-amber-300"
+                    title={t('turn.offhandHint', { damage: `${r.attack!.damageDice}${r.attack!.offhand!.damageBonus ? signed(r.attack!.offhand!.damageBonus) : ''}` })}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void offhand(r, e.currentTarget)
+                    }}
+                  >
+                    {nickAvailable(r) ? `🗡️ Nick` : `✨ ${t('turn.offhand')}`}
+                  </button>
+                )}
+                {r.attack?.loaded && (
+                  <button
+                    className="shrink-0 rounded border border-border px-2 py-0.5 text-xs font-semibold hover:bg-bg"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void run(reload(character, r.attack!))
+                    }}
+                  >
+                    🔄 {t('turn.reload')}
+                  </button>
+                )}
+                {r.attack?.mastery === 'cleave' && (
+                  <button
+                    className="shrink-0 rounded border border-accent px-2 py-0.5 text-xs font-semibold text-accent hover:bg-accent hover:text-accent-text"
+                    title={t('turn.cleaveHint')}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void cleave(r, e.currentTarget)
+                    }}
+                  >
+                    ↯ Cleave
+                  </button>
+                )}
+                {r.spellRow && castOptions(r.spellRow, sheet).length > 1 && (
+                  <button
+                    className="shrink-0 rounded border border-violet-500/60 px-1.5 py-0.5 text-xs font-semibold text-violet-700 hover:bg-violet-500/10 dark:text-violet-300"
+                    title={t('spells.castHow')}
+                    aria-label={t('spells.castHow')}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setCasting(casting === r.key ? undefined : r.key)
+                    }}
+                  >
+                    ▾
+                  </button>
+                )}
+                {r.uses && (
+                  <span className="shrink-0 pt-1 text-sm" title={t('sheet.usesLeft')}>
+                    {r.uses.max > 4 ? (r.uses.max === r.uses.remaining ? `×${r.uses.remaining}` : `${r.uses.remaining}/${r.uses.max}`) : <Dots remaining={r.uses.remaining} max={r.uses.max} />}
+                  </span>
+                )}
+              </div>
             </div>
             {casting === r.key && r.spellRow && (
               <CastPrompt
