@@ -288,6 +288,8 @@ export const GrantedSpell = z.object({
   freeLevel: z.number().int().optional(),
   /** Can only be cast as a Ritual (Animal Speaker, Ritual Caster outside the free cast). */
   ritualOnly: z.boolean().optional(),
+  /** Only the free cast, never with spell slots (2014 Drow Magic; spells from items are always like this). */
+  freeOnly: z.boolean().optional(),
 })
 export type GrantedSpell = z.infer<typeof GrantedSpell>
 

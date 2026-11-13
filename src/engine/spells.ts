@@ -76,6 +76,8 @@ export type SpellRow = {
   freeLevel?: number
   /** Added to the damage (Agonizing Blast: Charisma modifier). */
   damageBonus?: number
+  /** Only the free cast / at will (spells from items, 2014 Drow Magic): no slots. */
+  freeOnly?: boolean
   /** What features change about it (Eldritch Spear: range +30 ft per level). */
   notes: string[]
 }
@@ -271,6 +273,7 @@ export function computeSpellcasting(
           limit: 'limit' in g ? g.limit : undefined,
           freeLevel: 'freeLevel' in g ? g.freeLevel : undefined,
           notes: [],
+          freeOnly: ('freeOnly' in g && !!g.freeOnly) || (!!ae.item && ae.entity.type === 'item'),
         })
       }
     }
