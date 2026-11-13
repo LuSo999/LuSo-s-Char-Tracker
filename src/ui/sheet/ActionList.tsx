@@ -562,6 +562,11 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     ...sheet.companions.flatMap((c) => c.actions.map((a, i) => ({ ...creatureRow(a, i, c.entry.name ?? c.creature.name, false, c.creature), key: `${c.entry.uid}:${i}` }))),
   ].sort((a, b) => a.order - b.order)
   const [shaping, setShaping] = useState<Row>()
+  /** The form limits of a shapechange row: Wild Shape's, or its own group's (Boon of Fluid Forms). */
+  const rulesOf = (r: Row) => {
+    const group = r.activity?.activity.shapeGroup
+    return group ? sheet.shapeRulesBy[group] : sheet.shapeRules
+  }
   const [casting, setCasting] = useState<string>()
   const { quickCast } = useCastSpell()
   const [category, setCategory] = useState<CategoryFilter>('all')
@@ -625,7 +630,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     let result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll, { spendOnly, ...slots })
     if (result.ok && shapeId) {
       // Wild Shape: pay the use and take the chosen form in one step.
-      const shaped = startShape(result.character, content, shapeId)
+      const shaped = startShape(result.character, content, shapeId, r.activity?.activity.shapeGroup)
       if (shaped.ok) result = { ...result, character: shaped.character, items: [...result.items, ...shaped.items] }
     }
     if (!result.ok) return void run(result)
@@ -677,7 +682,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       return void quickCast(r.spellRow, undefined, at)
     }
     // Wild Shape: choose the beast form first.
-    if (r.activity?.activity.toggle === 'Wild Shape' && sheet.shapeRules) return setShaping(r)
+    if (r.activity?.activity.toggle === 'Wild Shape' && rulesOf(r)) return setShaping(r)
     if (needsPrompt(r)) return setPrompt(r.key)
     await perform(r, undefined, at, autoRoll(r), thrown)
   }
@@ -794,6 +799,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       </div>
       {shaping && (
         <ShapePicker
+          rules={rulesOf(shaping)!}
           onClose={() => setShaping(undefined)}
           onPick={(id) => {
             const r = shaping

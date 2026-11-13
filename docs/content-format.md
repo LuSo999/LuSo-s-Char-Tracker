@@ -93,7 +93,7 @@ Cíle (`target`):
 - **Smysly a odolnosti:** `sense:darkvision` (op `max`, nebo `add` pro rozšíření), `resistance:<typ>`, `immunity:<typ>`, `conditionImmunity:<stav>`.
 - **Kouzla:** `spellDc`, `spellAttack`, `spellDc:<classa>`, `spellDamage:<kouzlo>`, `spellNote:<kouzlo>`.
 - **Připomínky:** `note` (text v `note`), `advantage:save:condition` (poznámka u záchran).
-- **Wild Shape:** `shape:maxCr` (nejvyšší CR formy, op `max`), `shape:fly` / `shape:swim` (1 = formy s létáním / plaváním povolené), `shape:forms` (2024: počet známých forem), `shape:ac` (AC ve formě, op `max`, např. Circle of the Moon `"13 + wis"`), `shape:creature:<id>` (tento tvor je navíc dostupná forma, např. elementálové), `shape:type:<typ tvora>` (formy i tohoto typu, v limitu CR). U objektů (Eldritch Cannon) může `scores` chybět.
+- **Wild Shape:** `shape:maxCr` (nejvyšší CR formy, op `max`), `shape:fly` / `shape:swim` (1 = formy s létáním / plaváním povolené), `shape:forms` (2024: počet známých forem), `shape:ac` (AC ve formě, op `max`, např. Circle of the Moon `"13 + wis"`), `shape:creature:<id>` (tento tvor je navíc dostupná forma, např. elementálové), `shape:type:<typ tvora>` (formy i tohoto typu, v limitu CR). Jiná proměna než Wild Shape (Boon of Fluid Forms, Elemental Wild Shape) má vlastní limity: aktivita s `toggle: "Wild Shape"` a `shapeGroup: "<skupina>"`, efekty `shape@<skupina>:maxCr` atd. U objektů (Eldritch Cannon) může `scores` chybět.
 
 `op`: `add` (výchozí), `set`, `max`, `min`. Do cíle jde vložit `@<id volby>`, které se nahradí každou vybranou hodnotou, např. `resistance:@types`.
 

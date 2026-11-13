@@ -163,6 +163,8 @@ export type Sheet = {
   spellcasting: Spellcasting
   /** Wild Shape limits when the character has Wild Shape. */
   shapeRules?: ShapeRules
+  /** Limits of other shapechanges by group (an activity's `shapeGroup`): Boon of Fluid Forms, Elemental Wild Shape. */
+  shapeRulesBy: Record<string, ShapeRules>
   /** The beast form while shaped (2014: its own HP pool). */
   shape?: CreatureView & { hp?: { current: number; max: number } }
   /** Familiars, steeds, companions and summons, resolved. */
@@ -411,7 +413,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const allEffects = active.flatMap((ae) =>
     ae.entity.effects.flatMap((effect) => {
       const m = /@([\w-]+)/.exec(effect.target)
-      if (!m || effect.target.startsWith('spell')) return [{ effect, ae }]
+      // "shape@<group>:…" names a shapechange group, not a choice.
+      if (!m || effect.target.startsWith('spell') || effect.target.startsWith('shape@')) return [{ effect, ae }]
       return selections(char, ae, m[1]).map((v) => ({ effect: { ...effect, target: effect.target.replace(m[0], v) }, ae }))
     }),
   )
@@ -643,7 +646,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   if (shapeCreature) {
     // Wild Shape: the beast's AC (Circle of the Moon 2024: shape:ac "13 + wis" when higher).
     const beastAc = resolveScaled(shapeCreature.ac, {})
-    acR = applyEffects('shape:ac', beastAc, shapeCreature.name, vars)
+    acR = applyEffects(char.shape?.group ? `shape@${char.shape.group}:ac` : 'shape:ac', beastAc, shapeCreature.name, vars)
     acAllParts = acR.parts
   }
   const ac = override('ac', acR.value, acAllParts)
@@ -1008,24 +1011,31 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   }
 
   // --- Wild Shape and companions ------------------------------------------------
-  const shapeMaxCr = applyEffects('shape:maxCr', -1, '', vars)
-  const shapeRules: ShapeRules | undefined =
-    shapeMaxCr.value >= 0
-      ? {
-          maxCr: shapeMaxCr.value,
-          fly: applyEffects('shape:fly', 0, '', vars).value > 0,
-          swim: applyEffects('shape:swim', 0, '', vars).value > 0,
-          forms: applyEffects('shape:forms', 0, '', vars).value || undefined,
-          ...(() => {
-            const types = allEffects.filter(({ effect, ae }) => effect.target.startsWith('shape:type:') && effectApplies(effect, ae, baseCtx, toggleSet)).map(({ effect }) => effect.target.slice('shape:type:'.length))
-            return types.length ? { types } : {}
-          })(),
-          ...(() => {
-            const extra = allEffects.filter(({ effect, ae }) => effect.target.startsWith('shape:creature:') && effectApplies(effect, ae, baseCtx, toggleSet)).map(({ effect }) => effect.target.slice('shape:creature:'.length))
-            return extra.length ? { extra } : {}
-          })(),
-        }
-      : undefined
+  // Each kind of shapechange has its own limits: "shape:…" is Wild Shape, "shape@<group>:…" another one
+  // (Boon of Fluid Forms, Elemental Wild Shape), picked by the activity's shapeGroup.
+  const rulesFor = (prefix: string): ShapeRules | undefined => {
+    const maxCr = applyEffects(`${prefix}maxCr`, -1, '', vars).value
+    const listed = (kind: string) =>
+      allEffects.filter(({ effect, ae }) => effect.target.startsWith(`${prefix}${kind}:`) && effectApplies(effect, ae, baseCtx, toggleSet)).map(({ effect }) => effect.target.slice(`${prefix}${kind}:`.length))
+    const types = listed('type')
+    const extra = listed('creature')
+    if (maxCr < 0 && !extra.length) return undefined
+    return {
+      maxCr,
+      fly: applyEffects(`${prefix}fly`, 0, '', vars).value > 0,
+      swim: applyEffects(`${prefix}swim`, 0, '', vars).value > 0,
+      forms: applyEffects(`${prefix}forms`, 0, '', vars).value || undefined,
+      ...(types.length ? { types } : {}),
+      ...(extra.length ? { extra } : {}),
+    }
+  }
+  const shapeRules = rulesFor('shape:')
+  const shapeGroups = new Set(allEffects.flatMap(({ effect }) => /^shape@([\w-]+):/.exec(effect.target)?.[1] ?? []))
+  const shapeRulesBy: Record<string, ShapeRules> = {}
+  for (const g of shapeGroups) {
+    const r = rulesFor(`shape@${g}:`)
+    if (r) shapeRulesBy[g] = r
+  }
   const ownerMods = { ...mods }
   if (shapeCreature) for (const a of abilities) ownerMods[a] = abilityMod(scoreBase[a])
   const casterFor = (classId?: string) => {
@@ -1115,6 +1125,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     items,
     spellcasting,
     shapeRules,
+    shapeRulesBy,
     shape,
     companions,
     companionSources,

@@ -1,7 +1,7 @@
 import { RuleRef } from '../rules/RuleRef'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { crLabel, eligibleShapes, viewCreature } from '../../engine/creatures'
+import { crLabel, eligibleShapes, viewCreature, type ShapeRules } from '../../engine/creatures'
 import { setShapeForms } from '../../engine/shape'
 import { Dialog } from '../sheet/RestDialog'
 import { useRun, useSheet } from '../sheet/context'
@@ -11,11 +11,10 @@ import { StatBlock } from './StatBlock'
  * Wild Shape: choose the beast form. 2024 druids pick from their known forms (★, a limited
  * number); 2014 druids from any beast within their CR and speed limits.
  */
-export function ShapePicker({ onPick, onClose }: { onPick: (creatureId: string) => void; onClose: () => void }) {
+export function ShapePicker({ rules, onPick, onClose }: { rules: ShapeRules; onPick: (creatureId: string) => void; onClose: () => void }) {
   const { t } = useTranslation()
-  const { character, sheet, content } = useSheet()
+  const { character, content } = useSheet()
   const run = useRun()
-  const rules = sheet.shapeRules!
   const all = useMemo(() => eligibleShapes(content, rules), [content, rules])
   const maxForms = rules.forms
   const known = all.filter((c) => character.shapeForms.includes(c.id))

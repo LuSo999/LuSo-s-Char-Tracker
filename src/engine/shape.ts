@@ -10,12 +10,12 @@ const done = (character: Character, groupType: string, items: Extract<ActionResu
 const STATE = 'state:Wild Shape'
 
 /** Take a beast form (the Wild Shape use itself is paid by its activity). 2014 forms bring their own HP. */
-export function startShape(char: Character, content: ContentIndex, creatureId: string): ActionResult {
+export function startShape(char: Character, content: ContentIndex, creatureId: string, group?: string): ActionResult {
   const creature = content.getTyped(creatureId, 'creature')
   if (!creature) return { ok: false, error: 'noChange' }
   const hp = char.edition === '2014' ? viewCreature(creature, {}).hpMax : undefined
   const toggles = char.toggles.includes(STATE) ? char.toggles : [...char.toggles, STATE]
-  return done({ ...char, shape: { creatureId, hp }, toggles }, 'shape', [{ type: 'shapeStart', params: { name: creature.name } }])
+  return done({ ...char, shape: { creatureId, hp, ...(group ? { group } : {}) }, toggles }, 'shape', [{ type: 'shapeStart', params: { name: creature.name } }])
 }
 
 /** Back to the normal form. */

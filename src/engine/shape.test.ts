@@ -169,3 +169,11 @@ describe('Grant extras', () => {
     expect(viewCreature(cannon, {}).mods.str).toBe(0)
   })
 })
+
+describe('Shapechange groups', () => {
+  it('a form taken through another group uses that group’s AC rule', () => {
+    const c = okR(startShape(hero('2024', 'druid', 4), c24, 'creature-wolf', 'fluid-forms'))
+    expect(c.shape?.group).toBe('fluid-forms')
+    expect(computeSheet(c, c24).ac.value).toBe(12)
+  })
+})

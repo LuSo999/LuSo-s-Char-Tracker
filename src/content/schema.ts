@@ -135,7 +135,8 @@ export type EffectWhen = z.infer<typeof EffectWhen>
  *   speed:<fly|swim|climb|burrow> (feet; value "walk" = equal to Speed),
  *   shape:maxCr / shape:fly / shape:swim / shape:forms / shape:ac (Wild Shape limits; op max),
  *   shape:creature:<creature id> (that creature is also a Wild Shape form: elementals),
- *   shape:type:<creature type> (forms of that type count too, within the CR limit: Boon of Fluid Forms),
+ *   shape:type:<creature type> (forms of that type count too, within the CR limit),
+ *   shape@<group>:… (the same for another shapechange, used by an activity with that shapeGroup: Boon of Fluid Forms),
  *   resistance:<damage type>, immunity:<damage type>, conditionImmunity:<condition>,
  *   note (a reminder line in the notes; text in `note`).
  */
@@ -221,6 +222,8 @@ export const Activity = z.object({
   attack: z.boolean().default(false),
   /** Using it switches on this toggle of the same entity (Rage → "Raging"); rests switch it off. */
   toggle: z.string().optional(),
+  /** With toggle "Wild Shape": whose limits the form picker uses (effects "shape@<group>:maxCr"…); default Wild Shape's "shape:…". */
+  shapeGroup: z.string().optional(),
 })
 export type Activity = z.infer<typeof Activity>
 

@@ -160,7 +160,7 @@ export const Character = z.object({
     .default({ multiclass: true, trackAmmunition: true, legacySubclasses: false, legacyOrigins: false }),
   notes: z.string().default(''),
   /** Wild Shape: the beast form while shaped; 2014 forms have their own HP pool. */
-  shape: z.object({ creatureId: z.string(), hp: z.number().int().min(0).optional() }).optional(),
+  shape: z.object({ creatureId: z.string(), hp: z.number().int().min(0).optional(), group: z.string().optional() }).optional(),
   /** When the sheet last looked for changed homebrew content (ms; set at creation). */
   contentCheckedAt: z.number().optional(),
   /** 2024 Wild Shape: the Beast forms the druid knows. */
