@@ -52,6 +52,11 @@ for (const p of packs) {
       check(p.edition, e.optionOf, at)
     }
     for (const c of e.choices) c.from?.ids?.forEach((id) => check(p.edition, id, `${at}/${c.id}`))
+    // Spell references: granted spells, expanded lists, spell choice options, class extra spells.
+    for (const g of e.spells) check(p.edition, g.id, `${at} spell`)
+    for (const id of e.expandedSpells ?? []) check(p.edition, id, `${at} expandedSpells`)
+    for (const c of e.choices) if (c.kind === 'spell') c.options?.forEach((id) => check(p.edition, id, `${at}/${c.id} option`))
+    if (e.type === 'class' || e.type === 'subclass') for (const id of e.caster?.extraSpells ?? []) check(p.edition, id, `${at} extraSpells`)
   }
 }
 if (problems.length) {
