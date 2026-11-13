@@ -7,6 +7,10 @@ import { makeAttack, performActivity } from '../../engine/actions'
 import { pickUpThrown, recoverAmmo, reload } from '../../engine/inventory'
 import { offhandEligible } from '../../engine/items'
 import type { ActivityRow, AttackRow } from '../../engine/derive'
+import type { CreatureActionView } from '../../engine/creatures'
+import { startShape } from '../../engine/shape'
+import { ShapePicker } from '../creatures/ShapePicker'
+import { actionSummary } from '../creatures/format'
 import { spellBrief, spellDice, upcastNote, type SpellRow } from '../../engine/spells'
 import { useCastSpell } from '../spells/useCastSpell'
 import { CastPrompt } from '../spells/CastPrompt'
@@ -43,6 +47,8 @@ type Row = {
   attack?: AttackRow
   activity?: ActivityRow
   spellRow?: SpellRow
+  /** A beast-form or companion action from a stat block (no engine cost; the turn tracker counts beast-form actions). */
+  creature?: { action: CreatureActionView; shape: boolean }
 }
 
 const sectionOrder = { attack: 0, activity: 1, spell: 2, item: 3 }
@@ -532,14 +538,30 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
   const [prompt, setPrompt] = useState<string>()
   const [blocked, setBlocked] = useState<{ key: string; problem: Problem; at?: { x: number; y: number } }>()
   const [denied, setDenied] = useState<{ key: string; at: number }>()
+  const creatureRow = (a: CreatureActionView, i: number, owner: string, shape: boolean, entity: Entity): Row => ({
+    key: `${shape ? 'shape' : owner}:${i}`,
+    name: shape ? a.name : `${owner}: ${a.name}`,
+    entity,
+    actionType: a.actionType,
+    category: shape ? (a.attack ? 'weapon' : 'other') : 'companion',
+    details: [<strong key="s">{actionSummary(a, t('statBlock.toHit'))}</strong>],
+    brief: a.description,
+    available: true,
+    order: shape ? -1 : 50,
+    creature: { action: a, shape },
+  })
   const rows = [
+    // Wild Shape: the beast's actions take the place of weapon attacks.
+    ...(sheet.shape?.actions.map((a, i) => creatureRow(a, i, sheet.shape!.creature.name, true, sheet.shape!.creature)) ?? []),
     ...sheet.attacks.map((a) => attackRow(a, content)),
     ...sheet.activities.map(activityRow),
-    // Only spells marked ★ in the Spellcasting panel; the rest live in that panel.
+    // Only spells marked ★ in the Spellcasting panel; the rest live in that panel. No casting in Wild Shape.
     ...sheet.spellcasting.rows
-      .filter((r) => !r.ritualOnly && character.favoriteSpells.includes(r.spell.id))
+      .filter((r) => !sheet.shape && !r.ritualOnly && character.favoriteSpells.includes(r.spell.id))
       .map((r) => spellRow(r, sheet.characterLevel, sheet.mods[r.ability])),
+    ...sheet.companions.flatMap((c) => c.actions.map((a, i) => ({ ...creatureRow(a, i, c.entry.name ?? c.creature.name, false, c.creature), key: `${c.entry.uid}:${i}` }))),
   ].sort((a, b) => a.order - b.order)
+  const [shaping, setShaping] = useState<Row>()
   const [casting, setCasting] = useState<string>()
   const { quickCast } = useCastSpell()
   const [category, setCategory] = useState<CategoryFilter>('all')
@@ -553,7 +575,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
   const categoryOk = (r: Row, c: CategoryFilter) => c === 'all' || r.category === c
   const visible = rows.filter((r) => typeOk(r, filter) && categoryOk(r, category))
   const filters: Filter[] = ['all', 'action', 'bonusAction', 'reaction', 'other']
-  const categories: CategoryFilter[] = ['all', 'weapon', 'spellAttack', 'magic', 'other']
+  const categories: CategoryFilter[] = ['all', 'weapon', 'spellAttack', 'magic', 'other', ...(sheet.companions.length ? (['companion'] as const) : [])]
   // Each filter row counts within the other row's current choice.
   const count = (f: Filter) => rows.filter((r) => typeOk(r, f) && categoryOk(r, category)).length
   const countCategory = (c: CategoryFilter) => rows.filter((r) => typeOk(r, filter) && categoryOk(r, c)).length
@@ -563,13 +585,13 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
   const meleeThrown = (r: Row) => !!r.attack?.properties.includes('thrown') && r.attack.weapon?.range === 'melee'
 
   /** Attacks and things that replace an attack belong to the Attack action. */
-  const attackLike = (r: Row) => !!r.attack || !!r.activity?.activity.costsAttack
+  const attackLike = (r: Row) => !!r.attack || !!r.activity?.activity.costsAttack || (!!r.creature?.shape && !!r.creature.action.attack)
   /** Turn slots a row spends right now: an attack within a running Attack action spends none. */
   const slotsOf = (r: Row): Slot[] => {
     const slots: Slot[] = []
     if (attackLike(r) && attacksLeft(turn) === 0) slots.push('action')
     const type = r.actionType
-    if ((r.activity || r.spellRow) && type !== 'other' && !(attackLike(r) && type === 'action')) slots.push(type)
+    if ((r.activity || r.spellRow || r.creature?.shape) && type !== 'other' && !(attackLike(r) && type === 'action')) slots.push(type)
     return slots
   }
   const limitKey = (r: Row) => `activity:${r.key}`
@@ -590,8 +612,22 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     thrown = false,
     spendOnly = false,
     slots: { slotKey?: string; recover?: number[]; spent?: number } = {},
+    shapeId?: string,
   ) {
-    const result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll, { spendOnly, ...slots })
+    if (r.creature) {
+      // Stat block actions: the turn tracker counts beast-form actions; companions act on their own.
+      if (r.creature.shape && mode !== 'off' && as !== 'ignore') {
+        if (attackLike(r)) turn.attack(r.name, perAction, true)
+        else for (const s of slotsOf(r)) turn.use(s)
+      }
+      return fx(r.creature.action.attack ? 'physical' : 'power', at)
+    }
+    let result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll, { spendOnly, ...slots })
+    if (result.ok && shapeId) {
+      // Wild Shape: pay the use and take the chosen form in one step.
+      const shaped = startShape(result.character, content, shapeId)
+      if (shaped.ok) result = { ...result, character: shaped.character, items: [...result.items, ...shaped.items] }
+    }
     if (!result.ok) return void run(result)
     const before = snapshotTurn()
     let actionId: string | undefined
@@ -640,6 +676,8 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       // Cast right away with the default slot (undo is in history); ▾ picks another slot.
       return void quickCast(r.spellRow, undefined, at)
     }
+    // Wild Shape: choose the beast form first.
+    if (r.activity?.activity.toggle === 'Wild Shape' && sheet.shapeRules) return setShaping(r)
     if (needsPrompt(r)) return setPrompt(r.key)
     await perform(r, undefined, at, autoRoll(r), thrown)
   }
@@ -754,6 +792,16 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
           </button>
         ))}
       </div>
+      {shaping && (
+        <ShapePicker
+          onClose={() => setShaping(undefined)}
+          onPick={(id) => {
+            const r = shaping
+            setShaping(undefined)
+            void perform(r, undefined, undefined, autoRoll(r), false, false, {}, id)
+          }}
+        />
+      )}
       <ul className="min-h-0 flex-1 divide-y divide-border overflow-y-auto">
         {visible.map((r) => (
           <li key={denied?.key === r.key ? `${r.key}-${denied.at}` : r.key} className={`rounded py-1.5 ${r.available ? '' : 'opacity-45'} ${denied?.key === r.key ? 'fx-flash' : ''}`}>

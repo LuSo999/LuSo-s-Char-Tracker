@@ -159,6 +159,29 @@ export const Character = z.object({
     })
     .default({ multiclass: true, trackAmmunition: true, legacySubclasses: false, legacyOrigins: false }),
   notes: z.string().default(''),
+  /** Wild Shape: the beast form while shaped; 2014 forms have their own HP pool. */
+  shape: z.object({ creatureId: z.string(), hp: z.number().int().min(0).optional() }).optional(),
+  /** 2024 Wild Shape: the Beast forms the druid knows. */
+  shapeForms: z.array(z.string()).default([]),
+  /** Familiars, steeds, beast companions and summons with their own HP. */
+  companions: z
+    .array(
+      z.object({
+        uid: z.string(),
+        creatureId: z.string(),
+        /** The feature or spell it comes from, and which of its grants. */
+        sourceId: z.string(),
+        grantId: z.string(),
+        name: z.string().optional(),
+        hp: z.number().int().min(0),
+        tempHp: z.number().int().min(0).default(0),
+        /** Spell slot level it was cast with (scaled stat blocks). */
+        slot: z.number().int().optional(),
+        /** Temporary (concentration summons) or lasting (familiar, companion). */
+        notes: z.string().optional(),
+      }),
+    )
+    .default([]),
 })
 export type Character = z.infer<typeof Character>
 export type CharacterInput = z.input<typeof Character>

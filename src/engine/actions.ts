@@ -48,10 +48,24 @@ export function takeDamage(char: Character, sheet: Sheet, amount: number, critic
     temp -= absorbed
     remaining -= absorbed
   }
+  let shape = char.shape
+  let toggles = char.toggles
+  if (shape && sheet.shape?.hp && remaining > 0) {
+    const beastBefore = sheet.shape.hp.current
+    const beastAfter = Math.max(0, beastBefore - remaining)
+    items.push({ type: 'shapeHp', before: beastBefore, after: beastAfter })
+    remaining -= beastBefore - beastAfter
+    if (beastAfter === 0) {
+      items.push({ type: 'shapeEnd', params: { name: sheet.shape.creature.name } })
+      shape = undefined
+      toggles = toggles.filter((t) => t !== 'state:Wild Shape')
+    } else shape = { ...shape, hp: beastAfter }
+  }
   const before = char.hp.current
   const current = Math.max(0, before - remaining)
   let deathSaves = char.deathSaves
   if (remaining > 0 && before > 0) items.push({ type: 'damage', params: { amount }, before, after: current })
+  if (!items.length) items.push({ type: 'damage', params: { amount }, before, after: current })
 
   const hpMax = sheet.hpMax.value
   if (before > 0 && current === 0 && remaining - before >= hpMax) {
@@ -70,12 +84,19 @@ export function takeDamage(char: Character, sheet: Sheet, amount: number, critic
   }
   // Dropping to 0 HP (Unconscious) ends Concentration.
   const concentration = current === 0 ? undefined : char.concentration
-  return ok({ ...char, hp: { current, temp }, deathSaves, concentration }, 'damage', items)
+  return ok({ ...char, hp: { current, temp }, deathSaves, concentration, shape, toggles }, 'damage', items)
 }
 
 /** Healing: up to the HP maximum; any healing at 0 HP resets death saves. */
 export function heal(char: Character, sheet: Sheet, amount: number, source?: { name: string; entity?: string }): ActionResult {
   if (!(amount > 0)) return { ok: false, error: 'positiveAmount' }
+  // 2014 Wild Shape: healing goes to the beast form.
+  if (char.shape && sheet.shape?.hp) {
+    const b = sheet.shape.hp.current
+    const a = Math.min(sheet.shape.hp.max, b + amount)
+    if (a === b) return { ok: false, error: 'noChange' }
+    return ok({ ...char, shape: { ...char.shape, hp: a } }, 'heal', [{ type: 'shapeHp', params: { amount }, before: b, after: a }])
+  }
   const before = char.hp.current
   const current = Math.min(sheet.hpMax.value, before + amount)
   const items: HistoryItem[] = [{ type: 'heal', params: { amount, ...(source ? { source: source.name } : {}) }, before, after: current, entity: source?.entity }]

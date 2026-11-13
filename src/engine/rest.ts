@@ -103,7 +103,8 @@ function endStates(char: Character, sheet: Sheet, changes: RestChange[]): Charac
   // States that cost something when they end (2014 Frenzy) still do.
   const exhaustion = sheet.active.flatMap((ae) => ae.entity.activities).filter((a) => a.toggle && a.onEnd && keys.has(`state:${a.toggle}`)).reduce((n, a) => n + (a.onEnd?.exhaustion ?? 0), 0)
   if (exhaustion) changes.push({ kind: 'exhaustion', before: char.exhaustion, after: Math.min(6, char.exhaustion + exhaustion) })
-  return { ...char, exhaustion: Math.min(6, char.exhaustion + exhaustion), toggles: char.toggles.filter((k) => !keys.has(k)) }
+  const shape = keys.has('state:Wild Shape') ? undefined : char.shape
+  return { ...char, exhaustion: Math.min(6, char.exhaustion + exhaustion), toggles: char.toggles.filter((k) => !keys.has(k)), shape }
 }
 
 /** Resources that come back at dawn by a dice roll (wands, staffs), for the rest dialog. */

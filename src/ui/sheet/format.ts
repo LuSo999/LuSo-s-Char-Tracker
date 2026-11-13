@@ -32,11 +32,12 @@ export const actionTypeClass: Record<ActionType, string> = {
 }
 
 /** What a row in the action list does: weapon attack, spell attack, other magic, or anything else. */
-export type ActionCategory = 'weapon' | 'spellAttack' | 'magic' | 'other'
+export type ActionCategory = 'weapon' | 'spellAttack' | 'magic' | 'other' | 'companion'
 
 export const categoryIcon: Record<ActionCategory, string> = {
   weapon: '🗡️',
   spellAttack: '☄️',
   magic: '🪄',
   other: '⚙️',
+  companion: '🐾',
 }

@@ -333,7 +333,9 @@
       "spells": "Spells",
       "levelUp": "Level up",
       "levelDown": "Level removed",
-      "choices": "Choices"
+      "choices": "Choices",
+      "shape": "Wild Shape",
+      "companion": "Companion"
     },
     "items": {
       "damage": "Took {{amount}} damage: HP {{before}} → {{after}}",
@@ -417,7 +419,15 @@
       "legacySubclasses": "5e subclasses allowed",
       "legacyOrigins": "5e species and feats allowed",
       "theme": "Theme",
-      "frames": "Ornate frames"
+      "frames": "Ornate frames",
+      "shapeStart": "Wild Shape: {{name}}",
+      "shapeEnd": "Back from Wild Shape ({{name}})",
+      "shapeHp": "Beast form HP",
+      "shapeForms": "Known Wild Shape forms: {{count}}",
+      "companionAdd": "New companion: {{name}}",
+      "companionRemove": "Companion gone: {{name}}",
+      "companionHp": "{{name}} HP",
+      "companionTempHp": "{{name}} temporary HP"
     },
     "attackAction": "Attack action"
   },
@@ -647,7 +657,8 @@
     "weapon": "Attack",
     "spellAttack": "Spell attack",
     "magic": "Magic",
-    "other": "Other"
+    "other": "Other",
+    "companion": "Companions"
   },
   "shortcuts": {
     "title": "Keyboard shortcuts",
@@ -1084,5 +1095,61 @@
     "frames": "Ornate frames",
     "framesHint": "Decorated frames around the boxes in the theme's style (illustrated themes only). Boxes get a little more room.",
     "framesAccount": "Account default"
+  },
+  "shape": {
+    "title": "Wild Shape",
+    "pick": "Choose a form",
+    "limits": "Up to CR {{cr}}",
+    "noFly": "no Fly Speed",
+    "noSwim": "no Swim Speed",
+    "known": "Known forms",
+    "knownCount": "Known forms {{count}} / {{max}}",
+    "knownHint": "You know a limited number of Beast forms; mark them with ★ (you can change one on a Long Rest).",
+    "all": "All eligible beasts",
+    "noKnown": "No known forms yet: mark some with ★ under All eligible beasts.",
+    "become": "Take this form",
+    "search": "Search beasts…",
+    "revert": "Revert",
+    "statBlock": "Stat block",
+    "in": "Wild Shape",
+    "beastHp": "Beast HP",
+    "noSpells": "You can’t cast spells in Wild Shape."
+  },
+  "companions": {
+    "title": "Companions",
+    "add": "Add",
+    "addTitle": "New companion",
+    "from": "From",
+    "slot": "Spell level",
+    "choose": "Choose a creature",
+    "remove": "Dismiss",
+    "removeConfirm": "Dismiss {{name}}?",
+    "none": "No companion yet. Add a familiar, steed, beast companion or summon from your features and spells.",
+    "kinds": {
+      "familiar": "Familiar",
+      "steed": "Steed",
+      "companion": "Companion",
+      "summon": "Summon"
+    },
+    "search": "Search…"
+  },
+  "statBlock": {
+    "ac": "AC",
+    "hp": "HP",
+    "speed": "Speed",
+    "saves": "Saving throws",
+    "skills": "Skills",
+    "senses": "Senses",
+    "languages": "Languages",
+    "resistances": "Resistances",
+    "immunities": "Immunities",
+    "conditionImmunities": "Condition immunities",
+    "cr": "CR",
+    "toHit": "to hit",
+    "actions": "Actions",
+    "bonusActions": "Bonus actions",
+    "reactions": "Reactions",
+    "traits": "Traits",
+    "passive": "passive Perception"
   }
 }

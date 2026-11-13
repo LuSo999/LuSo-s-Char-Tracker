@@ -20,8 +20,8 @@ const FILES = [
   'Magic-Items', 'Spells', 'Conditions', 'Proficiencies', 'Weapon-Properties', 'Skills',
 ]
 const EDITION_FILES: Record<Edition, string[]> = {
-  '2014': [...FILES, 'Races', 'Subraces'],
-  '2024': [...FILES, 'Species', 'Subspecies', 'Weapon-Mastery-Properties'],
+  '2014': [...FILES, 'Races', 'Subraces', 'Monsters'],
+  '2024': [...FILES, 'Species', 'Subspecies', 'Weapon-Mastery-Properties', 'Monsters'],
 }
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -43,6 +43,60 @@ async function load(edition: Edition, name: string): Promise<Raw[]> {
 }
 
 // --- Helpers -----------------------------------------------------------------
+
+/** Non-Beast stat blocks spells and pacts call on. */
+const CREATURE_EXTRAS = ['Imp', 'Pseudodragon', 'Quasit', 'Sprite', 'Skeleton', 'Zombie', 'Slaad Tadpole', 'Sphinx of Wonder']
+
+const feet = (s: unknown) => Number(/(\d+)/.exec(String(s))?.[1] ?? 0)
+
+/** A 5e-bits monster as a Creature entity ("creature-<index>"). */
+function creature(m: Raw, edition: Edition, source: Raw): Raw {
+  const speed: Record<string, number> = {}
+  for (const [k, v] of Object.entries(m.speed ?? {})) if (typeof v === 'string') speed[k] = feet(v)
+  const senses: Record<string, number> = {}
+  for (const [k, v] of Object.entries(m.senses ?? {})) if (k !== 'passive_perception') senses[k] = feet(v)
+  const saves: Record<string, number> = {}
+  const skillBonus: Record<string, number> = {}
+  for (const p of m.proficiencies ?? []) {
+    const idx: string = p.proficiency.index
+    if (idx.startsWith('saving-throw-')) saves[idx.slice('saving-throw-'.length)] = p.value
+    else if (idx.startsWith('skill-')) skillBonus[idx.slice('skill-'.length)] = p.value
+  }
+  const list = (xs: Raw[] | undefined) => (xs ?? []).map((x) => (typeof x === 'string' ? x : x.name ?? x.index)).map((x: string) => x.toLowerCase())
+  const action = (a: Raw, actionType: string) => {
+    const damage = (a.damage ?? [])
+      .filter((d: Raw) => d.damage_dice && d.damage_type)
+      .map((d: Raw) => {
+        const [, dice = '', sign, flat] = /^(\d+d\d+)?\s*(?:([+-])\s*(\d+))?$/.exec(String(d.damage_dice).replace(/\s/g, '')) ?? []
+        return { dice: dice || '', bonus: flat ? (sign === '-' ? -Number(flat) : Number(flat)) : dice ? 0 : Number(d.damage_dice) || 0, type: d.damage_type.index }
+      })
+    const usage = a.usage?.type === 'recharge on roll' ? ` (Recharge ${a.usage.min_value}${a.usage.min_value < 6 ? '–6' : ''})` : a.usage?.type === 'per day' ? ` (${a.usage.times}/Day)` : ''
+    const range = /(reach \d+ ft\.?|range [\d/]+ ft\.?)/i.exec(a.desc ?? '')?.[1]
+    return {
+      name: a.name + usage, description: a.desc ?? '', actionType,
+      ...(a.attack_bonus !== undefined ? { attack: { bonus: a.attack_bonus, ...(range ? { range } : {}) } } : {}),
+      damage,
+      ...(a.dc ? { save: { ability: a.dc.dc_type.index, dc: a.dc.dc_value } } : {}),
+    }
+  }
+  return {
+    id: `creature-${m.index}`, edition, name: m.name, description: `${m.size} ${m.type}${m.subtype ? ` (${m.subtype})` : ''}, CR ${crText(m.challenge_rating)}`, source,
+    type: 'creature', size: m.size, creatureType: m.type, cr: m.challenge_rating,
+    ac: m.armor_class?.[0]?.value ?? 10, hp: m.hit_points, hitDice: m.hit_dice, speed,
+    scores: { str: m.strength, dex: m.dexterity, con: m.constitution, int: m.intelligence, wis: m.wisdom, cha: m.charisma },
+    saves, skills: skillBonus, senses, passivePerception: m.senses?.passive_perception, languages: m.languages || '',
+    resistances: list(m.damage_resistances), immunities: list(m.damage_immunities), conditionImmunities: list(m.condition_immunities),
+    traits: (m.special_abilities ?? []).map((t: Raw) => ({ name: t.name, description: t.desc ?? '' })),
+    actions: [
+      ...(m.actions ?? []).map((a: Raw) => action(a, 'action')),
+      ...(m.bonus_actions ?? []).map((a: Raw) => action(a, 'bonusAction')),
+      ...(m.reactions ?? []).map((a: Raw) => action(a, 'reaction')),
+    ],
+    tags: [m.type],
+  }
+}
+
+const crText = (cr: number) => (cr === 0.125 ? '1/8' : cr === 0.25 ? '1/4' : cr === 0.5 ? '1/2' : String(cr))
 
 /** 2014 option prerequisites (Eldritch Invocations): class level, another option, a known spell. */
 function featurePrerequisite(raw: Raw): Raw {
@@ -735,6 +789,10 @@ async function build(edition: Edition) {
       higherLevels: Array.isArray(s.higher_level) ? s.higher_level.join('\n\n') || undefined : s.higher_level,
     })
   }
+
+  // Creatures: every Beast (Wild Shape, familiars, steeds, companions) and the few other stat
+  // blocks spells and pacts summon (Pact of the Chain familiars, Animate Dead).
+  for (const m of files.Monsters) if (m.type === 'beast' || CREATURE_EXTRAS.includes(m.name)) entities.push(creature(m, edition, source))
 
   for (const c of files.Conditions) entities.push({ ...base(c), type: 'condition' })
   for (const m of files['Weapon-Mastery-Properties'] ?? []) entities.push({ ...base(m), type: 'weaponMastery' })

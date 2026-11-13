@@ -27,6 +27,7 @@ import { EquippedPanel } from './EquippedPanel'
 import { Dialog, RestDialog } from './RestDialog'
 import { BooksPicker } from './BooksPicker'
 import { ConditionsPanel, FeaturesPanel, Reminders, ResourcesPanel } from './SidePanels'
+import { CompanionsPanel, ShapeBanner } from '../creatures/CompanionsPanel'
 import { SheetShortcuts } from './shortcuts'
 import { useTurn } from './turn'
 import { Vitals } from './Vitals'
@@ -379,12 +380,14 @@ function SheetLayout() {
         </div>
         <div className="order-1 flex min-w-0 flex-col gap-3 xl:order-2 xl:min-h-0">
           <Vitals />
+          <ShapeBanner />
           <Reminders />
           <ActionList onOpenSpells={() => setSpells(true)} />
         </div>
         <div className="order-2 flex flex-col gap-3 xl:order-3 xl:min-h-0 xl:overflow-y-auto">
           <ResourcesPanel />
           <ConditionsPanel />
+          <CompanionsPanel />
           <FeaturesPanel />
         </div>
       </div>

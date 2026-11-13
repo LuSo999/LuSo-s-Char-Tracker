@@ -1,6 +1,7 @@
 // Computes everything shown on the sheet from stored character state and
 // content. Order for every value: base from the rules → modifiers from active
 // features and equipped items → manual override from edit mode.
+import { viewCreature, type CompanionSource, type CreatureView, type ShapeRules } from './creatures'
 import type { ContentIndex } from '../content'
 import {
   abilities,
@@ -158,6 +159,14 @@ export type Sheet = {
   /** Inventory entries resolved to what they are in play. */
   items: ResolvedEntry[]
   spellcasting: Spellcasting
+  /** Wild Shape limits when the character has Wild Shape. */
+  shapeRules?: ShapeRules
+  /** The beast form while shaped (2014: its own HP pool). */
+  shape?: CreatureView & { hp?: { current: number; max: number } }
+  /** Familiars, steeds, companions and summons, resolved. */
+  companions: (CreatureView & { entry: Character['companions'][number]; source?: CompanionSource })[]
+  /** Features and spells that can give a companion. */
+  companionSources: CompanionSource[]
 }
 
 // ---------------------------------------------------------------------------
@@ -372,6 +381,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     for (const e of ae.entity.effects) for (const name of togglesIn(e.when)) if (stateNames.has(name) && char.toggles.includes(`state:${name}`)) toggleSet.add(`${ae.grantKey}#${name}`)
   }
   const notes: string[] = []
+  // Wild Shape: the beast form applies while the Wild Shape state is on.
+  const shapeCreature = char.shape && char.toggles.includes('state:Wild Shape') ? content.getTyped(char.shape.creatureId, 'creature') : undefined
 
   const items = char.inventory.map((e) => resolveEntry(e, content)).filter((r): r is ResolvedEntry => r !== undefined)
   const equippedItems = items.filter((r) => r.entry.equipped && (!r.item.attunement || r.entry.attuned || r.weapon || r.armor))
@@ -481,6 +492,10 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     }
     scores[a] = override(`score:${a}`, value, scoreParts[a])
   }
+  // Your own Constitution keeps your HP maximum while in Wild Shape.
+  const ownConMod = abilityMod(scores.con.value)
+  // Wild Shape: the beast's Strength, Dexterity and Constitution (both editions).
+  if (shapeCreature) for (const a of ['str', 'dex', 'con'] as const) scores[a] = override(`score:${a}`, shapeCreature.scores[a], [{ label: shapeCreature.name, value: shapeCreature.scores[a] }])
   const mods = Object.fromEntries(abilities.map((a) => [a, abilityMod(scores[a].value)])) as Record<Ability, number>
 
   const attunedCount = char.inventory.filter((e) => e.attuned).length
@@ -561,6 +576,9 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     let r = applyEffects(`save:${a}`, base, proficient ? 'Modifier + proficiency' : 'Modifier', vars)
     const all = applyEffects('save:all', 0, '', vars)
     r = withExhaustion({ value: r.value + all.value, parts: [...r.parts, ...all.parts.slice(1)] })
+    const beastSave = shapeCreature?.saves[a]
+    // Wild Shape: the beast's bonus when it is higher than yours.
+    if (beastSave !== undefined && beastSave > r.value) r = { value: beastSave, parts: [{ label: shapeCreature!.name, value: beastSave }] }
     saves[a] = { ...override(`save:${a}`, r.value, r.parts), proficient }
   }
 
@@ -573,7 +591,9 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const r = applyEffects(`skill:${s}`, base, proficiency ? 'Modifier + proficiency' : 'Modifier', vars, ctx)
     const check = applyEffects(`check:${a}`, 0, '', vars, ctx)
     const checkAll = applyEffects('check:all', 0, '', vars, ctx)
-    const v = withExhaustion({ value: r.value + check.value + checkAll.value, parts: [...r.parts, ...check.parts.slice(1), ...checkAll.parts.slice(1)] })
+    let v = withExhaustion({ value: r.value + check.value + checkAll.value, parts: [...r.parts, ...check.parts.slice(1), ...checkAll.parts.slice(1)] })
+    const beastSkill = shapeCreature?.skills[s]
+    if (beastSkill !== undefined && beastSkill > v.value) v = { value: beastSkill, parts: [{ label: shapeCreature!.name, value: beastSkill }] }
     skillValues[s] = { ...override(`skill:${s}`, v.value, v.parts), proficiency }
   }
 
@@ -616,8 +636,15 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     acBase += shield.ac.base
     acParts.push({ label: shield.name, value: shield.ac.base })
   }
-  const acR = applyEffects('ac', acBase, '', vars)
-  const ac = override('ac', acR.value, [...acParts, ...acR.parts.slice(1)])
+  let acR = applyEffects('ac', acBase, '', vars)
+  let acAllParts = [...acParts, ...acR.parts.slice(1)]
+  if (shapeCreature) {
+    // Wild Shape: the beast's AC (Circle of the Moon 2024: shape:ac "13 + wis" when higher).
+    const beastAc = resolveScaled(shapeCreature.ac, {})
+    acR = applyEffects('shape:ac', beastAc, shapeCreature.name, vars)
+    acAllParts = acR.parts
+  }
+  const ac = override('ac', acR.value, acAllParts)
 
   // --- Speed --------------------------------------------------------------
   const species = content.require(char.speciesId, 'species')
@@ -628,7 +655,10 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   }
   const exhaustedSpeed = rules.exhaustedSpeed(speedR.value, char.exhaustion)
   if (exhaustedSpeed !== speedR.value) speedR.parts.push({ label: 'Exhaustion', value: exhaustedSpeed - speedR.value })
-  const speed = override('speed', Math.max(0, exhaustedSpeed), speedR.parts)
+  const shapeWalk = shapeCreature ? resolveScaled(shapeCreature.speed.walk ?? 0, {}) : undefined
+  const speed = shapeWalk !== undefined
+    ? override('speed', rules.exhaustedSpeed(shapeWalk, char.exhaustion), [{ label: shapeCreature!.name, value: shapeWalk }])
+    : override('speed', Math.max(0, exhaustedSpeed), speedR.parts)
 
   // --- Hit points and hit dice ---------------------------------------------
   const hpParts: Part[] = []
@@ -641,7 +671,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       const rollIndex = i === 0 ? lvl - 2 : lvl - 1
       const roll = isFirst ? cls.hitDie : (entry.hpRolls[rollIndex] ?? avg)
       // A level never grants less than 1 HP.
-      const gained = Math.max(1, roll + mods.con)
+      const gained = Math.max(1, roll + ownConMod)
       hp += gained
       hpParts.push({ label: `${cls.name} ${lvl}`, value: gained })
     }
@@ -844,6 +874,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const unarmed = attackRow('unarmed', 'Unarmed Strike', undefined, undefined)
   if (unarmed.damageDice === '1') unarmed.damageDice = '1'
   attacks.push(unarmed)
+  // Wild Shape: the beast's own attacks replace weapons and unarmed strikes (listed from sheet.shape).
+  if (shapeCreature) attacks.length = 0
 
   // --- Activities -------------------------------------------------------------
   const activities: ActivityRow[] = []
@@ -955,6 +987,67 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     if (sp) speeds[sp[1]] = Math.max(speeds[sp[1]] ?? 0, resolveScaled(effect.value, { ...vars(ae), walk: speed.value }))
   }
   for (const [k, v] of Object.entries(senseAdds)) senses[k] = (senses[k] ?? 0) + v
+  if (shapeCreature) {
+    for (const [k, v] of Object.entries(shapeCreature.senses)) senses[k] = Math.max(senses[k] ?? 0, v)
+    for (const k of Object.keys(speeds)) delete speeds[k]
+    for (const [k, v] of Object.entries(shapeCreature.speed)) if (k !== 'walk') speeds[k] = resolveScaled(v, {})
+    for (const r of shapeCreature.resistances) resistances.add(r)
+    for (const r of shapeCreature.immunities) immunities.add(r)
+    for (const r of shapeCreature.conditionImmunities) conditionImmunities.add(r)
+  }
+
+  // --- Wild Shape and companions ------------------------------------------------
+  const shapeMaxCr = applyEffects('shape:maxCr', -1, '', vars)
+  const shapeRules: ShapeRules | undefined =
+    shapeMaxCr.value >= 0
+      ? {
+          maxCr: shapeMaxCr.value,
+          fly: applyEffects('shape:fly', 0, '', vars).value > 0,
+          swim: applyEffects('shape:swim', 0, '', vars).value > 0,
+          forms: applyEffects('shape:forms', 0, '', vars).value || undefined,
+        }
+      : undefined
+  const ownerMods = { ...mods }
+  if (shapeCreature) for (const a of abilities) ownerMods[a] = abilityMod(scoreBase[a])
+  const casterFor = (classId?: string) => {
+    const casters = spellcasting.casters
+    return casters.find((c) => c.classId === classId) ?? [...casters].sort((x, y) => y.dc - x.dc)[0]
+  }
+  const companionSources: CompanionSource[] = []
+  for (const ae of active) {
+    for (const grant of ae.entity.companions ?? []) {
+      const caster = casterFor(grant.spellClass ?? ae.classId)
+      companionSources.push({ entity: ae.entity, grant, classId: ae.classId, classLevel: ae.classLevel, spellAttack: caster?.attack ?? 0, spellDc: caster?.dc ?? 0 })
+    }
+  }
+  const seenSpells = new Set<string>()
+  for (const row of spellcasting.rows) {
+    if (!row.spell.companions?.length || seenSpells.has(row.spell.id)) continue
+    seenSpells.add(row.spell.id)
+    for (const grant of row.spell.companions) companionSources.push({ entity: row.spell, grant, classId: row.classId, classLevel: characterLevel, spellAttack: row.attackBonus, spellDc: row.dc })
+  }
+  const companionVars = (source: CompanionSource | undefined, slot: number | undefined): FormulaVars => ({
+    ...ownerMods,
+    pb,
+    characterLevel,
+    level: source?.classLevel ?? characterLevel,
+    classLevel: source?.classLevel ?? characterLevel,
+    slot: slot ?? 0,
+    spellAttack: source?.spellAttack ?? 0,
+    spellDc: source?.spellDc ?? 0,
+  })
+  const companions = char.companions.flatMap((entry) => {
+    const creature = content.getTyped(entry.creatureId, 'creature')
+    if (!creature) return []
+    const source = companionSources.find((s) => s.entity.id === entry.sourceId && s.grant.id === entry.grantId)
+    return [{ ...viewCreature(creature, companionVars(source, entry.slot)), entry, source }]
+  })
+  const shape = shapeCreature
+    ? (() => {
+        const view = viewCreature(shapeCreature, companionVars(undefined, undefined))
+        return { ...view, ac: ac.value, hp: char.edition === '2014' ? { current: Math.min(char.shape!.hp ?? view.hpMax, view.hpMax), max: view.hpMax } : undefined }
+      })()
+    : undefined
 
   // Carrying capacity: Strength × 15 (size-adjusted); Powerful Build counts as one size larger.
   const carrySize = applyEffects('carrySize', 0, '', vars).value
@@ -999,5 +1092,9 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     weight,
     items,
     spellcasting,
+    shapeRules,
+    shape,
+    companions,
+    companionSources,
   }
 }

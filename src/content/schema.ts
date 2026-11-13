@@ -296,6 +296,26 @@ export const GrantedSpell = z.object({
 })
 export type GrantedSpell = z.infer<typeof GrantedSpell>
 
+/**
+ * Creatures an entity lets the character have: a familiar or steed from a spell, a beast
+ * companion, a summoned spirit. Either a fixed list of creature ids or a filter over the
+ * creatures in the content (tag, type, highest CR). Scaled stat blocks read `slot` (the
+ * spell level it was cast with) and the owner's numbers (pb, level, spellAttack, spellDc…).
+ */
+export const CompanionGrant = z.object({
+  id: z.string(),
+  kind: z.enum(['familiar', 'steed', 'companion', 'summon']),
+  creatures: z.array(z.string()).default([]),
+  filter: z.object({ tag: z.string().optional(), creatureType: z.string().optional(), maxCr: z.number().optional() }).optional(),
+  /** Cast with a spell slot: the companion remembers the slot level (scaled stat blocks). */
+  slot: z.boolean().default(false),
+  /** Class whose spell attack / DC the stat block uses (default: the entity's own class, else the best). */
+  spellClass: z.string().optional(),
+  /** Short rules reminder shown with the companion. */
+  note: z.string().optional(),
+})
+export type CompanionGrant = z.infer<typeof CompanionGrant>
+
 const base = {
   id: z.string(),
   edition: Edition,
@@ -317,6 +337,7 @@ const base = {
   /** Spells added to the class list the entity belongs to, to learn or prepare (2014 Fiend: Expanded Spell List). */
   expandedSpells: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
+  companions: z.array(CompanionGrant).default([]),
   /** Features this one replaces while it applies (Tasha's Favored Foe → Favored Enemy; a subclass's own smite). */
   replaces: z.array(z.string()).default([]),
   /**
@@ -681,6 +702,46 @@ export const RuleDef = z.object({
 })
 export type RuleDef = z.infer<typeof RuleDef>
 
+/** One action, bonus action or reaction in a creature's stat block. Numbers may be formulas (scaled stat blocks). */
+export const CreatureAction = z.object({
+  name: z.string(),
+  description: z.string().default(''),
+  actionType: ActionType.default('action'),
+  /** Attack roll bonus and reach / range text ("reach 5 ft.", "range 80/320 ft."). */
+  attack: z.object({ bonus: Scaled, range: z.string().optional() }).optional(),
+  /** Damage parts: dice plus a (scaled) flat bonus, e.g. { dice: '1d8', bonus: '3 + slot', type: 'piercing' }. */
+  damage: z.array(z.object({ dice: z.string().default(''), bonus: Scaled.default(0), type: z.string() })).default([]),
+  save: z.object({ ability: Ability, dc: Scaled }).optional(),
+})
+export type CreatureAction = z.infer<typeof CreatureAction>
+
+/** A stat block: Wild Shape forms, familiars, steeds, companions and summons. */
+export const Creature = z.object({
+  ...base,
+  type: z.literal('creature'),
+  size: z.string(),
+  creatureType: z.string(),
+  /** Challenge rating as a number (0.125, 0.25, 0.5, 1…). */
+  cr: z.number().default(0),
+  ac: Scaled,
+  hp: Scaled,
+  hitDice: z.string().optional(),
+  /** Speeds in feet: walk, fly, swim, climb, burrow (may scale). */
+  speed: z.record(z.string(), Scaled),
+  scores: z.object({ str: z.number(), dex: z.number(), con: z.number(), int: z.number(), wis: z.number(), cha: z.number() }),
+  saves: z.partialRecord(Ability, z.number()).default({}),
+  skills: z.partialRecord(Skill, z.number()).default({}),
+  senses: z.record(z.string(), z.number()).default({}),
+  passivePerception: z.number().optional(),
+  languages: z.string().default(''),
+  resistances: z.array(z.string()).default([]),
+  immunities: z.array(z.string()).default([]),
+  conditionImmunities: z.array(z.string()).default([]),
+  traits: z.array(z.object({ name: z.string(), description: z.string() })).default([]),
+  actions: z.array(CreatureAction).default([]),
+})
+export type Creature = z.infer<typeof Creature>
+
 export const Entity = z.union([
   Class,
   Subclass,
@@ -695,6 +756,7 @@ export const Entity = z.union([
   ConditionDef,
   WeaponMastery,
   RuleDef,
+  Creature,
 ])
 export type Entity = z.infer<typeof Entity>
 export type EntityType = Entity['type']

@@ -1,4 +1,5 @@
 // Warlock and the Fiend. Checked against SRD 5.1 (2014) and SRD 5.2.1 (2024).
+import { chainFamiliar2014, chainFamiliar2024 } from './companions.ts'
 import { longOnly, option, shortAndLong, type ClassOverlay, type Patch } from './common.ts'
 
 const atWill = (...ids: string[]) => ({ spells: ids.map((id) => ({ id, atWill: true })) })
@@ -94,7 +95,7 @@ const invocations2024: Inv[] = [
   ['pact-of-the-blade', 'Pact of the Blade', 'Bonus Action: conjure or bond a melee pact weapon. You’re proficient with it, can use Charisma for its attack and damage rolls and deal Necrotic, Psychic or Radiant damage.', {
     activities: [{ id: 'use', name: 'Pact of the Blade', actionType: 'bonusAction', fx: 'magic', summary: 'Conjure or bond your pact weapon (Charisma for its attacks; Necrotic, Psychic or Radiant damage).' }],
   }],
-  ['pact-of-the-chain', 'Pact of the Chain', 'Learn Find Familiar and cast it as a Magic action without a spell slot; special forms (Imp, Pseudodragon, Quasit…). Forgo one attack so the familiar attacks with its Reaction.', atWill('find-familiar')],
+  ['pact-of-the-chain', 'Pact of the Chain', 'Learn Find Familiar and cast it as a Magic action without a spell slot; special forms (Imp, Pseudodragon, Quasit…). Forgo one attack so the familiar attacks with its Reaction.', { ...atWill('find-familiar'), companions: [chainFamiliar2024] }],
   ['pact-of-the-tome', 'Pact of the Tome', 'Book of Shadows: three cantrips and two level 1 Ritual spells from any class, prepared while you carry it; it’s your Spellcasting Focus.', {
     choices: [
       { id: 'cantrips', label: 'Book of Shadows cantrips', kind: 'spell', spellLevel: 0, count: 3 },
@@ -134,7 +135,7 @@ export const warlock: ClassOverlay = {
       choices: [{ id: 'invocations', label: 'Eldritch Invocations', kind: 'entity', count: { byLevel: { 2: 2, 5: 3, 7: 4, 9: 5, 12: 6, 15: 7, 18: 8 } }, from: { ids: Object.keys(invocations2014) }, changeable: 'levelUp' }],
     },
     ...invocations2014,
-    'pact-of-the-chain': { spells: [{ id: 'find-familiar' }] },
+    'pact-of-the-chain': { spells: [{ id: 'find-familiar' }], companions: [chainFamiliar2014] },
     'pact-of-the-blade': { activities: [{ id: 'use', name: 'Pact of the Blade', actionType: 'action', fx: 'magic', summary: 'Create your pact weapon in your empty hand (you are proficient with it; it counts as magical).' }] },
     'pact-of-the-tome': {
       choices: [{ id: 'cantrips', label: 'Book of Shadows cantrips', kind: 'spell', spellLevel: 0, count: 3 }],

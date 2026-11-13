@@ -333,7 +333,9 @@
       "spells": "Kouzla",
       "levelUp": "Level up",
       "levelDown": "Odebrání levelu",
-      "choices": "Volby"
+      "choices": "Volby",
+      "shape": "Wild Shape",
+      "companion": "Společník"
     },
     "items": {
       "damage": "Zranění {{amount}}: HP {{before}} → {{after}}",
@@ -417,7 +419,15 @@
       "legacySubclasses": "Subclassy z 5e povoleny",
       "legacyOrigins": "Rasy a featy z 5e povoleny",
       "theme": "Vzhled",
-      "frames": "Zdobené rámečky"
+      "frames": "Zdobené rámečky",
+      "shapeStart": "Wild Shape: {{name}}",
+      "shapeEnd": "Návrat z Wild Shape ({{name}})",
+      "shapeHp": "HP zvířecí formy",
+      "shapeForms": "Známé formy Wild Shape: {{count}}",
+      "companionAdd": "Nový společník: {{name}}",
+      "companionRemove": "Společník odešel: {{name}}",
+      "companionHp": "{{name}} HP",
+      "companionTempHp": "{{name}} dočasné HP"
     },
     "attackAction": "Attack action"
   },
@@ -647,7 +657,8 @@
     "weapon": "Attack",
     "spellAttack": "Spell attack",
     "magic": "Magic",
-    "other": "Other"
+    "other": "Other",
+    "companion": "Společníci"
   },
   "shortcuts": {
     "title": "Klávesové zkratky",
@@ -1084,5 +1095,61 @@
     "frames": "Zdobené rámečky",
     "framesHint": "Ozdobné rámečky kolem boxů ve stylu vzhledu (jen u ilustrovaných vzhledů). Boxy dostanou trochu víc místa.",
     "framesAccount": "Podle účtu"
+  },
+  "shape": {
+    "title": "Wild Shape",
+    "pick": "Vyber formu",
+    "limits": "Nejvýš CR {{cr}}",
+    "noFly": "bez létání",
+    "noSwim": "bez plavání",
+    "known": "Známé formy",
+    "knownCount": "Známé formy {{count}} / {{max}}",
+    "knownHint": "Znáš omezený počet zvířecích forem; označ je ★ (jednu můžeš vyměnit při Long Restu).",
+    "all": "Všechna dostupná zvířata",
+    "noKnown": "Zatím žádné známé formy: označ je ★ v seznamu všech dostupných zvířat.",
+    "become": "Proměnit se",
+    "search": "Hledat zvíře…",
+    "revert": "Vrátit se",
+    "statBlock": "Stat block",
+    "in": "Wild Shape",
+    "beastHp": "HP zvířete",
+    "noSpells": "Ve Wild Shape nemůžeš sesílat kouzla."
+  },
+  "companions": {
+    "title": "Společníci",
+    "add": "Přidat",
+    "addTitle": "Nový společník",
+    "from": "Odkud",
+    "slot": "Úroveň kouzla",
+    "choose": "Vyber tvora",
+    "remove": "Propustit",
+    "removeConfirm": "Propustit {{name}}?",
+    "none": "Zatím žádný společník. Přidej familiara, steeda, zvířecího společníka nebo vyvolaného tvora ze svých featur a kouzel.",
+    "kinds": {
+      "familiar": "Familiar",
+      "steed": "Steed",
+      "companion": "Společník",
+      "summon": "Vyvolaný"
+    },
+    "search": "Hledat…"
+  },
+  "statBlock": {
+    "ac": "AC",
+    "hp": "HP",
+    "speed": "Rychlost",
+    "saves": "Záchranné hody",
+    "skills": "Dovednosti",
+    "senses": "Smysly",
+    "languages": "Jazyky",
+    "resistances": "Odolnosti",
+    "immunities": "Imunity",
+    "conditionImmunities": "Imunita vůči stavům",
+    "cr": "CR",
+    "toHit": "na zásah",
+    "actions": "Akce",
+    "bonusActions": "Bonusové akce",
+    "reactions": "Reakce",
+    "traits": "Vlastnosti",
+    "passive": "pasivní Vnímání"
   }
 }

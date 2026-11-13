@@ -18,6 +18,21 @@ const lands2024: (Land & { 3: string })[] = [
   Object.assign(['temperate', 'Temperate Land', [...at(3, 'misty-step', 'shocking-grasp', 'sleep'), ...at(5, 'lightning-bolt'), ...at(7, 'freedom-of-movement'), ...at(9, 'tree-stride')]] as Land, { 3: 'Lightning' }),
   Object.assign(['tropical', 'Tropical Land', [...at(3, 'acid-splash', 'ray-of-sickness', 'web'), ...at(5, 'stinking-cloud'), ...at(7, 'polymorph'), ...at(9, 'insect-plague')]] as Land, { 3: 'Poison' }),
 ]
+/**
+ * Wild Shape forms as effects, so subclasses can raise them (Circle of the Moon: shape:maxCr op max).
+ * shape:maxCr (highest CR), shape:fly / shape:swim (1 = such forms allowed), shape:forms (2024 known forms).
+ */
+const shapeRules2014 = [
+  { target: 'shape:maxCr', op: 'max', value: { byLevel: { 2: 0.25, 4: 0.5, 8: 1 } } },
+  { target: 'shape:swim', op: 'max', value: { byLevel: { 2: 0, 4: 1 } } },
+  { target: 'shape:fly', op: 'max', value: { byLevel: { 2: 0, 8: 1 } } },
+]
+const shapeRules2024 = [
+  { target: 'shape:maxCr', op: 'max', value: { byLevel: { 2: 0.25, 4: 0.5, 8: 1 } } },
+  { target: 'shape:swim', op: 'max', value: 1 },
+  { target: 'shape:fly', op: 'max', value: { byLevel: { 2: 0, 8: 1 } } },
+  { target: 'shape:forms', op: 'max', value: { byLevel: { 2: 4, 4: 6, 8: 8 } } },
+]
 const granted = (spells: [string, number][]) => spells.map(([id, minLevel]) => ({ id, minLevel }))
 
 export const druid: ClassOverlay = {
@@ -51,7 +66,7 @@ export const druid: ClassOverlay = {
           summary: 'Beast you have seen: CR 1/4, no fly or swim speed (4th: CR 1/2, no fly; 8th: CR 1). Lasts half your druid level in hours. Unlimited at 20th.',
         },
       ],
-      effects: [note('Wild Shape: the beast’s statistics replace yours (keep Int, Wis, Cha, skills); you can’t cast spells; HP of the beast first.', 'Wild Shape')],
+      effects: [note('Wild Shape: the beast’s statistics replace yours (keep Int, Wis, Cha, skills); you can’t cast spells; HP of the beast first.', 'Wild Shape'), ...shapeRules2014],
     },
     'wild-shape-cr-1-2-or-below-no-flying-speed': { upgradeOf: 'wild-shape-cr-1-4-or-below-no-flying-or-swim-speed' },
     'wild-shape-cr-1-or-below': { upgradeOf: 'wild-shape-cr-1-4-or-below-no-flying-or-swim-speed' },
@@ -77,9 +92,10 @@ export const druid: ClassOverlay = {
           summary: 'Known Beast form (level 2: CR 1/4, no Fly; 4: CR 1/2; 8: CR 1, Fly). Temp HP = Druid level. Lasts half your Druid level in hours; leave as a Bonus Action.',
         },
       ],
-      effects: [note('Wild Shape: the Beast’s stat block replaces yours (keep HP, Hit Dice, Int, Wis, Cha, class features); no spellcasting.', 'Wild Shape')],
+      effects: [note('Wild Shape: the Beast’s stat block replaces yours (keep HP, Hit Dice, Int, Wis, Cha, class features); no spellcasting.', 'Wild Shape'), ...shapeRules2024],
     },
     'druid-wild-companion': {
+      companions: [{ id: 'familiar', kind: 'familiar', filter: { creatureType: 'beast', maxCr: 0 }, note: 'Fey familiar from Wild Companion; it leaves on a Long Rest.' }],
       activities: [
         { id: 'use', name: 'Wild Companion', actionType: 'action', cost: [{ resource: 'wild-shape' }], fx: 'magic', summary: 'Cast Find Familiar without Material components. The Fey familiar leaves on a Long Rest.' },
         { id: 'slot', name: 'Wild Companion (spell slot)', actionType: 'action', slotCost: true, fx: 'magic', summary: 'The same, spending a spell slot instead of Wild Shape.' },

@@ -93,6 +93,7 @@ Cíle (`target`):
 - **Smysly a odolnosti:** `sense:darkvision` (op `max`, nebo `add` pro rozšíření), `resistance:<typ>`, `immunity:<typ>`, `conditionImmunity:<stav>`.
 - **Kouzla:** `spellDc`, `spellAttack`, `spellDc:<classa>`, `spellDamage:<kouzlo>`, `spellNote:<kouzlo>`.
 - **Připomínky:** `note` (text v `note`), `advantage:save:condition` (poznámka u záchran).
+- **Wild Shape:** `shape:maxCr` (nejvyšší CR formy, op `max`), `shape:fly` / `shape:swim` (1 = formy s létáním / plaváním povolené), `shape:forms` (2024: počet známých forem), `shape:ac` (AC ve formě, op `max`, např. Circle of the Moon `"13 + wis"`).
 
 `op`: `add` (výchozí), `set`, `max`, `min`. Do cíle jde vložit `@<id volby>`, které se nahradí každou vybranou hodnotou, např. `resistance:@types`.
 
@@ -143,6 +144,14 @@ Kouzla z předmětů jdou vždy jen zdarma z nábojů předmětu.
   "properties": ["finesse"], "diceByLevel": { "11": "1d8" }, "while": "Raging" }
 ```
 
+### Společníci (`companions`, u featury, kouzla nebo předmětu)
+
+```json
+{ "id": "steed", "kind": "steed", "creatures": ["creature-otherworldly-steed"], "slot": true, "note": "…" }
+```
+
+`kind`: `familiar`, `steed`, `companion` (od každého zdroje jen jeden naráz), `summon` (víc naráz). Tvory určuje seznam `creatures` (id) a/nebo `filter: { creatureType, maxCr, tag }`. `slot: true` = stat block škáluje s úrovní kouzla. `spellClass` = jejíž spell attack / DC tvor používá.
+
 ### Podmínky (`prerequisite`, u featu, možnosti nebo subclassy)
 
 `level`, `abilities: [{ ability, min }]`, `features` (musí mít), `spells` (zná aspoň jedno), `species`, `anyTag` / `noTag`, `weaponProficiency`, `anyOf: [ … ]` (stačí jedna alternativa) a `text` (ukáže se k ověření).
@@ -165,6 +174,8 @@ Kouzla z předmětů jdou vždy jen zdarma z nábojů předmětu.
   - weapon: `category`, `range`, `damage`, `properties`, `distance`, `mastery`
   - armor: `category`, `ac: { base, dex, maxDex }`, `strMin`, `stealthDisadvantage`
   - tag `unarmed` přenese bonusy předmětu na útok beze zbraně
+- **creature (stat block):** `size`, `creatureType`, `cr`, `ac`, `hp`, `hitDice`, `speed: { walk, fly, swim, climb, burrow }`, `scores`, `saves`, `skills`, `senses`, `passivePerception`, `languages`, `resistances`, `immunities`, `conditionImmunities`, `traits: [{ name, description }]`, `actions: [{ name, actionType, description, attack: { bonus, range }, damage: [{ dice, bonus, type }], save: { ability, dc } }]`.
+  - Čísla můžou být vzorce: `slot` (úroveň kouzla), `spellAttack`, `spellDc`, `pb`, `level` (úroveň classy zdroje), `wis` a další modifikátory majitele. Např. `"ac": "10 + slot"`, `"hp": "5 + 10 * slot"`.
 - **spell:** `level`, `school`, `castingTime`, `actionType`, `range`, `components`, `material`, `duration`, `concentration`, `ritual`, `classes`, `attack`, `save`, `damage: { type, by: "slot"|"character", dice: { "1": "3d6" } }`, `heal`, `higherLevels`, `brief`.
 
 ## Kontrola
