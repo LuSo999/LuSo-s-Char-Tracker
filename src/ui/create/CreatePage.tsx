@@ -28,6 +28,7 @@ import { RuleRef } from '../rules/RuleRef'
 import { DraftSheet } from '../levelup/DraftSheet'
 import { DecisionList } from '../levelup/LevelUpDialog'
 import { signed } from '../sheet/format'
+import { BooksPicker } from '../sheet/BooksPicker'
 
 type Step = 'basics' | 'class' | 'species' | 'background' | 'abilities' | 'choices' | 'equipment' | 'details'
 const STEPS: Step[] = ['basics', 'class', 'species', 'background', 'abilities', 'choices', 'equipment', 'details']
@@ -53,7 +54,7 @@ function Wizard({
   uid,
   edition,
   setEdition,
-  content,
+  content: allContent,
   onCreate,
 }: {
   uid: string
@@ -65,6 +66,9 @@ function Wizard({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>('basics')
+  const [books, setBooks] = useState<string[]>([])
+  // Only the allowed books are offered.
+  const content = useMemo(() => allContent.withBooks(books), [allContent, books])
   const [level, setLevel] = useState(1)
   const classes = content.all('class').filter((c) => c.edition === edition)
   const allSpecies = content.all('species').filter((s) => s.edition === edition)
@@ -94,16 +98,17 @@ function Wizard({
   const cls = content.getTyped(draft.classId, 'class')
   const species = content.getTyped(draft.speciesId, 'species')
   const background = content.getTyped(draft.backgroundId, 'background')
-  const subspecies = (species?.subspecies ?? []).map((id) => content.getTyped(id, 'subspecies')).filter((s) => !!s)
+  // Subspecies of allowed books, including ones a book adds to an SRD species (PHB Mountain Dwarf).
+  const subspecies = content.all('subspecies').filter((s) => s.species === draft.speciesId || species?.subspecies.includes(s.id))
 
   // The character as it stands (level 1), for choices and the summary.
   const character = useMemo(() => {
     try {
-      return buildCharacter(content, draft)
+      return buildCharacter(content, { ...draft, books })
     } catch {
       return undefined
     }
-  }, [content, draft])
+  }, [content, draft, books])
   const sheet = useMemo(() => (character ? computeSheet(character, content) : undefined), [character, content])
   const onDraftChange = useCallback((c: Character) => setDraft((d) => ({ ...d, choices: c.choices, spells: c.spells })), [])
 
@@ -130,7 +135,7 @@ function Wizard({
   async function create() {
     if (!character) return
     setSaving(true)
-    const final = buildCharacter(content, { ...draft, inventory: gearInventory(content, gear), gp: gear.gp })
+    const final = buildCharacter(content, { ...draft, books, inventory: gearInventory(content, gear), gp: gear.gp })
     if (onCreate) return onCreate({ ...final, xp: XP_FOR_LEVEL[level] }, level)
     const { id: _id, ...rest } = { ...final, xp: XP_FOR_LEVEL[level] }
     void _id
@@ -194,6 +199,11 @@ function Wizard({
             <input type="number" min={1} max={20} className="w-16 rounded border border-border bg-card px-1.5 py-0.5" value={level} onChange={(e) => setLevel(Math.min(20, Math.max(1, Number(e.target.value) || 1)))} />
           </label>
           {level > 1 && <p className="text-xs text-muted">{t('create.higherLevelHint', { level })}</p>}
+          <div>
+            <h2 className="mb-1 font-semibold">{t('books.title')}</h2>
+            <p className="mb-1 text-xs text-muted">{t('books.hint')}</p>
+            <BooksPicker content={allContent} books={books} onChange={setBooks} />
+          </div>
         </section>
       )}
 

@@ -394,7 +394,8 @@
       "featureGained": "New: {{name}}",
       "subclass": "Subclass ({{class}})",
       "multiclassRule": "Multiclassing allowed",
-      "spellCopied": "Copied {{name}} into the spellbook ({{gp}} GP, {{hours}} h)"
+      "spellCopied": "Copied {{name}} into the spellbook ({{gp}} GP, {{hours}} h)",
+      "books": "Allowed books"
     },
     "attackAction": "Attack action"
   },
@@ -841,5 +842,12 @@
     "openChoices": "{{count}} choices still open (can be finished later).",
     "create": "Create character",
     "createAndLevel": "Create and level up to {{level}}"
+  },
+  "books": {
+    "title": "Allowed books",
+    "hint": "Content from these books is offered (choices, level up, spells). SRD is always on.",
+    "srd": "SRD (always)",
+    "unofficial": "unofficial / playtest",
+    "none": "No books are uploaded yet; only SRD content is available."
   }
 }

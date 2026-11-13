@@ -119,6 +119,8 @@ export type Draft = {
   inventory: InventoryEntry[]
   gp: number
   notes: string
+  /** Allowed books (empty: every official book). */
+  books?: string[]
 }
 
 /** A level 1 character from the draft, at full HP. */
@@ -140,6 +142,7 @@ export function buildCharacter(content: ContentIndex, d: Draft): Character {
     currency: { cp: 0, sp: 0, ep: 0, gp: Math.floor(d.gp), pp: 0 },
     hp: { current: 1, temp: 0 },
     notes: d.notes,
+    books: d.books ?? [],
   }
   const c = Character.parse(input)
   return { ...c, hp: { current: computeSheet(c, content).hpMax.value, temp: 0 } }

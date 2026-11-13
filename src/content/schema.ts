@@ -606,6 +606,10 @@ export const Pack = z.object({
   book: z.string(),
   /** Template for links when an item has no own url: {type}, {slug}, {id}. */
   linkTemplate: z.string().optional(),
+  /** Short label shown next to content from this book ("PHB'24", "XGtE"). */
+  abbr: z.string().optional(),
+  /** Unofficial or playtest material (Plane Shift, Unearthed Arcana): off unless a character enables it. */
+  defaultOff: z.boolean().optional(),
   entities: z.array(Entity),
 })
 export type Pack = z.infer<typeof Pack>

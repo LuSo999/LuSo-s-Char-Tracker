@@ -394,7 +394,8 @@
       "featureGained": "Nové: {{name}}",
       "subclass": "Subclass ({{class}})",
       "multiclassRule": "Multiclass povolen",
-      "spellCopied": "Zkopírováno {{name}} do spellbooku ({{gp}} GP, {{hours}} h)"
+      "spellCopied": "Zkopírováno {{name}} do spellbooku ({{gp}} GP, {{hours}} h)",
+      "books": "Povolené knihy"
     },
     "attackAction": "Attack action"
   },
@@ -841,5 +842,12 @@
     "openChoices": "Otevřených voleb: {{count}} (jde dokončit později).",
     "create": "Vytvořit postavu",
     "createAndLevel": "Vytvořit a levelovat na {{level}}"
+  },
+  "books": {
+    "title": "Povolené knihy",
+    "hint": "Nabízí se obsah z těchto knih (volby, level up, kouzla). SRD je vždy zapnuté.",
+    "srd": "SRD (vždy)",
+    "unofficial": "neoficiální / playtest",
+    "none": "Zatím nejsou nahrané žádné knihy; je k dispozici jen SRD."
   }
 }

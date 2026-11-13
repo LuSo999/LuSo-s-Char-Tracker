@@ -93,3 +93,9 @@ export function removeReminder(char: Character, uid: string): ActionResult {
   if (!r) return { ok: false, error: 'noChange' }
   return ok({ ...char, reminders: char.reminders.filter((x) => x.uid !== uid) }, [{ type: 'reminderRemoved', params: { text: r.text } }])
 }
+
+/** Which books' content the character may use (empty: every official book). */
+export function setBooks(char: Character, books: string[]): ActionResult {
+  if (JSON.stringify(char.books) === JSON.stringify(books)) return { ok: false, error: 'noChange' }
+  return { ok: true, character: { ...char, books }, items: [{ type: 'books', before: char.books.join(', ') || '*', after: books.join(', ') || '*' }], groupType: 'edit', kind: 'sheet' }
+}

@@ -21,9 +21,10 @@ import { ActionList } from './ActionList'
 import { SheetContext, undoGroup, useRun, useSheet } from './context'
 import { useEditMode } from './editMode'
 import { EntityEditHost } from './EntityEditDialog'
-import { resetAllOverrides, setName } from '../../engine/edits'
+import { resetAllOverrides, setBooks as setBooksAction, setName } from '../../engine/edits'
 import { EquippedPanel } from './EquippedPanel'
-import { RestDialog } from './RestDialog'
+import { Dialog, RestDialog } from './RestDialog'
+import { BooksPicker } from './BooksPicker'
 import { ConditionsPanel, FeaturesPanel, Reminders, ResourcesPanel } from './SidePanels'
 import { SheetShortcuts } from './shortcuts'
 import { useTurn } from './turn'
@@ -67,7 +68,7 @@ export function SheetView({ character, content, store }: { character: Character;
   const { t } = useTranslation()
   const official = useOfficial()
   // The character's own names, summaries and links apply everywhere on the sheet.
-  const view = useMemo(() => content.withCustomizations(character.customizations), [content, character.customizations])
+  const view = useMemo(() => content.withBooks(character.books).withCustomizations(character.customizations), [content, character.books, character.customizations])
   const result = useMemo(() => {
     try {
       return { sheet: computeSheet(character, view) }
@@ -239,14 +240,24 @@ function CharacterName() {
 /** Shown while editing: what edit mode does, and a quick way to drop all overrides. */
 function EditBanner() {
   const { t } = useTranslation()
-  const { character } = useSheet()
+  const { character, baseContent } = useSheet()
   const run = useRun()
   const { on, toggle } = useEditMode()
+  const [books, setBooks] = useState(false)
   if (!on) return null
   const count = Object.keys(character.overrides).length
   return (
     <div className="mb-3 flex flex-wrap items-center gap-3 rounded-card border-2 border-dashed border-accent bg-accent/10 px-4 py-2 text-sm">
       <span className="font-semibold">✏️ {t('edit.banner')}</span>
+      <button className="rounded border border-border bg-card px-2 py-0.5 hover:bg-bg" onClick={() => setBooks(true)}>
+        📚 {t('books.title')}
+      </button>
+      {books && (
+        <Dialog title={t('books.title')} onClose={() => setBooks(false)}>
+          <p className="mb-2 text-xs text-muted">{t('books.hint')}</p>
+          <BooksPicker content={baseContent} books={character.books} onChange={(b) => void run(setBooksAction(character, b))} />
+        </Dialog>
+      )}
       {count > 0 && (
         <button
           className="rounded border border-border bg-card px-2 py-0.5 hover:bg-bg"

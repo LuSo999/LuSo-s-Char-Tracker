@@ -89,9 +89,49 @@ export class ContentIndex {
     return this.getTyped(id, 'item')
   }
 
-  /** All entities of a type; items of the other edition only when asked for. */
+  /**
+   * All entities of a type the character may choose from: items of the other
+   * edition only when asked for, and only books the character allows
+   * (see withBooks). `get` still finds everything, so existing picks resolve.
+   */
   all<T extends EntityType>(type: T, opts: { foreign?: boolean } = {}): ByType<T>[] {
-    return [...this.byId.values()].filter((e): e is ByType<T> => e.type === type && (opts.foreign || !this.foreign.has(e.id)))
+    return [...this.byId.values()].filter((e): e is ByType<T> => e.type === type && (opts.foreign || !this.foreign.has(e.id)) && this.bookAllowed(e))
+  }
+
+  /** The book an entity comes from (its own source, else its pack's). */
+  bookOf(e: Entity): string {
+    return e.source.book || this.packOf.get(e.id)?.book || ''
+  }
+
+  /** Books (non-SRD packs) of this edition, for the "allowed books" setting. */
+  books(): { id: string; name: string; abbr?: string; defaultOff: boolean }[] {
+    const seen = new Map<string, { id: string; name: string; abbr?: string; defaultOff: boolean }>()
+    for (const pack of new Set(this.packOf.values())) {
+      if (pack.edition !== this.edition || pack.book.startsWith('srd') || seen.has(pack.book)) continue
+      seen.set(pack.book, { id: pack.book, name: pack.name, abbr: pack.abbr, defaultOff: !!pack.defaultOff })
+    }
+    return [...seen.values()]
+  }
+
+  private allowedBooks?: Set<string>
+  private offBooks?: Set<string>
+
+  private bookAllowed(e: Entity): boolean {
+    const book = this.bookOf(e)
+    if (!book || book.startsWith('srd') || book === 'homebrew') return true
+    if (this.allowedBooks) return this.allowedBooks.has(book)
+    return !this.offBooks?.has(book)
+  }
+
+  /**
+   * A view that offers only the character's allowed books. An empty list
+   * means every official book except the ones that are off by default.
+   */
+  withBooks(books: readonly string[]): ContentIndex {
+    const view = Object.create(ContentIndex.prototype) as ContentIndex
+    const off = new Set([...new Set(this.packOf.values())].filter((p) => p.defaultOff).map((p) => p.book))
+    Object.assign(view, this, books.length ? { allowedBooks: new Set(books) } : { offBooks: off })
+    return view
   }
 
   /** True for items that come from the other edition. */
