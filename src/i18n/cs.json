@@ -172,7 +172,11 @@
     "restricted": "Sdílený obsah vidí jen pozvané e-maily",
     "invited": "Pozvané e-maily (jeden na řádek)",
     "save": "Uložit",
-    "saved": "Uloženo."
+    "saved": "Uloženo.",
+    "delete": "Smazat sdílený obsah",
+    "deleteConfirm": "Smazat všechen nahraný oficiální obsah? Postavy pak uvidí jen SRD, dokud ho znovu nenahraješ.",
+    "deleting": "Mažu… {{done}}/{{total}}",
+    "deleted": "Sdílený obsah je smazaný."
   },
   "undo": "Zpět",
   "cancel": "Zrušit",

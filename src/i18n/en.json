@@ -172,7 +172,11 @@
     "restricted": "Only invited e-mails can see the shared content",
     "invited": "Invited e-mails (one per line)",
     "save": "Save",
-    "saved": "Saved."
+    "saved": "Saved.",
+    "delete": "Delete shared content",
+    "deleteConfirm": "Delete all uploaded official content? Characters then only see SRD content until you upload again.",
+    "deleting": "Deleting… {{done}}/{{total}}",
+    "deleted": "Shared content deleted."
   },
   "undo": "Undo",
   "cancel": "Cancel",

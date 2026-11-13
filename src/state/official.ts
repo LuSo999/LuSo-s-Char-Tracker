@@ -92,6 +92,18 @@ export async function uploadOfficial(content: OfficialContent, onProgress?: (don
   await loadOfficial(true)
 }
 
+/** Admin: remove all shared official content (access settings stay). */
+export async function deleteOfficial(onProgress?: (done: number, total: number) => void) {
+  const existing = await getDocs(partsCol())
+  let done = 0
+  for (const d of existing.docs) {
+    await deleteDoc(d.ref)
+    onProgress?.(++done, existing.size)
+  }
+  await deleteDoc(officialDoc())
+  await loadOfficial(true)
+}
+
 export async function getOfficialMeta(): Promise<Meta | undefined> {
   const snap = await getDoc(officialDoc())
   return snap.exists() ? (snap.data() as Meta) : undefined

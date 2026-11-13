@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { OfficialContent } from '../content/schema'
-import { getAccess, getOfficialMeta, setAccess, uploadOfficial, type Access } from '../state/official'
+import { getAccess, getOfficialMeta, setAccess, uploadOfficial, type Access, deleteOfficial } from '../state/official'
 import { BackToSheet } from './BackToSheet'
 import { Card } from './Card'
 
@@ -80,7 +80,7 @@ export function AdminPage() {
         <input
           type="file"
           accept="application/json,.json"
-          className="mt-4 block text-sm"
+          className="mt-4 block text-sm file:mr-3 file:cursor-pointer file:rounded file:border file:border-accent file:bg-accent file:px-4 file:py-2 file:font-medium file:text-accent-text hover:file:opacity-90"
           onChange={async (e) => {
             const f = e.target.files?.[0]
             setProgress(undefined)
@@ -109,6 +109,19 @@ export function AdminPage() {
           </div>
         )}
         {progress && <p className="mt-2 text-sm">{progress}</p>}
+        {meta && (
+          <button
+            className="mt-4 rounded border border-danger px-3 py-1.5 text-sm text-danger hover:bg-danger/10"
+            onClick={async () => {
+              if (!confirm(t('admin.deleteConfirm'))) return
+              await deleteOfficial((done, total) => setProgress(t('admin.deleting', { done, total })))
+              setProgress(t('admin.deleted'))
+              setMeta(await getOfficialMeta())
+            }}
+          >
+            🗑 {t('admin.delete')}
+          </button>
+        )}
       </Card>
 
       <Card>
