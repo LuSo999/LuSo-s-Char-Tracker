@@ -345,6 +345,9 @@ export const Prerequisite = z.object({
   features: z.array(z.string()).optional(),
   /** At least one of these spells must be known (a damaging Warlock cantrip…). */
   spells: z.array(z.string()).optional(),
+  /** Needs an entity with one of these tags (Greater Mark: "dragonmark"); or must not have one (a second Dragonmark). */
+  anyTag: z.array(z.string()).optional(),
+  noTag: z.array(z.string()).optional(),
   /** Shown to the player; a requirement the app can't check, or the wording of the ones it does. */
   text: z.string().optional(),
 })

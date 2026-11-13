@@ -191,7 +191,7 @@ export function computeSpellcasting(
       spellbookPlaces: cls.caster.spellbook ? spellbookPlaces(cls, entry.level) : undefined,
       swap: cls.caster.swap,
       swapsUsed: { cantrips: swapsUsed(char, cls.id, 'cantrips', cls.caster.swap.cantrips), spells: swapsUsed(char, cls.id, 'spells', cls.caster.swap.spells) },
-      expanded: [...(cls.caster.extraSpells ?? []), ...active.filter((ae) => ae.classId === cls.id).flatMap((ae) => ae.entity.expandedSpells ?? [])],
+      expanded: [...(cls.caster.extraSpells ?? []), ...active.filter((ae) => ae.classId === cls.id || (!ae.classId && !ae.item)).flatMap((ae) => ae.entity.expandedSpells ?? [])],
       spellList: cls.caster.spellList ?? cls.id,
       progression: cls.spellcasting,
       schools: cls.caster.schools,
