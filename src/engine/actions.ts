@@ -217,8 +217,21 @@ export function performActivity(
   if (row.activity.slotCost) {
     const r = opts.slotKey && remainingOf(next, sheet, opts.slotKey)
     if (!r || r.remaining <= 0) return { ok: false, error: 'noSlot', params: { level: opts.slotKey?.replace('slot:', '') ?? '?' } }
+    const slotLevel = opts.slotKey === 'pact' ? (sheet.spellcasting.pact?.level ?? 1) : Number(opts.slotKey!.replace('slot:', ''))
+    if (row.activity.slotMin && slotLevel < row.activity.slotMin) return { ok: false, error: 'slotTooLow' }
     next = withRemaining(next, sheet, opts.slotKey!, r.remaining - 1)
     items.push({ type: 'resource', params: { name: r.name }, before: r.remaining, after: r.remaining - 1 })
+    // Arcane Ward: the slot refills a pool by its level.
+    const per = row.activity.restorePerSlotLevel
+    const target = per && sheet.resources.find((x) => x.resource.id === per.resource)
+    if (per && target) {
+      const current = currentRemaining(next, sheet, target.key) ?? target.remaining
+      const after = Math.min(target.max, current + per.amount * slotLevel)
+      if (after !== current) {
+        next = withRemaining(next, sheet, target.key, after)
+        items.push({ type: 'resource', params: { name: target.resource.name }, before: current, after })
+      }
+    }
   }
   // Uncanny Metabolism, Magical Cunning…: give resources back.
   for (const back of row.restores) {

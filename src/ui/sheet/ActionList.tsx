@@ -325,7 +325,9 @@ function SlotPrompt({ row, onDone }: { row: ActivityRow; onDone: (opts?: { slotK
   const { sheet } = useSheet()
   const [picked, setPicked] = useState<number[]>([])
   const res = (key: string) => sheet.resources.find((r) => r.key === key)
-  const slots = [...sheet.spellcasting.slots.map((s) => ({ key: s.key, level: s.level })), ...(sheet.spellcasting.pact ? [{ key: 'pact', level: sheet.spellcasting.pact.level }] : [])]
+  const slots = [...sheet.spellcasting.slots.map((s) => ({ key: s.key, level: s.level })), ...(sheet.spellcasting.pact ? [{ key: 'pact', level: sheet.spellcasting.pact.level }] : [])].filter(
+    (s) => s.level >= (row.activity.slotMin ?? 1),
+  )
   if (row.recoverSlots === undefined) {
     return (
       <div className="mt-1 flex flex-wrap items-center gap-1.5 rounded border border-violet-500/60 bg-violet-500/5 p-2 text-sm">

@@ -188,6 +188,10 @@ export const Activity = z.object({
   restore: z.array(z.object({ resource: z.string(), amount: z.union([z.literal('all'), Scaled]), upTo: z.boolean().default(false) })).default([]),
   /** Also expends one spell slot of the player's choice (Font of Inspiration, Primeval Awareness, Wild Resurgence). */
   slotCost: z.boolean().default(false),
+  /** With slotCost: the lowest slot level allowed (Mantle of Majesty: 3). */
+  slotMin: z.number().int().optional(),
+  /** With slotCost: refills a resource by this much per slot level (Arcane Ward: 2 HP per level). */
+  restorePerSlotLevel: z.object({ resource: z.string(), amount: z.number() }).optional(),
   /** Recover spell slots with this combined level, none above level 5 (Arcane Recovery, Natural Recovery). */
   recoverSlots: Scaled.optional(),
   /** The state of this activity also ends when that state ends (Frenzied ends with Raging). */
@@ -297,6 +301,29 @@ const base = {
   /** Spells added to the class list the entity belongs to, to learn or prepare (2014 Fiend: Expanded Spell List). */
   expandedSpells: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
+  /**
+   * Attacks the entity gives that aren't items: natural weapons (claws, horns,
+   * hooves), Psychic Blades, a conjured weapon. Listed with the weapon attacks.
+   */
+  attacks: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        range: z.enum(['melee', 'ranged']).default('melee'),
+        damage: z.object({ dice: z.string(), type: z.string() }),
+        properties: z.array(z.string()).default([]),
+        distance: z.object({ normal: z.number(), long: z.number().optional() }).optional(),
+        mastery: z.string().optional(),
+        /** Ability for attack and damage; default Str (Dex with finesse / ranged). */
+        ability: Ability.optional(),
+        /** Class level / character level from which it's available. */
+        minLevel: z.number().optional(),
+        /** Only while this toggle / state is on (e.g. "Raging", "Pact weapon summoned"). */
+        while: z.string().optional(),
+      }),
+    )
+    .default([]),
 }
 
 /**

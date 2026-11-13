@@ -372,7 +372,15 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const baseCtx: EffectContext = { armor: bodyArmor, shield: shield !== undefined, bloodied: false, edition: char.edition, emptyHands }
 
   // Effects keyed by the entity they come from, so formulas use the right level.
-  const allEffects = active.flatMap((ae) => ae.entity.effects.map((effect) => ({ effect, ae })))
+  // "@<choice>" in a target stands for each value picked in that choice of the entity
+  // (Boon of Energy Resistance: "resistance:@types" → resistance:fire, resistance:cold).
+  const allEffects = active.flatMap((ae) =>
+    ae.entity.effects.flatMap((effect) => {
+      const m = /@([\w-]+)/.exec(effect.target)
+      if (!m || effect.target.startsWith('spell')) return [{ effect, ae }]
+      return selections(char, ae, m[1]).map((v) => ({ effect: { ...effect, target: effect.target.replace(m[0], v) }, ae }))
+    }),
+  )
 
   const override = (key: string, computed: number, parts: Part[]): Value => {
     const o = char.overrides[key]
@@ -688,12 +696,13 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const martialDie = applyEffects('martialArtsDie', 0, '', vars, martialArtsCtx).value
   const dieSize = (dice: string | undefined) => Number(/d(\d+)/.exec(dice ?? '')?.[1] ?? 0)
 
-  function attackRow(key: string, name: string, w: Weapon | undefined, entry: InventoryEntry | undefined): AttackRow {
+  function attackRow(key: string, name: string, w: Weapon | undefined, entry: InventoryEntry | undefined, natural?: { ability?: Ability }): AttackRow {
     const props = w?.properties ?? []
     const ranged = w?.range === 'ranged'
     const monk = martialArts && (!w || isMonkWeapon(w, char.edition))
-    const ability: Ability = ranged ? 'dex' : (props.includes('finesse') || monk) && mods.dex > mods.str ? 'dex' : 'str'
-    const proficient = w ? isProficient(w) : true
+    const ability: Ability = natural?.ability ?? (ranged ? 'dex' : (props.includes('finesse') || monk) && mods.dex > mods.str ? 'dex' : 'str')
+    // Natural weapons and attacks a feature gives are always proficient.
+    const proficient = w && !natural ? isProficient(w) : true
     const ctx: EffectContext = { ...baseCtx, weapon: w ?? ({ range: 'melee' } as Weapon), ability, unarmed: !w }
 
     // Ammunition in use: the chosen entry, or the first one of the right kind.
@@ -775,6 +784,15 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     if (!r.weapon) continue
     attacks.push(attackRow(r.entry.uid, r.name, r.weapon, r.entry))
   }
+  // Attacks features give (claws, horns, Psychic Blades…), while their state is on.
+  for (const ae of active) {
+    for (const a of ae.entity.attacks ?? []) {
+      if (a.minLevel !== undefined && ae.classLevel < a.minLevel) continue
+      if (a.while && !char.toggles.some((t) => t === `state:${a.while}` || t === `${ae.grantKey}#${a.while}`)) continue
+      const w = { id: a.id, name: a.name, kind: 'weapon', category: 'simple', range: a.range, damage: a.damage, properties: a.properties, distance: a.distance, mastery: a.mastery } as unknown as Weapon
+      attacks.push(attackRow(`${ae.grantKey}:${a.id}`, a.name, w, undefined, { ability: a.ability }))
+    }
+  }
   // Unarmed Strike: 1 + Strength modifier bludgeoning in both editions.
   const unarmed = attackRow('unarmed', 'Unarmed Strike', undefined, undefined)
   if (unarmed.damageDice === '1') unarmed.damageDice = '1'
@@ -790,6 +808,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       // ... and resource counts: used_<id> / max_<id> (Relentless Rage DC, Magical Cunning's half of the Pact slots).
       const v = {
         ...vars(ae),
+        hpMax: hpMax.value,
         ...Object.fromEntries(Object.entries(skillValues).map(([k, sv]) => [k.replace(/-/g, '_'), sv.value])),
         ...Object.fromEntries(resources.flatMap((r) => [[`used_${r.key.replace(/[^a-z0-9]/gi, '_')}`, Math.max(0, r.used)], [`max_${r.key.replace(/[^a-z0-9]/gi, '_')}`, r.max]])),
       }
