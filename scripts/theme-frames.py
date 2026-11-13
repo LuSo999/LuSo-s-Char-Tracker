@@ -149,27 +149,20 @@ FL = lambda x, y, ang, s=1: leaf(x, y, ang, s, 'url(#fl)', '#4f7a32')
 fern = ''.join(f'<path d="M0 0 C1 -1.2 2.6 -1.4 3.4 -0.6 C2.6 0 1.2 0.2 0 0 Z" transform="translate({x:.2f} {y:.2f}) rotate({ang}) scale({sc})" fill="url(#fl)"/>'
                for x, y, ang, sc in [(31, 30.2, -80, 1), (29, 31.4, 170, 1), (33.6, 28, -70, 0.85), (31.4, 28.6, 160, 0.85), (36, 26.4, -60, 0.7), (34, 26.6, 150, 0.7), (37.6, 25.4, -50, 0.55)])
 out['forest'] = frame(
-    # tendrils curling along both sides
+    # one curling tendril per side, two leaves, a big blossom with a small companion
     f'<g fill="none" stroke="{vine}" stroke-width="0.9" stroke-linecap="round">'
-    f'<path d="M40 14.5 C32 13.5 25 15 22 19 C19.5 22.5 22 26 25 24.5 C27 23.4 26 21 24.4 21.8"/>'
-    f'<path d="M14.5 40 C13.5 32 15 25 19 22 C22.5 19.5 26 22 24.5 25 C23.4 27 21 26 21.8 24.4" />'
-    f'<path d="M40 20 C35 19 31 20 29 22 M20 40 C19 35 20 31 22 29" stroke-width="0.6"/></g>'
-    f'<path d="M24 34 C27 32 30 29.5 32 27.5 C34 25.5 36 24.5 38.5 24.6" fill="none" stroke="{vine2}" stroke-width="0.5"/>{fern}'
-    + FL(28, 13.8, -20, 0.62) + FL(13.8, 28, 110, 0.62) + FL(33, 15, 10, 0.5) + FL(15, 33, 80, 0.5)
-    + blossom(25, 6.5, 5.2, 'fv', 20) + blossom(6.5, 25, 5.2, 'fw', 5)
-    + blossom(12, 12, 10.5, 'fp', -10)
-    + bud(34.5, 12.6, 70, 0.9) + bud(12.6, 34.5, 200, 0.9, 'fp')
-    + sparkle(30.5, 6, 1.6) + sparkle(6, 31, 1.3) + sparkle(23, 25, 0.9) + sparkle(3, 3.5, 1.1),
-    # one wave of vine over the long tile: a big blossom in the middle, small ones and buds on the way
-    f'<path d="M40 20 C73 10 107 10 140 20 C173 30 207 30 240 20" fill="none" stroke="{vine}" stroke-width="1.2"/>'
-    f'<path d="M40 20 C73 10 107 10 140 20 C173 30 207 30 240 20" fill="none" stroke="{vine2}" stroke-width="0.4" transform="translate(0 0.8)"/>'
-    f'<g fill="none" stroke="{vine}" stroke-width="0.7" stroke-linecap="round"><path d="M104 13 C105 8.5 109.5 7.5 111.2 10 C112.3 11.8 110 13.2 109.2 11.8"/><path d="M176 27 C175 31.5 170.5 32.5 168.8 30 C167.7 28.2 170 26.8 170.8 28.2"/></g>'
-    + FL(56, 16.2, -35, 0.75) + FL(118, 14, 215, 0.75) + FL(162, 26, 25, 0.75) + FL(224, 23.8, 145, 0.75)
-    + bud(72, 13.6, -25, 1.25, 'fp') + bud(208, 26.4, 155, 1.25, 'fp')
-    + blossom(140, 20, 13, 'fp', 12)
-    + blossom(92, 12.2, 5.4, 'fv', 30) + blossom(188, 27.8, 5.4, 'fw', 0)
-    + sparkle(124, 28, 1.6) + sparkle(156, 11, 1.6) + sparkle(48, 12.5, 1.1) + sparkle(232, 28, 1.1),
-    fdefs, 280)
+    f'<path d="M40 13 C31 12.5 25 14.5 22.5 18.5 C20.5 22 23.5 25 26 23.2 C27.6 22 26.4 20 25 20.8"/>'
+    f'<path d="M13 40 C12.5 31 14.5 25 18.5 22.5 C22 20.5 25 23.5 23.2 26 C22 27.6 20 26.4 20.8 25"/></g>'
+    + FL(31, 12.8, -15, 0.6) + FL(12.8, 31, 105, 0.6)
+    + blossom(23.5, 6.5, 4.4, 'fv', 20)
+    + blossom(11.5, 11.5, 9.5, 'fp', -10)
+    + sparkle(4, 25, 1.2),
+    # a gentle vine with one blossom per long tile
+    f'<path d="M40 20 C120 14 200 14 280 20 C300 21.5 340 21.5 360 20" fill="none" stroke="{vine}" stroke-width="1"/>'
+    + FL(184, 17, -30, 0.6) + FL(216, 17.4, 210, 0.6)
+    + blossom(200, 16.6, 7.5, 'fp', 12)
+    + bud(110, 16.4, -20, 0.9, 'fv'),
+    fdefs, 400)
 
 # ---------------- Holy: a radiant gold sun with a cross in a beaded halo; a gilded band with fleurs-de-lis.
 c = T['holy']; a, card = c['accent'], c['card']
@@ -351,29 +344,19 @@ r1 = ((40, 9), (26, 8), (12, 9), (9, 18)); r2 = ((9, 18), (6, 26), (8, 34), (9, 
 dff_root = f'M40 9 C26 8 12 9 9 18 C6 26 8 34 9 40'
 out['dark-fey-forest'] = frame(
     f'<circle cx="16" cy="16" r="19" fill="url(#dg)"/>'
-    # gnarled root with rootlets and thorns
-    f'<path d="{dff_root}" fill="none" stroke="url(#dr)" stroke-width="4" stroke-linecap="round"/>'
-    f'<path d="{dff_root}" fill="none" stroke="{rootHi}" stroke-width="0.6" transform="translate(-0.8 -0.8)" opacity="0.8"/>'
-    f'<g fill="none" stroke="{droot}" stroke-width="0.9" stroke-linecap="round"><path d="M30 8.6 C29 5 31 2.5 33.5 2"/><path d="M8.6 30 C5 29 2.5 31 2 33.5"/>'
-    f'<path d="M14 9.5 C11 6.5 7 6 4 7.5"/><path d="M9.5 14 C6.5 11 6 7 7.5 4" stroke-width="0.6"/><path d="M33.5 2 C35.5 1.8 37 3 37.5 4.5 M2 33.5 C1.8 35.5 3 37 4.5 37.5" stroke-width="0.5"/></g>'
-    + thorns(r1, [0.12, 0.3, 0.5], 1) + thorns(r2, [0.45, 0.65, 0.88], 1)
-    # toadstools growing out of the root, toward the corner
-    + mush(31, 10.5, 9, 12, -20, 2) + mush(10.5, 31, 9, 12, -70, 2) + mush(23, 23, 17, 23, -45, 4)
-    + shade(19, 4.2, 4, 10) + shade(4.2, 19, 4, 40)
-    + wisp(36, 20, 1.1) + wisp(20, 36, 0.9) + wisp(3, 4, 0.9),
-    # bramble: two twisted thorny strands, a nightshade blossom, small toadstools, wisps
-    f'<path d="M40 20 C73 12 107 12 140 20 C173 28 207 28 240 20" fill="none" stroke="url(#dr)" stroke-width="3"/>'
-    f'<path d="M40 20 C73 12 107 12 140 20 C173 28 207 28 240 20" fill="none" stroke="{rootHi}" stroke-width="0.45" transform="translate(0 -0.8)"/>'
-    f'<path d="M40 20 C73 27 107 27 140 20 C173 13 207 13 240 20" fill="none" stroke="#7a2a5e" stroke-width="1.6"/>'
-    + thorns(((40, 20), (73, 12), (107, 12), (140, 20)), [0.15, 0.35, 0.62, 0.85], 1, 3)
-    + thorns(((140, 20), (173, 28), (207, 28), (240, 20)), [0.15, 0.38, 0.65, 0.85], -1, 3)
-    + thorns(((40, 20), (73, 27), (107, 27), (140, 20)), [0.25, 0.72], -1, 1.6)
-    + thorns(((140, 20), (173, 13), (207, 13), (240, 20)), [0.28, 0.75], 1, 1.6)
-    + f'<g fill="none" stroke="{droot}" stroke-width="0.6" stroke-linecap="round"><path d="M104 14.5 C106 10.5 110 9.5 112 11.5"/><path d="M176 25.5 C174 29.5 170 30.5 168 28.5"/></g>'
-    + mush(84, 15, 11, 14, -6, 3) + mush(94, 14, 6.5, 9, 10, 1) + mush(196, 25, 9, 12, 180, 2)
-    + shade(140, 20, 11.5, 8) + shade(62, 15.6, 5, 30) + shade(218, 24.4, 5, 0)
-    + wisp(122, 27, 1) + wisp(160, 12, 1) + wisp(50, 12, 0.8) + wisp(230, 28, 0.8),
-    ddefs, 280)
+    # a gnarled root with a few thorns, one big glowing toadstool and a small one
+    f'<path d="{dff_root}" fill="none" stroke="url(#dr)" stroke-width="3.6" stroke-linecap="round"/>'
+    f'<path d="{dff_root}" fill="none" stroke="{rootHi}" stroke-width="0.5" transform="translate(-0.8 -0.8)" opacity="0.7"/>'
+    + thorns(r1, [0.3], 1, 2.6) + thorns(r2, [0.7], 1, 2.6)
+    + mush(31, 10.5, 8, 11, -20, 2) + mush(23, 23, 17, 23, -45, 4)
+    + wisp(20, 36, 1),
+    # one thorny strand with a single nightshade blossom per long tile
+    f'<path d="M40 20 C120 15 200 15 280 20 C300 21.3 340 21.3 360 20" fill="none" stroke="url(#dr)" stroke-width="2.2"/>'
+    + thorns(((40, 20), (120, 15), (200, 15), (280, 20)), [0.12, 0.3, 0.7, 0.88], 1, 2.4)
+    + shade(200, 17, 8.5, 8)
+    + mush(110, 17.5, 7, 9.5, -8, 2)
+    + wisp(150, 11, 0.9),
+    ddefs, 400)
 
 for k, (e, c_) in out.items():
     open(f'{root}/{k}/frame.svg', 'w').write(e + '\n')
