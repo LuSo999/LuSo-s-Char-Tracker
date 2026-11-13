@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { adjustHp, rollDeathSave, setDeathSaves, setHp, setTempHp } from '../../engine/actions'
 import { useRun, useSheet } from './context'
@@ -27,10 +27,48 @@ export function Vitals() {
   const max = sheet.hpMax.value
   const pct = Math.max(0, Math.min(100, (current / max) * 100))
   const bloodied = current <= Math.floor(max / 2)
+  // Phone: once the HP box scrolls away, a slim HP bar stays at the top of the screen.
+  const hpBox = useRef<HTMLDivElement>(null)
+  const [away, setAway] = useState(false)
+  useEffect(() => {
+    const el = hpBox.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => setAway(!e.isIntersecting && e.boundingClientRect.top < 0))
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
 
   return (
     <div className="grid grid-cols-3 gap-2 sm:grid-cols-[2.2fr_1fr_1fr_1fr_1.4fr]">
-      <div className="framed-sm col-span-3 rounded-card border border-border bg-card px-3 py-2 shadow-sm sm:col-span-1">
+      {away && (
+        <div className="fixed inset-x-0 top-0 z-30 border-b border-border bg-card px-3 pt-1 shadow-md sm:hidden">
+          <div className="flex items-center gap-2">
+            <span aria-hidden>❤️</span>
+            <NumberAdjust
+              label={t('sheet.hitPoints')}
+              value={current}
+              valueClassName="text-xl font-semibold"
+              onSet={(v) => void run(setHp(character, sheet, v))}
+              onDelta={(d) => void run(adjustHp(character, sheet, d))}
+            />
+            <span className="text-muted">/ {max}</span>
+            <span className="ml-auto flex items-center gap-1 text-xs text-sky-700 dark:text-sky-300">
+              <span aria-hidden>💠</span>
+              <NumberAdjust
+                label={t('sheet.tempHp')}
+                value={temp}
+                valueClassName="font-semibold"
+                onSet={(v) => void run(setTempHp(character, v))}
+                onDelta={(d) => void run(setTempHp(character, temp + d))}
+              />
+            </span>
+          </div>
+          <div className="mt-1 h-1 overflow-hidden rounded bg-border">
+            <div className={`h-full ${bloodied ? 'bg-danger' : 'bg-emerald-600'}`} style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      )}
+      <div ref={hpBox} className="framed-sm col-span-3 rounded-card border border-border bg-card px-3 py-2 shadow-sm sm:col-span-1">
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-[11px] font-semibold uppercase text-muted" title={breakdown(sheet.hpMax)}>
             <span aria-hidden>❤️ </span>
@@ -87,8 +125,10 @@ function DeathSaves() {
     if (await run(rollDeathSave(character, n))) setRoll('')
   }
 
+  // Phone: only shown while it matters (at 0 HP or with saves already marked).
+  const phoneHidden = !dying && successes === 0 && failures === 0
   return (
-    <div className={`framed-sm col-span-3 rounded-card border bg-card px-3 py-2 shadow-sm sm:col-span-1 ${dying ? 'border-danger ring-2 ring-danger/30' : 'border-border'}`}>
+    <div className={`framed-sm col-span-3 rounded-card border bg-card px-3 py-2 shadow-sm sm:col-span-1 ${phoneHidden ? 'hidden sm:block' : ''} ${dying ? 'border-danger ring-2 ring-danger/30' : 'border-border'}`}>
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[11px] font-semibold uppercase text-muted">
           <span aria-hidden>💀 </span>

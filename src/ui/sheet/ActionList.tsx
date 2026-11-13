@@ -726,13 +726,13 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       {mode !== 'off' && <TurnBar />}
       {sheet.spellcasting.any && onOpenSpells && <MagicTile onOpen={onOpenSpells} />}
       {mode !== 'off' && <AttackBanner />}
-      <div className="mt-2 flex flex-wrap gap-1" role="tablist" aria-label={t('actionFilter.byCategory')}>
+      <div className="mt-2 flex gap-1 overflow-x-auto pb-0.5 sm:flex-wrap" role="tablist" aria-label={t('actionFilter.byCategory')}>
         {categories.map((c) => (
           <button
             key={c}
             role="tab"
             aria-selected={category === c}
-            className={`rounded-full border px-3 py-1 text-sm ${category === c ? 'border-accent bg-accent text-accent-text' : 'border-border hover:bg-bg'}`}
+            className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-sm ${category === c ? 'border-accent bg-accent text-accent-text' : 'border-border hover:bg-bg'}`}
             onClick={() => setCategory(c)}
           >
             {c !== 'all' && <span aria-hidden>{categoryIcon[c]} </span>}
@@ -740,13 +740,13 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
           </button>
         ))}
       </div>
-      <div className="mb-2 mt-1 flex flex-wrap gap-1" role="tablist" aria-label={t('actionFilter.byType')}>
+      <div className="mb-2 mt-1 flex gap-1 overflow-x-auto pb-0.5 sm:flex-wrap" role="tablist" aria-label={t('actionFilter.byType')}>
         {filters.map((f) => (
           <button
             key={f}
             role="tab"
             aria-selected={filter === f}
-            className={`rounded-full border px-2.5 py-0.5 text-xs ${filter === f ? 'border-accent bg-accent text-accent-text' : 'border-border hover:bg-bg'}`}
+            className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs ${filter === f ? 'border-accent bg-accent text-accent-text' : 'border-border hover:bg-bg'}`}
             onClick={() => setFilter(f)}
           >
             {f !== 'all' && <span aria-hidden>{actionTypeIcon[f]} </span>}

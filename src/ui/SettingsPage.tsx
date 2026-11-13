@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { ADMIN_UIDS } from '../config'
 import { linkSiteLabels, linkSites, type LinkSite } from '../content/links'
 import { editions } from '../content/schema'
+import { signOut } from '../firebase'
 import { useAuth } from '../state/auth'
 import { effectLevels, saveSettings, turnModes, useSettings } from '../state/settings'
 import { fx } from './fx/fx'
@@ -86,11 +87,16 @@ export function SettingsPage({ uid }: { uid: string }) {
         <p className="mt-1 text-sm">
           UID: <code className="select-all rounded bg-bg px-1">{uid}</code>
         </p>
-        {ADMIN_UIDS.includes(uid) && (
-          <Link className="mt-3 inline-block text-accent underline" to="/admin">
-            {t('admin.title')}
-          </Link>
-        )}
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          {ADMIN_UIDS.includes(uid) && (
+            <Link className="text-accent underline" to="/admin">
+              {t('admin.title')}
+            </Link>
+          )}
+          <button className="rounded border border-border px-3 py-1 text-sm hover:bg-bg" onClick={() => void signOut()}>
+            {t('signOut')}
+          </button>
+        </div>
       </Card>
     </div>
   )

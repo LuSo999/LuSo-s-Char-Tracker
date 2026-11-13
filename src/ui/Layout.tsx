@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { signOut } from '../firebase'
 import { languages, setLanguage, type Language } from '../i18n'
 import { useAuth } from '../state/auth'
@@ -11,6 +11,7 @@ import { FeedbackButton } from './feedback/FeedbackButton'
 export function Layout({ children }: { children: React.ReactNode }) {
   const { t, i18n } = useTranslation()
   const user = useAuth((s) => s.user)
+  const { pathname } = useLocation()
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -21,7 +22,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="ml-auto flex items-center gap-3">
           <AdminBulb />
           <FeedbackButton />
-          <ShortcutsButton />
+          {/* Phone: the character list sits here (the sheet's own bar is kept short). */}
+          {pathname !== '/' && (
+            <Link to="/" className="text-sm text-muted hover:underline sm:hidden" title={t('sheet.buttons.switch')} aria-label={t('sheet.buttons.switch')}>
+              👥
+            </Link>
+          )}
+          <div className="hidden sm:block">
+            <ShortcutsButton />
+          </div>
           <label className="flex items-center gap-1 text-sm text-muted">
             <span className="sr-only">{t('language')}</span>
             <select
@@ -39,12 +48,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ThemeButton />
           {user && (
             <>
-              <Link to="/settings" className="text-sm text-muted hover:underline">
-                <span aria-hidden>⚙️ </span>
-                {t('settings.title')}
+              <Link to="/settings" className="text-sm text-muted hover:underline" aria-label={t('settings.title')}>
+                <span aria-hidden>⚙️</span>
+                <span className="hidden sm:inline"> {t('settings.title')}</span>
               </Link>
               <span className="hidden text-sm text-muted sm:inline">{user.displayName ?? user.email}</span>
-              <button className="rounded border border-border px-3 py-1 text-sm hover:bg-bg" onClick={() => void signOut()}>
+              <button className="hidden rounded border border-border px-3 py-1 text-sm hover:bg-bg sm:inline-block" onClick={() => void signOut()}>
                 {t('signOut')}
               </button>
             </>

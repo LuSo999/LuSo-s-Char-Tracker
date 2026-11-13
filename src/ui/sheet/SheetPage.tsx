@@ -124,7 +124,7 @@ function TopBar({
   const pending = useMemo(() => pendingChoices(character, content, sheet).length, [character, content, sheet])
   const last = undoable(store.history)
   const classes = character.classes.map((c) => ({ entry: c, cls: content.getTyped(c.classId, 'class'), sub: c.subclassId ? content.getTyped(c.subclassId, 'subclass') : undefined }))
-  const button = 'rounded border border-border px-3 py-1.5 text-sm hover:bg-bg disabled:opacity-50 disabled:hover:bg-transparent'
+  const button = 'rounded border border-border px-2 py-1.5 text-sm hover:bg-bg sm:px-3 disabled:opacity-50 disabled:hover:bg-transparent'
 
   return (
     <div className="framed-sm mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-card border border-border bg-card px-4 py-1.5 shadow-sm">
@@ -160,7 +160,7 @@ function TopBar({
       <span className="rounded-full border border-accent px-2.5 py-0.5 text-xs font-semibold text-accent" title={t('sheet.editionHint')}>
         {character.edition === '2014' ? '5e (2014)' : '5.5e (2024)'}
       </span>
-      <div className="ml-auto flex flex-wrap gap-1.5">
+      <div className="ml-auto flex flex-wrap gap-1 sm:gap-1.5">
         <button className={button} onClick={() => onRest('short')}>
           ☕ <Term id="rule-short-rest">{t('sheet.buttons.shortRest')}</Term>
         </button>
@@ -169,16 +169,18 @@ function TopBar({
         </button>
         {pending > 0 && (
           <button className={`${button} border-accent bg-accent/10 font-semibold`} title={t('levelUp.badgeHint')} onClick={onChoices}>
-            ⚠️ {t('levelUp.badge', { count: pending })}
+            ⚠️ <span className="sm:hidden">{pending}</span>
+            <span className="hidden sm:inline">{t('levelUp.badge', { count: pending })}</span>
           </button>
         )}
-        <button className={button} onClick={onLevelUp}>
+        <button className={`${button} hidden sm:inline-block`} onClick={onLevelUp}>
           ⬆️ {t('sheet.buttons.levelUp')}
         </button>
-        <EditToggle className={button} />
+        <EditToggle className={`${button} hidden sm:inline-block`} />
         <button
           className={button}
           disabled={!last}
+          aria-label={t('undo')}
           title={last ? `${t('sheet.undoHint', { what: groupSummary(t, last) })} (Ctrl+Z)` : undefined}
           onClick={() => {
             if (!last) return
@@ -186,14 +188,15 @@ function TopBar({
             toast(t('sheet.undone', { what: groupSummary(t, last) }))
           }}
         >
-          ↶ {t('undo')}
+          ↶<span className="hidden sm:inline"> {t('undo')}</span>
         </button>
         <button className={`${button} hidden sm:inline-block`} onClick={onHistory}>
           📜 {t('sheet.buttons.history')}
         </button>
-        <Link to="/" className={button}>
+        <Link to="/" className={`${button} hidden sm:inline-block`}>
           👥 {t('sheet.buttons.switch')}
         </Link>
+        <MoreMenu className={button} onLevelUp={onLevelUp} />
       </div>
     </div>
   )
@@ -223,6 +226,31 @@ function ThemeTarget() {
   }, [character, run])
   useEffect(() => () => useThemeTarget.setState({ target: undefined }), [])
   return null
+}
+
+/** Phone: the less frequent top bar buttons (Level up, Edit) behind ⋯. */
+function MoreMenu({ className, onLevelUp }: { className: string; onLevelUp: () => void }) {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const item = 'block w-full rounded px-3 py-2 text-left text-sm hover:bg-bg'
+  return (
+    <div className="relative sm:hidden">
+      <button className={className} aria-label={t('sheet.buttons.more')} aria-expanded={open} onClick={() => setOpen(!open)}>
+        ⋯
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full z-40 mt-1 w-48 rounded-card border border-border bg-card p-1 shadow-lg" onClick={() => setOpen(false)}>
+            <button className={item} onClick={onLevelUp}>
+              ⬆️ {t('sheet.buttons.levelUp')}
+            </button>
+            <EditToggle className={`${item} border-0`} />
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 function EditToggle({ className }: { className: string }) {
@@ -377,7 +405,7 @@ function SheetLayout() {
       {spells && <SpellcastingDrawer onClose={() => setSpells(false)} />}
 
       {/* Phone: panels open full screen from a bottom bar. */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-card sm:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-card pb-[env(safe-area-inset-bottom)] sm:hidden">
         {sheet.spellcasting.any && (
           <button className="flex-1 border-r border-border py-2.5 text-sm font-semibold" onClick={() => setSpells(true)}>
             ✨ {t('spells.title')}
