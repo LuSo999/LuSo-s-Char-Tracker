@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ContentIndex } from '../content'
 import type { Edition, Pack } from '../content/schema'
 import { loadSrd } from '../data/srd'
+import { useHomebrew } from './homebrew'
 import { loadOfficial, useOfficial } from './official'
 
 const srdCache = new Map<Edition, Promise<Pack>>()
@@ -18,6 +19,7 @@ export function useContent(edition: Edition | undefined): ContentIndex | undefin
   // This edition's SRD plus the other one, whose items can be used too.
   const [srdPacks, setSrdPacks] = useState<Pack[]>()
   const official = useOfficial()
+  const homebrew = useHomebrew((s) => s.packs)
 
   useEffect(() => {
     void loadOfficial()
@@ -36,6 +38,7 @@ export function useContent(edition: Edition | undefined): ContentIndex | undefin
     if (!edition || !srdPacks || srdPacks[0].edition !== edition) return undefined
     // Wait for the shared content once, so a character using it doesn't flash an error.
     if (official.status === 'idle' || official.status === 'loading') return undefined
-    return new ContentIndex(edition, [...srdPacks, ...official.packs])
-  }, [edition, srdPacks, official.status, official.packs])
+    // Homebrew last: it may deliberately replace an SRD or book entity.
+    return new ContentIndex(edition, [...srdPacks, ...official.packs, ...homebrew])
+  }, [edition, srdPacks, official.status, official.packs, homebrew])
 }

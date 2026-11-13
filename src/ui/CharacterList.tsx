@@ -78,6 +78,9 @@ export function CharacterList({ uid }: { uid: string }) {
           <button className="rounded border border-border px-4 py-2 hover:bg-bg" onClick={() => void addCharacter(uid, sampleChampion)}>
             {t('characters.addSample')}
           </button>
+          <Link to="/homebrew" className="rounded border border-border px-4 py-2 hover:bg-bg">
+            🧪 {t('homebrew.title')}
+          </Link>
           <button className="rounded border border-border px-4 py-2 hover:bg-bg" onClick={() => fileInput.current?.click()}>
             {t('characters.import')}
           </button>

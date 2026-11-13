@@ -864,7 +864,13 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
             .map((ch) => [`mod_${ch.id.replace(/[^a-z0-9]/gi, '_')}`, mods[(selections(char, ae, ch.id)[0]?.split('+')[0] as Ability) ?? 'str'] ?? 0]),
         ),
         ...Object.fromEntries(Object.entries(skillValues).map(([k, sv]) => [k.replace(/-/g, '_'), sv.value])),
-        ...Object.fromEntries(resources.flatMap((r) => [[`used_${r.key.replace(/[^a-z0-9]/gi, '_')}`, Math.max(0, r.used)], [`max_${r.key.replace(/[^a-z0-9]/gi, '_')}`, r.max]])),
+        ...Object.fromEntries(
+          resources.flatMap((r) => {
+            const k = r.key.replace(/[^a-z0-9]/gi, '_')
+            // die_<id>: the pool's die size (spend a die and roll it: { count: 1, die: 'die_lantern_dice' }).
+            return [[`used_${k}`, Math.max(0, r.used)], [`max_${k}`, r.max], ...(r.die ? [[`die_${k}`, r.die]] : [])]
+          }),
+        ),
       }
       // "@quantity" spends the item itself (potions); other costs name a resource id.
       const pool = (resource: string): ActivityRow['uses'] => {

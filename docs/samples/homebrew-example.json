@@ -1,0 +1,183 @@
+{
+  "id": "hb-example",
+  "name": "Ukázkový homebrew: Lantern Warden",
+  "edition": "2024",
+  "version": "1",
+  "book": "homebrew:hb-example",
+  "entities": [
+    {
+      "id": "hb-example-lantern-warden",
+      "type": "subclass",
+      "edition": "2024",
+      "name": "Lantern Warden",
+      "class": "fighter",
+      "description": "Fighter subclass: a pool of Lantern Dice fuels light-themed techniques.",
+      "source": { "book": "homebrew:hb-example" },
+      "levels": [
+        { "level": 3, "features": ["hb-example-lantern-light", "hb-example-lantern-techniques"] },
+        { "level": 7, "features": ["hb-example-steady-glow"] },
+        { "level": 10, "features": ["hb-example-bright-reserve"] },
+        { "level": 18, "features": ["hb-example-beacon"] }
+      ]
+    },
+    {
+      "id": "hb-example-lantern-light",
+      "type": "feature",
+      "edition": "2024",
+      "name": "Lantern Light",
+      "parent": "hb-example-lantern-warden",
+      "description": "You have Lantern Dice: 4 d6 (5 at level 7, 6 at 15; d8 at 10, d10 at 18). Spent dice return on a Short or Long Rest.",
+      "source": { "book": "homebrew:hb-example" },
+      "resources": [
+        {
+          "id": "lantern-dice",
+          "name": "Lantern Dice",
+          "max": { "byLevel": { "3": 4, "7": 5, "15": 6 } },
+          "die": { "byLevel": { "3": 6, "10": 8, "18": 10 } },
+          "recharge": [{ "on": "shortRest", "amount": "all" }, { "on": "longRest", "amount": "all" }]
+        }
+      ]
+    },
+    {
+      "id": "hb-example-lantern-techniques",
+      "type": "feature",
+      "edition": "2024",
+      "name": "Lantern Techniques",
+      "parent": "hb-example-lantern-warden",
+      "description": "Learn 2 techniques (3 at level 7, 4 at 10, 5 at 15). You can swap one when you gain a Fighter level.",
+      "source": { "book": "homebrew:hb-example" },
+      "choices": [
+        {
+          "id": "techniques",
+          "label": "Lantern Techniques",
+          "kind": "entity",
+          "count": { "byLevel": { "3": 2, "7": 3, "10": 4, "15": 5 } },
+          "from": { "ids": ["hb-example-flare", "hb-example-ward", "hb-example-guiding-beam", "hb-example-kindle"] },
+          "changeable": "levelUp"
+        }
+      ]
+    },
+    {
+      "id": "hb-example-flare",
+      "type": "feature",
+      "edition": "2024",
+      "name": "Flare",
+      "optionOf": "hb-example-lantern-techniques",
+      "description": "On a hit: spend a Lantern Die, add it as Radiant damage; the target makes a Con save or is Blinded until the end of your next turn.",
+      "source": { "book": "homebrew:hb-example" },
+      "activities": [
+        {
+          "id": "use",
+          "name": "Flare",
+          "actionType": "other",
+          "attack": true,
+          "perTurn": 1,
+          "cost": [{ "resource": "lantern-dice" }],
+          "roll": { "dice": { "count": 1, "die": "die_lantern_dice" }, "kind": "damage" },
+          "saveDc": "8 + pb + wis",
+          "saveAbility": "con",
+          "summary": "Hit: +1 Lantern Die Radiant; Con save or Blinded until the end of your next turn."
+        }
+      ]
+    },
+    {
+      "id": "hb-example-ward",
+      "type": "feature",
+      "edition": "2024",
+      "name": "Ward",
+      "optionOf": "hb-example-lantern-techniques",
+      "description": "Reaction when you or an ally within 10 ft is hit: spend a Lantern Die, reduce the damage by the roll + your Wis modifier.",
+      "source": { "book": "homebrew:hb-example" },
+      "activities": [
+        {
+          "id": "use",
+          "name": "Ward",
+          "actionType": "reaction",
+          "cost": [{ "resource": "lantern-dice" }],
+          "roll": { "dice": "1d6", "bonus": "wis", "kind": "other" },
+          "summary": "Reduce the damage of one hit by the roll + Wis."
+        }
+      ]
+    },
+    {
+      "id": "hb-example-guiding-beam",
+      "type": "feature",
+      "edition": "2024",
+      "name": "Guiding Beam",
+      "optionOf": "hb-example-lantern-techniques",
+      "description": "Bonus Action: spend a Lantern Die; the next attack roll against a creature you see within 60 ft before your next turn has Advantage.",
+      "source": { "book": "homebrew:hb-example" },
+      "activities": [
+        { "id": "use", "name": "Guiding Beam", "actionType": "bonusAction", "cost": [{ "resource": "lantern-dice" }], "summary": "Next attack against the target has Advantage." }
+      ]
+    },
+    {
+      "id": "hb-example-kindle",
+      "type": "feature",
+      "edition": "2024",
+      "name": "Kindle",
+      "optionOf": "hb-example-lantern-techniques",
+      "description": "Bonus Action: spend any number of Lantern Dice and heal yourself the rolled total.",
+      "source": { "book": "homebrew:hb-example" },
+      "activities": [
+        { "id": "use", "name": "Kindle", "actionType": "bonusAction", "cost": [{ "resource": "lantern-dice" }], "spendInput": true, "spendDice": 6, "roll": { "kind": "heal" }, "summary": "Spend N dice, heal the total." }
+      ]
+    },
+    {
+      "id": "hb-example-steady-glow",
+      "type": "feature",
+      "edition": "2024",
+      "name": "Steady Glow",
+      "parent": "hb-example-lantern-warden",
+      "description": "Darkvision 60 ft (or +30 ft if you have it); Advantage on saves against being Blinded.",
+      "source": { "book": "homebrew:hb-example" },
+      "effects": [
+        { "target": "sense:darkvision", "op": "max", "value": 60 },
+        { "target": "advantage:save:condition", "note": "Advantage on saves against Blinded" }
+      ]
+    },
+    {
+      "id": "hb-example-bright-reserve",
+      "type": "feature",
+      "edition": "2024",
+      "name": "Bright Reserve",
+      "parent": "hb-example-lantern-warden",
+      "description": "Once per Short Rest, as a Bonus Action, regain one Lantern Die.",
+      "source": { "book": "homebrew:hb-example" },
+      "resources": [{ "id": "bright-reserve", "name": "Bright Reserve", "max": 1, "recharge": [{ "on": "shortRest", "amount": "all" }, { "on": "longRest", "amount": "all" }] }],
+      "activities": [
+        { "id": "use", "name": "Bright Reserve", "actionType": "bonusAction", "cost": [{ "resource": "bright-reserve" }], "restore": [{ "resource": "lantern-dice", "amount": 1 }], "summary": "Regain one Lantern Die." }
+      ]
+    },
+    {
+      "id": "hb-example-beacon",
+      "type": "feature",
+      "edition": "2024",
+      "name": "Beacon",
+      "parent": "hb-example-lantern-warden",
+      "description": "Bonus Action, once per Long Rest: for 1 minute you shed bright light 30 ft and your weapon attacks deal +1d6 Radiant.",
+      "source": { "book": "homebrew:hb-example" },
+      "resources": [{ "id": "beacon", "name": "Beacon", "max": 1, "recharge": [{ "on": "longRest", "amount": "all" }] }],
+      "activities": [
+        { "id": "use", "name": "Beacon", "actionType": "bonusAction", "cost": [{ "resource": "beacon" }], "toggle": "Beacon", "fx": "magic", "summary": "1 minute: bright light 30 ft, weapon hits +1d6 Radiant." }
+      ],
+      "effects": [{ "target": "note", "note": "Beacon: weapon hits deal +1d6 Radiant", "when": { "toggle": "Beacon" } }]
+    },
+    {
+      "id": "hb-example-lantern-shield",
+      "type": "item",
+      "kind": "armor",
+      "edition": "2024",
+      "name": "Lantern Shield",
+      "description": "+1 Shield; 3 charges at dawn: cast Faerie Fire from it.",
+      "source": { "book": "homebrew:hb-example" },
+      "magic": true,
+      "rarity": "uncommon",
+      "weight": 6,
+      "category": "shield",
+      "ac": { "base": 3, "dex": false },
+      "charges": { "id": "charges", "name": "Charges", "max": 3, "recharge": [{ "on": "dawn", "amount": "all" }] },
+      "spells": [{ "id": "faerie-fire", "freeCast": "charges" }]
+    }
+  ]
+}

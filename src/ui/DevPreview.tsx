@@ -9,7 +9,12 @@ import { Character } from '../engine/character'
 import { useMemoryStore } from '../state/history'
 import { useSettings } from '../state/settings'
 import { SheetView } from './sheet/SheetPage'
-import { useNavigate } from 'react-router'
+import { Route, Routes, useNavigate } from 'react-router'
+import { enableMemoryHomebrew } from '../state/homebrew'
+import { HomebrewBase } from './homebrew/base'
+import { HomebrewPage } from './homebrew/HomebrewPage'
+import { PackPage } from './homebrew/PackPage'
+import { EntityEditor } from './homebrew/EntityEditor'
 import { CreatePage } from './create/CreatePage'
 
 const privateFiles: Partial<Record<string, () => Promise<{ default: unknown }>>> = import.meta.glob<{ default: unknown }>('../../private/{official-content,valdric}.json')
@@ -57,6 +62,8 @@ export default function DevPreview() {
   const navigate = useNavigate()
   const [created, setCreated] = useState<{ character: Character; levelTo: number }>()
   const createdContent = useMemo(() => created && state && new ContentIndex(created.character.edition, created.character.edition === '2014' ? [...state.packs].reverse() : state.packs), [created, state])
+  // #/dev/homebrew tries the homebrew editor with packs kept in memory.
+  if (location.hash.startsWith('#/dev/homebrew')) return <DevHomebrew />
   if (location.hash.startsWith('#/dev/new') && !created) {
     return (
       <CreatePage
@@ -72,6 +79,19 @@ export default function DevPreview() {
   if (created && createdContent) return <MemorySheet initial={created.character} content={createdContent} />
   if (!state || !content) return <p className="p-4">Loading…</p>
   return <MemorySheet initial={state.character} content={content} />
+}
+
+function DevHomebrew() {
+  useEffect(() => enableMemoryHomebrew(), [])
+  return (
+    <HomebrewBase.Provider value="/dev/homebrew">
+      <Routes>
+        <Route path="/dev/homebrew" element={<HomebrewPage uid="dev" />} />
+        <Route path="/dev/homebrew/:packId" element={<PackPage uid="dev" />} />
+        <Route path="/dev/homebrew/:packId/:entityId" element={<EntityEditor uid="dev" />} />
+      </Routes>
+    </HomebrewBase.Provider>
+  )
 }
 
 function MemorySheet({ initial, content }: { initial: Character; content: ContentIndex }) {

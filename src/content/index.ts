@@ -111,7 +111,7 @@ export class ContentIndex {
   books(): { id: string; name: string; abbr?: string; defaultOff: boolean }[] {
     const seen = new Map<string, { id: string; name: string; abbr?: string; defaultOff: boolean }>()
     for (const pack of new Set(this.packOf.values())) {
-      if ((pack.edition !== this.edition && !this.legacy) || pack.book.startsWith('srd') || seen.has(pack.book)) continue
+      if ((pack.edition !== this.edition && !this.legacy) || pack.book.startsWith('srd') || pack.book.startsWith('homebrew') || seen.has(pack.book)) continue
       seen.set(pack.book, { id: pack.book, name: pack.name, abbr: pack.abbr, defaultOff: !!pack.defaultOff })
     }
     return [...seen.values()]
@@ -236,7 +236,7 @@ export class ContentIndex {
 
   private bookAllowed(e: Entity): boolean {
     const book = this.bookOf(e)
-    if (!book || book.startsWith('srd') || book === 'homebrew') return true
+    if (!book || book.startsWith('srd') || book.startsWith('homebrew')) return true
     if (this.allowedBooks) return this.allowedBooks.has(book)
     return !this.offBooks?.has(book)
   }
