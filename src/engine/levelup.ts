@@ -57,6 +57,7 @@ function choiceApplies(char: Character, ae: ActiveEntity, choice: Choice): boole
   const primary = ae.entity.id === char.classes[0].classId
   if (choice.id === 'skills') return primary
   if (choice.id === 'multiclass-skills') return !primary
+  if (choice.startingClassOnly) return primary
   return true
 }
 

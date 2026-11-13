@@ -492,6 +492,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   for (const ae of active) {
     for (const choice of ae.entity.choices) {
       if (choice.kind !== 'tool' && choice.kind !== 'language') continue
+      if (choice.startingClassOnly && ae.entity.type === 'class' && ae.entity.id !== char.classes[0].classId) continue
       for (const v of char.choices[choiceKey(ae.grantKey, choice.id)] ?? []) (choice.kind === 'tool' ? toolProf : languageSet).add(v)
     }
   }
@@ -696,7 +697,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const martialDie = applyEffects('martialArtsDie', 0, '', vars, martialArtsCtx).value
   const dieSize = (dice: string | undefined) => Number(/d(\d+)/.exec(dice ?? '')?.[1] ?? 0)
 
-  function attackRow(key: string, name: string, w: Weapon | undefined, entry: InventoryEntry | undefined, natural?: { ability?: Ability }): AttackRow {
+  function attackRow(key: string, name: string, w: Weapon | undefined, entry: InventoryEntry | undefined, natural?: { ability?: Ability; attackBonus?: number; damageBonus?: number }): AttackRow {
     const props = w?.properties ?? []
     const ranged = w?.range === 'ranged'
     const monk = martialArts && (!w || isMonkWeapon(w, char.edition))
@@ -722,10 +723,11 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       return { value: r.value + extra.reduce((s2, p) => s2 + p.value, 0), parts: [...r.parts, ...extra] }
     }
 
+    const own = (r: { value: number; parts: Part[] }, extra: number | undefined) => (extra ? { value: r.value + extra, parts: [...r.parts, { label: name, value: extra }] } : r)
     const atk = withExhaustion(
-      withAmmo(applyEffects('attack', mods[ability] + (proficient ? pb : 0), proficient ? `${ability.toUpperCase()} + proficiency` : ability.toUpperCase(), vars, ctx, ownItem), 'attack'),
+      own(withAmmo(applyEffects('attack', mods[ability] + (proficient ? pb : 0), proficient ? `${ability.toUpperCase()} + proficiency` : ability.toUpperCase(), vars, ctx, ownItem), 'attack'), natural?.attackBonus),
     )
-    const dmg = withAmmo(applyEffects('damage', mods[ability], ability.toUpperCase(), vars, ctx, ownItem), 'damage')
+    const dmg = own(withAmmo(applyEffects('damage', mods[ability], ability.toUpperCase(), vars, ctx, ownItem), 'damage'), natural?.damageBonus)
     const crit = applyEffects('critRange', 20, '', vars, ctx, ownItem)
     const twoHanded = entry?.twoHanded && w?.versatileDamage
     const mastery = w && char.edition === '2024' && w.mastery && (weaponMasteries.includes(w.id) || (w.baseItem && weaponMasteries.includes(w.baseItem))) ? w.mastery : undefined
@@ -789,8 +791,17 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     for (const a of ae.entity.attacks ?? []) {
       if (a.minLevel !== undefined && ae.classLevel < a.minLevel) continue
       if (a.while && !char.toggles.some((t) => t === `state:${a.while}` || t === `${ae.grantKey}#${a.while}`)) continue
-      const w = { id: a.id, name: a.name, kind: 'weapon', category: 'simple', range: a.range, damage: a.damage, properties: a.properties, distance: a.distance, mastery: a.mastery } as unknown as Weapon
-      attacks.push(attackRow(`${ae.grantKey}:${a.id}`, a.name, w, undefined, { ability: a.ability }))
+      let dice = a.damage.dice
+      for (const [lvl, d] of Object.entries(a.diceByLevel ?? {}).sort((x, y) => Number(x[0]) - Number(y[0]))) if (ae.classLevel >= Number(lvl)) dice = d
+      const w = { id: a.id, name: a.name, kind: 'weapon', category: 'simple', range: a.range, damage: { ...a.damage, dice }, properties: a.properties, distance: a.distance, mastery: a.mastery } as unknown as Weapon
+      const v = vars(ae)
+      attacks.push(
+        attackRow(`${ae.grantKey}:${a.id}`, a.name, w, undefined, {
+          ability: a.ability,
+          attackBonus: a.attackBonus !== undefined ? resolveScaled(a.attackBonus, v) : undefined,
+          damageBonus: a.damageBonus !== undefined ? resolveScaled(a.damageBonus, v) : undefined,
+        }),
+      )
     }
   }
   // Unarmed Strike: 1 + Strength modifier bludgeoning in both editions.

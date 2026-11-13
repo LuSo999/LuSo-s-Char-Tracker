@@ -88,3 +88,13 @@ describe('Choice-driven effects and formulas', () => {
     expect(s.activities.find((a) => a.activity.id === 'stand')?.rollBonus).toBe(Math.floor(s.hpMax.value / 2))
   })
 })
+
+describe('Granted attack scaling', () => {
+  it('dice by class level and flat bonuses', () => {
+    const c = withFeature({ attacks: [{ id: 'gauntlet', name: 'Gauntlet', damage: { dice: '1d6', type: 'force' }, diceByLevel: { 5: '1d8' }, attackBonus: 1, damageBonus: 'int' }] })
+    const g = computeSheet(c, c24).attacks.find((a) => a.name === 'Gauntlet')!
+    expect(g.damageDice).toBe('1d8')
+    expect(g.attack.value).toBe(0 + 3 + 1)
+    expect(g.damageBonus).toBe(0 + 3)
+  })
+})

@@ -248,6 +248,8 @@ export const Choice = z.object({
   /** For kind "spell": only these schools (Fey Touched: divination, enchantment) / only Ritual spells (Ritual Caster). */
   spellSchools: z.array(z.string()).optional(),
   ritualOnly: z.boolean().optional(),
+  /** On a class: only for the starting class, not when multiclassing into it (tool choice). */
+  startingClassOnly: z.boolean().optional(),
   /** Either this choice or the named one is made (2014: a feat instead of the Ability Score Improvement). */
   alternativeTo: z.string().optional(),
 })
@@ -317,6 +319,11 @@ const base = {
         mastery: z.string().optional(),
         /** Ability for attack and damage; default Str (Dex with finesse / ranged). */
         ability: Ability.optional(),
+        /** Damage dice by level of the owning class (Armorer: { 3: '1d6', 15: '1d8' }); overrides damage.dice. */
+        diceByLevel: z.record(z.string(), z.string()).optional(),
+        /** Extra to hit / damage (magic +1 at a level…). */
+        attackBonus: Scaled.optional(),
+        damageBonus: Scaled.optional(),
         /** Class level / character level from which it's available. */
         minLevel: z.number().optional(),
         /** Only while this toggle / state is on (e.g. "Raging", "Pact weapon summoned"). */
