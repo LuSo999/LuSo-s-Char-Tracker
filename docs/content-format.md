@@ -171,7 +171,8 @@ Kouzla z předmětů jdou vždy jen zdarma z nábojů předmětu.
 - **item:**
   - `kind`: `weapon`, `armor`, `wondrous`, `ring`, `rod`, `staff`, `wand`, `potion`, `scroll`, `gear`, `ammunition`, `tool`, `pack`
   - společná pole: `magic`, `rarity`, `attunement`, `charges`, `consumable`, `weight`, `cost`
-  - weapon: `category`, `range`, `damage`, `properties`, `distance`, `mastery`
+  - weapon: `category`, `range`, `damage`, `versatileDamage`, `properties`, `distance`, `mastery`, `ammunition` (druh munice, např. `arrows`), `reload` (velikost zásobníku), `baseItem` (základní zbraň u magické), `propertyNotes` (vlastní vlastnost s poznámkou, např. `{ "misfire": "při hodu 1 se zasekne" }`, ukáže se u útoku)
+  - munice (gear): `ammoKind`, `bundle`, `recoverable` (jde po boji sebrat)
   - armor: `category`, `ac: { base, dex, maxDex }`, `strMin`, `stealthDisadvantage`
   - tag `unarmed` přenese bonusy předmětu na útok beze zbraně
 - **creature (stat block):** `size`, `creatureType`, `cr`, `ac`, `hp`, `hitDice`, `speed: { walk, fly, swim, climb, burrow }`, `scores`, `saves`, `skills`, `senses`, `passivePerception`, `languages`, `resistances`, `immunities`, `conditionImmunities`, `traits: [{ name, description }]`, `actions: [{ name, actionType, description, attack: { bonus, range }, damage: [{ dice, bonus, type }], save: { ability, dc } }]`.

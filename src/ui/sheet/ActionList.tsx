@@ -119,8 +119,8 @@ function attackRow(a: AttackRow, content: ContentIndex): Row {
   if (a.loaded) details.push(<span key="loaded">🔫 {a.loaded.rounds}/{a.loaded.size}</span>)
   if (a.notes.length) {
     details.push(
-      <span key="notes" className="min-w-0 flex-1 truncate text-xs text-muted" title={a.notes.map((n) => i18n.t(`attackNotes.${n}`)).join('\n')}>
-        ⓘ {a.notes.map((n) => i18n.t(`attackNotes.${n}`)).join(' · ')}
+      <span key="notes" className="min-w-0 flex-1 truncate text-xs text-muted" title={a.notes.map((n) => i18n.t(`attackNotes.${n}`, { defaultValue: n })).join('\n')}>
+        ⓘ {a.notes.map((n) => i18n.t(`attackNotes.${n}`, { defaultValue: n })).join(' · ')}
       </span>,
     )
   }

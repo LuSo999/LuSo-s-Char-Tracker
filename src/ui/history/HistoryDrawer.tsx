@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { HistoryGroup } from '../../engine/history'
 import { RuleRef } from '../rules/RuleRef'
@@ -33,6 +33,19 @@ export function HistoryDrawer({ onClose }: { onClose: () => void }) {
   const [search, setSearch] = useState('')
   const [note, setNote] = useState('')
 
+  // Searching or filtering looks through the whole history: older pages load on their own.
+  // One more page each time the previous one has arrived (not on every render).
+  const { hasMore } = store
+  const loadMore = useRef(store.loadMore)
+  useEffect(() => {
+    loadMore.current = store.loadMore
+  })
+  const filtering = !!search || !!type
+  const loaded = store.history.length
+  useEffect(() => {
+    if (filtering && hasMore) loadMore.current()
+  }, [filtering, hasMore, loaded])
+
   const time = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'short', timeStyle: 'short' })
   const undone = useMemo(() => new Set(store.history.filter((g) => g.undoes).map((g) => g.undoes)), [store.history])
   const types = useMemo(() => [...new Set(store.history.map((g) => g.groupType))].filter((x) => x !== 'session'), [store.history])
@@ -64,7 +77,13 @@ export function HistoryDrawer({ onClose }: { onClose: () => void }) {
     const head = (
       <span className="flex flex-wrap items-baseline justify-between gap-2">
         <span className={`${isSheet ? 'font-semibold text-accent' : 'font-medium'} ${wasUndone ? 'line-through opacity-60' : ''}`}>
-          {headItem ? itemText(t, headItem) : groupTitle(t, g)}
+          {headItem ? (
+            <RuleRef entity={headItem.entity ? content.get(headItem.entity) : undefined} content={content}>
+              {itemText(t, headItem)}
+            </RuleRef>
+          ) : (
+            groupTitle(t, g)
+          )}
         </span>
         <span className="text-xs text-muted">
           {wasUndone && <span className="mr-1 rounded bg-border px-1">{t('history.undone')}</span>}

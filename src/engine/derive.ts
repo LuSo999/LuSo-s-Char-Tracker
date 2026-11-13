@@ -814,6 +814,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const notes: string[] = []
     if (ranged || props.includes('thrown')) notes.push('longRange', 'adjacent')
     if (props.includes('loading')) notes.push('loading')
+    for (const [prop, text] of Object.entries(w?.propertyNotes ?? {})) notes.push(`${prop[0].toUpperCase()}${prop.slice(1)}: ${text}`)
     if (props.includes('heavy')) {
       if (char.edition === '2014' && sizeName === 'Small') notes.push('heavySmall')
       if (char.edition === '2024' && (ranged ? scores.dex.value : scores.str.value) < 13) notes.push('heavyWeak')

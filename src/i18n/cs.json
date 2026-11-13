@@ -194,7 +194,8 @@
     "clickToSet": "Klikni a napiš novou hodnotu",
     "amount": "Množství pro {{label}}",
     "add": "Přičíst k {{label}}",
-    "subtract": "Odečíst od {{label}}"
+    "subtract": "Odečíst od {{label}}",
+    "signHint": "Napiš +{{n}} nebo -{{n}}, nebo stiskni + / − vedle pole."
   },
   "turn": {
     "action": "Action",
@@ -274,7 +275,9 @@
       "longRestOne": "{{name}}: výměna kouzla za tento Long Rest je využitá."
     },
     "spellbookLevel": "Pro kouzlo {{level}}. úrovně není volné místo zdarma; jen zkopírováním.",
-    "schoolLimit": "Jen kouzla škol {{schools}}, kromě {{max}} z libovolné školy."
+    "schoolLimit": "Jen kouzla škol {{schools}}, kromě {{max}} z libovolné školy.",
+    "slotTooHigh": "Spell slot úrovně {{level}} tady nejde.",
+    "notEnoughXp": "Zkušenosti nemůžou klesnout pod 0."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -336,7 +339,9 @@
       "levelDown": "Odebrání levelu",
       "choices": "Volby",
       "shape": "Wild Shape",
-      "companion": "Společník"
+      "companion": "Společník",
+      "xp": "Zkušenosti",
+      "hitDice": "Hit Dice"
     },
     "items": {
       "damage": "Zranění {{amount}}: HP {{before}} → {{after}}",
@@ -428,7 +433,9 @@
       "companionAdd": "Nový společník: {{name}}",
       "companionRemove": "Společník odešel: {{name}}",
       "companionHp": "{{name}} HP",
-      "companionTempHp": "{{name}} dočasné HP"
+      "companionTempHp": "{{name}} dočasné HP",
+      "xp": "XP {{before}} → {{after}}",
+      "hitDiceLeft": "Zbývající Hit Dice d{{die}}"
     },
     "attackAction": "Attack action"
   },
@@ -789,7 +796,7 @@
     "subclass": "Subclass",
     "noSubclass": "Žádná subclass k dispozici (další v balíčcích pravidel).",
     "spells": "kouzla",
-    "picked": "vybráno {{count}} / {{of}}",
+    "picked": "vybráno {{count}} / {{of}} (z {{total}})",
     "points": "Body {{spent}} / {{budget}} (skóre nejvýš {{cap}})",
     "showBlocked": "Ukázat nedostupné ({{count}})",
     "noOptions": "Není z čeho vybírat.",
@@ -831,7 +838,8 @@
       "abilities": "Ability scores",
       "choices": "Skills a volby",
       "equipment": "Vybavení",
-      "details": "Jméno a souhrn"
+      "details": "Jméno a souhrn",
+      "race": "Race"
     },
     "edition": "Edice",
     "editionHint": {
@@ -918,8 +926,8 @@
       "feature": "Featura",
       "subclass": "Subclass",
       "feat": "Feat",
-      "species": "Rasa",
-      "subspecies": "Podrasa",
+      "species": "Species",
+      "subspecies": "Subspecies",
       "background": "Background",
       "item": "Předmět",
       "spell": "Kouzlo",
@@ -929,8 +937,8 @@
       "feature": "Featury",
       "subclass": "Subclassy",
       "feat": "Featy",
-      "species": "Rasy",
-      "subspecies": "Podrasy",
+      "species": "Species",
+      "subspecies": "Subspecies",
       "background": "Backgroundy",
       "item": "Předměty",
       "spell": "Kouzla",
@@ -959,10 +967,10 @@
     "newFeature": "Nová featura",
     "newTrait": "Nový trait",
     "action": {
-      "action": "Akce",
-      "bonusAction": "Bonusová akce",
-      "reaction": "Reakce",
-      "other": "Jiné / zdarma"
+      "action": "Action",
+      "bonusAction": "Bonus action",
+      "reaction": "Reaction",
+      "other": "Other / free"
     },
     "recharge": {
       "short": "Short nebo Long rest",
@@ -1085,7 +1093,10 @@
       "while": "Jen ve stavu",
       "strDex": "Str (Dex u finesse)",
       "moreInJson": "Volby, škálování po levelech a další možnosti: záložka JSON."
-    }
+    },
+    "deleteEntityConfirm": "Smazat {{name}} z tohoto balíčku?",
+    "notJson": "Soubor není platný JSON (chybí čárka, uvozovka nebo závorka?):",
+    "invalidPack": "Balíček neodpovídá formátu (docs/content-format.md). Co je špatně:"
   },
   "theme": {
     "title": "Vzhled",
@@ -1137,9 +1148,9 @@
   "statBlock": {
     "ac": "AC",
     "hp": "HP",
-    "speed": "Rychlost",
-    "saves": "Záchranné hody",
-    "skills": "Dovednosti",
+    "speed": "Speed",
+    "saves": "Saving throws",
+    "skills": "Skills",
     "senses": "Smysly",
     "languages": "Jazyky",
     "resistances": "Odolnosti",
@@ -1147,10 +1158,10 @@
     "conditionImmunities": "Imunita vůči stavům",
     "cr": "CR",
     "toHit": "na zásah",
-    "actions": "Akce",
-    "bonusActions": "Bonusové akce",
-    "reactions": "Reakce",
+    "actions": "Actions",
+    "bonusActions": "Bonus actions",
+    "reactions": "Reactions",
     "traits": "Vlastnosti",
-    "passive": "pasivní Vnímání"
+    "passive": "passive Perception"
   }
 }

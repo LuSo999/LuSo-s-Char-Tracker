@@ -61,7 +61,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main className="w-full flex-1">{children}</main>
-      <footer className="px-4 py-4 text-center text-xs text-muted">{t('attribution')}</footer>
+      <footer className="px-4 py-4 text-center text-xs text-muted">
+        {t('attribution')}{' '}
+        <a className="underline" href="https://www.dndbeyond.com/srd" target="_blank" rel="noreferrer">
+          SRD
+        </a>
+        {' · '}
+        <a className="underline" href="https://creativecommons.org/licenses/by/4.0/legalcode" target="_blank" rel="noreferrer">
+          CC-BY-4.0
+        </a>
+      </footer>
     </div>
   )
 }

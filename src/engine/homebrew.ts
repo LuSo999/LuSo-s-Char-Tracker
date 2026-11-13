@@ -50,23 +50,45 @@ export function newEntity(pack: Pack, type: HomebrewType, name: string, extra: R
 export function checkEntity(raw: unknown): { ok: true; entity: Entity } | { ok: false; errors: string[] } {
   const r = Entity.safeParse(raw)
   if (r.success) return { ok: true, entity: r.data }
-  // Union errors are long; show the most specific issues first.
-  const issues = r.error.issues.flatMap((i) => ('errors' in i && Array.isArray(i.errors) ? (i.errors as { path: PropertyKey[]; message: string }[][]).flat() : [i]))
+  // Union errors list every entity type; keep the branch of the declared type (the one without a "type" error).
+  type Issue = { path: PropertyKey[]; message: string }
+  const issues = r.error.issues.flatMap((i): Issue[] => {
+    if (!('errors' in i) || !Array.isArray(i.errors)) return [i]
+    const branches = i.errors as Issue[][]
+    // Item kinds are a union of their own ("kind"), so a mismatch there means another type too.
+    const own = branches.filter((b) => !b.some((x) => x.path.length === 1 && (x.path[0] === 'type' || x.path[0] === 'kind')))
+    return (own.length ? own.sort((a, b) => a.length - b.length)[0] : branches.flat()).map((x) => ({ ...x, path: [...i.path, ...x.path] }))
+  })
   const msgs = [...new Set(issues.map((i) => `${i.path.join('.') || '(entity)'}: ${i.message}`))]
   return { ok: false, errors: msgs.slice(0, 12) }
 }
 
 /** Read a pack file (export of this app or a hand-written JSON pack). */
-export function parsePackFile(text: string): { ok: true; pack: Pack } | { ok: false; errors: string[] } {
+export function parsePackFile(text: string): { ok: true; pack: Pack } | { ok: false; errors: string[]; notJson?: boolean } {
   let json: unknown
   try {
     json = JSON.parse(text)
   } catch (e) {
-    return { ok: false, errors: [`Not valid JSON: ${(e as Error).message}`] }
+    return { ok: false, errors: [`JSON: ${(e as Error).message}`], notJson: true }
   }
   const r = Pack.safeParse(json)
-  if (!r.success) return { ok: false, errors: r.error.issues.slice(0, 20).map((i) => `${i.path.join('.')}: ${i.message}`) }
-  return { ok: true, pack: r.data }
+  if (r.success) return { ok: true, pack: r.data }
+  // Per entity: "#3 Lantern Warden (subclass): level: expected number", from its own type's rules.
+  const raw = (json as { entities?: unknown[] }).entities
+  const errors: string[] = []
+  const badEntities = new Set<number>()
+  for (const i of r.error.issues) {
+    if (i.path[0] === 'entities' && typeof i.path[1] === 'number' && Array.isArray(raw)) {
+      const n = i.path[1]
+      if (badEntities.has(n)) continue
+      badEntities.add(n)
+      const e = raw[n] as { name?: string; type?: string } | undefined
+      const check = checkEntity(e)
+      const label = `#${n + 1} ${e?.name ?? '?'} (${e?.type ?? '?'})`
+      if (!check.ok) errors.push(...check.errors.map((m) => `${label}: ${m}`))
+    } else errors.push(`${i.path.join('.') || '(pack)'}: ${i.message}`)
+  }
+  return { ok: false, errors: errors.slice(0, 20) }
 }
 
 /**

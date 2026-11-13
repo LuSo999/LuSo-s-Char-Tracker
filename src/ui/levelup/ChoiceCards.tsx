@@ -111,13 +111,14 @@ function SpellsCard({ classId }: { classId: string }) {
 
 export function ChoiceCard({ p }: { p: PendingChoice }) {
   const { t } = useTranslation()
-  const { character, content } = useSheet()
+  const { character, content, sheet } = useSheet()
   const altChosen = p.alternative ? (character.choices[choiceKey(p.ae.grantKey, p.alternative.id)] ?? []) : []
   const [useAlt, setUseAlt] = useState(altChosen.length > 0)
   const active = useAlt && p.alternative ? p.alternative : p.choice
   const count = active === p.choice ? p.count : 1
   const chosen = character.choices[choiceKey(p.ae.grantKey, active.id)] ?? []
   const done = isComplete(active, chosen, count)
+  const total = active.kind === 'abilityPoints' ? 0 : choiceOptions(character, content, sheet, p.ae, active).filter((o) => !o.blocked).length
   return (
     <div className={`${card} ${done ? 'border-border' : 'border-accent/60 bg-accent/5'}`}>
       <Header
@@ -141,7 +142,7 @@ export function ChoiceCard({ p }: { p: PendingChoice }) {
           </span>
         )}
         {active.kind !== 'abilityPoints' && (
-          <span className="ml-auto text-xs text-muted">{t('levelUp.picked', { count: chosen.length, of: count })}</span>
+          <span className="ml-auto text-xs text-muted">{t('levelUp.picked', { count: chosen.length, of: count, total })}</span>
         )}
       </Header>
       {active.kind === 'abilityPoints' ? <AbilityPoints p={p} choice={active} /> : <Options p={p} choice={active} count={count} chosen={chosen} />}

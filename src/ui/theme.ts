@@ -34,7 +34,7 @@ export function applyTheme(id: string | undefined, frames = false) {
   const theme = themeById(id)
   root.dataset.mode = theme ? theme.mode : systemDark() ? 'dark' : 'light'
   for (const v of Object.values(vars)) root.style.removeProperty(v)
-  for (const v of ['--app-bg', '--card-texture', '--card-opacity', '--frame', '--frame-corners', 'color-scheme']) root.style.removeProperty(v)
+  for (const v of ['--app-bg', '--card-texture', '--card-opacity', '--frame', '--frame-corners', '--radius-card', '--font-heading', 'color-scheme']) root.style.removeProperty(v)
   delete root.dataset.appTheme
   delete root.dataset.textured
   delete root.dataset.frames
@@ -43,6 +43,7 @@ export function applyTheme(id: string | undefined, frames = false) {
   for (const [k, v] of Object.entries(theme.colors)) root.style.setProperty(vars[k as keyof Theme['colors']], v)
   root.style.setProperty('color-scheme', theme.mode)
   if (theme.radius) root.style.setProperty('--radius-card', theme.radius)
+  if (theme.fontHeading) root.style.setProperty('--font-heading', theme.fontHeading)
   if (theme.background) root.style.setProperty('--app-bg', `url("${theme.background}")`)
   if (theme.texture) {
     root.style.setProperty('--card-texture', `url("${theme.texture}")`)

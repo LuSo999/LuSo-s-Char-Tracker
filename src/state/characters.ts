@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, getDocs, limit, onSnapshot, orderBy, query, serverTimestamp, writeBatch } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import { Character, type CharacterInput } from '../engine/character'
@@ -79,5 +79,14 @@ export function parseCharacterFile(text: string): { ok: true; value: z.infer<typ
 }
 
 export async function deleteCharacter(uid: string, id: string) {
+  // Its history subcollection goes too (Firestore doesn't delete subcollections with the document).
+  const history = collection(doc(charactersCol(uid), id), 'history')
+  for (;;) {
+    const page = await getDocs(query(history, limit(400)))
+    if (page.empty) break
+    const batch = writeBatch(db!)
+    for (const d of page.docs) batch.delete(d.ref)
+    await batch.commit()
+  }
   await deleteDoc(doc(charactersCol(uid), id))
 }

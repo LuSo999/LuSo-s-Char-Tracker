@@ -194,7 +194,8 @@
     "clickToSet": "Click to type a new value",
     "amount": "Amount for {{label}}",
     "add": "Add to {{label}}",
-    "subtract": "Subtract from {{label}}"
+    "subtract": "Subtract from {{label}}",
+    "signHint": "Type +{{n}} or -{{n}}, or press + / − next to the field."
   },
   "turn": {
     "action": "Action",
@@ -274,7 +275,9 @@
       "longRestOne": "{{name}}: the spell replacement for this Long Rest is used up."
     },
     "spellbookLevel": "No free place for a level {{level}} spell; only by copying.",
-    "schoolLimit": "Only {{schools}} spells, except {{max}} from any school."
+    "schoolLimit": "Only {{schools}} spells, except {{max}} from any school.",
+    "slotTooHigh": "A level {{level}} spell slot isn’t allowed here.",
+    "notEnoughXp": "Experience points can’t go below 0."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -336,7 +339,9 @@
       "levelDown": "Level removed",
       "choices": "Choices",
       "shape": "Wild Shape",
-      "companion": "Companion"
+      "companion": "Companion",
+      "xp": "Experience",
+      "hitDice": "Hit Dice"
     },
     "items": {
       "damage": "Took {{amount}} damage: HP {{before}} → {{after}}",
@@ -428,7 +433,9 @@
       "companionAdd": "New companion: {{name}}",
       "companionRemove": "Companion gone: {{name}}",
       "companionHp": "{{name}} HP",
-      "companionTempHp": "{{name}} temporary HP"
+      "companionTempHp": "{{name}} temporary HP",
+      "xp": "XP {{before}} → {{after}}",
+      "hitDiceLeft": "Hit Dice d{{die}} left"
     },
     "attackAction": "Attack action"
   },
@@ -789,7 +796,7 @@
     "subclass": "Subclass",
     "noSubclass": "No subclass available (more in rule packs).",
     "spells": "spells",
-    "picked": "{{count}} / {{of}} picked",
+    "picked": "{{count}} / {{of}} picked (of {{total}})",
     "points": "Points {{spent}} / {{budget}} (score at most {{cap}})",
     "showBlocked": "Show unavailable ({{count}})",
     "noOptions": "Nothing to choose from.",
@@ -831,7 +838,8 @@
       "abilities": "Ability scores",
       "choices": "Skills & choices",
       "equipment": "Equipment",
-      "details": "Name & summary"
+      "details": "Name & summary",
+      "race": "Race"
     },
     "edition": "Edition",
     "editionHint": {
@@ -1085,7 +1093,10 @@
       "while": "Only while (state)",
       "strDex": "Str (Dex if finesse)",
       "moreInJson": "Choices, scaling by level and other options: JSON tab."
-    }
+    },
+    "deleteEntityConfirm": "Delete {{name}} from this pack?",
+    "notJson": "The file isn’t valid JSON (a missing comma, quote or bracket?):",
+    "invalidPack": "The pack doesn’t match the format (docs/content-format.md). What’s wrong:"
   },
   "theme": {
     "title": "Theme",

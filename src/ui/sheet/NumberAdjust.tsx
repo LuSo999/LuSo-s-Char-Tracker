@@ -1,3 +1,4 @@
+import { toast } from '../toast'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -86,7 +87,8 @@ export function NumberAdjust({
           onChange={(e) => setAmount(e.target.value.replace(/[^\d+-]/g, ''))}
           onKeyDown={(e) => {
             if (e.key !== 'Enter') return
-            if (!applySigned() && amount) setAmount('')
+            // A bare number is ambiguous: keep it and say how to use it (+3 / −3, or the buttons).
+            if (!applySigned() && amount) toast(t('adjust.signHint', { n: amount }), { key: 'adjust-hint' })
           }}
         />
         <div className="flex flex-col">

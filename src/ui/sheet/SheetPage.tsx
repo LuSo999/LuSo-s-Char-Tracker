@@ -1,3 +1,5 @@
+import { adjustXp } from '../../engine/actions'
+import { NumberAdjust } from './NumberAdjust'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useParams } from 'react-router'
@@ -121,6 +123,7 @@ function TopBar({
   onChoices: () => void
 }) {
   const { t } = useTranslation()
+  const run = useRun()
   const { character, content, store, sheet } = useSheet()
   const pending = useMemo(() => pendingChoices(character, content, sheet).length, [character, content, sheet])
   const last = undoable(store.history)
@@ -160,6 +163,10 @@ function TopBar({
       </div>
       <span className="rounded-full border border-accent px-2.5 py-0.5 text-xs font-semibold text-accent" title={t('sheet.editionHint')}>
         {character.edition === '2014' ? '5e (2014)' : '5.5e (2024)'}
+      </span>
+      <span className="hidden items-center gap-1 text-sm text-muted sm:flex">
+        XP
+        <NumberAdjust label="XP" value={character.xp} valueClassName="font-semibold text-text" onSet={(v) => void run(adjustXp(character, v - character.xp))} onDelta={(d) => void run(adjustXp(character, d))} />
       </span>
       <div className="ml-auto flex flex-wrap gap-1 sm:gap-1.5">
         <button className={button} onClick={() => onRest('short')}>
@@ -232,6 +239,8 @@ function ThemeTarget() {
 /** Phone: the less frequent top bar buttons (Level up, Edit) behind ⋯. */
 function MoreMenu({ className, onLevelUp }: { className: string; onLevelUp: () => void }) {
   const { t } = useTranslation()
+  const { character } = useSheet()
+  const run = useRun()
   const [open, setOpen] = useState(false)
   const item = 'block w-full rounded px-3 py-2 text-left text-sm hover:bg-bg'
   return (
@@ -247,6 +256,10 @@ function MoreMenu({ className, onLevelUp }: { className: string; onLevelUp: () =
               ⬆️ {t('sheet.buttons.levelUp')}
             </button>
             <EditToggle className={`${item} border-0`} />
+            <div className="flex items-center gap-1 px-3 py-2 text-sm" onClick={(e) => e.stopPropagation()}>
+              XP
+              <NumberAdjust label="XP" value={character.xp} valueClassName="font-semibold" onSet={(v) => void run(adjustXp(character, v - character.xp))} onDelta={(d) => void run(adjustXp(character, d))} />
+            </div>
           </div>
         </>
       )}

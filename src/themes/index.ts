@@ -18,6 +18,8 @@ export const ThemeDef = z.object({
   /** How much of the card color covers the texture (0–1). */
   cardOpacity: z.number().default(0.88),
   radius: z.string().optional(),
+  /** Heading font stack (CSS font-family); the default is Roboto Condensed. */
+  fontHeading: z.string().optional(),
 })
 export type Theme = z.infer<typeof ThemeDef> & { id: string; background?: string; texture?: string; frame?: string; corners?: string }
 

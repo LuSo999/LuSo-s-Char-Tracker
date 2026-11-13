@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ContentIndex } from '../../content'
 import type { Entity, RechargeOn } from '../../content/schema'
-import { setExhaustion, setResourceRemaining, toggleCondition, toggleEffect } from '../../engine/actions'
+import { setExhaustion, setHitDiceRemaining, setResourceRemaining, toggleCondition, toggleEffect } from '../../engine/actions'
 import type { ActiveEntity } from '../../engine/derive'
 import { RuleRef } from '../rules/RuleRef'
 import { Dots, Panel } from './common'
@@ -92,6 +92,21 @@ export function ResourcesPanel() {
             </li>
           )
         })}
+        {/* Hit Point Dice: spent on a Short Rest, half (2014) or all (2024) back on a Long Rest. */}
+        {sheet.hitDice.map((p) => (
+          <li key={`hd${p.die}`} className="flex items-center justify-between gap-2">
+            <span className="min-w-0">
+              <Term id="rule-hit-point-dice">
+                <span className="text-sm font-semibold">Hit Dice</span>
+              </Term>
+              <span className="ml-1 text-sm text-muted">d{p.die}</span>
+              <span className="ml-1.5 text-xs text-muted">
+                ↻ <Term id="rule-long-rest">{rechargeLabel.longRest}</Term>
+              </span>
+            </span>
+            <Dots remaining={p.total - p.used} max={p.total} label={`Hit Dice d${p.die}`} onSet={(n) => void run(setHitDiceRemaining(character, sheet, p.die, n))} />
+          </li>
+        ))}
       </ul>
     </Panel>
   )

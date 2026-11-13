@@ -139,6 +139,24 @@ export function setHp(char: Character, sheet: Sheet, value: number): ActionResul
   return ok({ ...char, hp: { ...char.hp, current }, deathSaves }, 'setHp', items)
 }
 
+/** Hit Point Dice left of one die size (spent ones come back on a Long Rest). */
+export function setHitDiceRemaining(char: Character, sheet: Sheet, die: number, remaining: number): ActionResult {
+  const pool = sheet.hitDice.find((p) => p.die === die)
+  if (!pool) return { ok: false, error: 'noChange' }
+  const left = Math.max(0, Math.min(pool.total, remaining))
+  const before = pool.total - pool.used
+  if (left === before) return { ok: false, error: 'noChange' }
+  return ok({ ...char, hitDiceUsed: { ...char.hitDiceUsed, [String(die)]: pool.total - left } }, 'hitDice', [{ type: 'hitDiceLeft', params: { die }, before, after: left }])
+}
+
+/** Experience points: never below 0. */
+export function adjustXp(char: Character, delta: number): ActionResult {
+  const after = char.xp + Math.round(delta)
+  if (after < 0) return { ok: false, error: 'notEnoughXp' }
+  if (after === char.xp) return { ok: false, error: 'noChange' }
+  return ok({ ...char, xp: after }, 'xp', [{ type: 'xp', before: char.xp, after }])
+}
+
 /** Temporary HP don't stack: the new value replaces the old one. */
 export function setTempHp(char: Character, value: number): ActionResult {
   const temp = Math.max(0, Math.round(value))

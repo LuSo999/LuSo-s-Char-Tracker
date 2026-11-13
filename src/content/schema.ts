@@ -633,6 +633,8 @@ export const Weapon = z.object({
   versatileDamage: z.string().optional(),
   /** Weapon properties: ammunition, finesse, heavy, light, loading, reach, thrown, two-handed, versatile, reload… */
   properties: z.array(z.string()).default([]),
+  /** What a property the app doesn't know does (homebrew "misfire", "burst fire"): shown as a note on the attack. */
+  propertyNotes: z.record(z.string(), z.string()).optional(),
   /** Normal / long range in feet (ranged weapons, or throw range for thrown). */
   distance: z.object({ normal: z.number(), long: z.number().optional() }).optional(),
   /** 2024 weapon mastery property id. */

@@ -1,6 +1,9 @@
 // Regression tests for rules bugs found in the full review (one test per bug).
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { heal, setHp, takeDamage, toggleEffect, type ActionResult } from './actions'
+import { ContentIndex } from '../content'
+import { Pack } from '../content/schema'
+import { adjustXp, heal, setHitDiceRemaining, setHp, takeDamage, toggleEffect, type ActionResult } from './actions'
 import { Character, type CharacterInput } from './character'
 import { computeSheet } from './derive'
 import { makeCharacter, srd } from './fixtures'
@@ -113,5 +116,26 @@ describe('Review fixes', () => {
     const cd = computeSheet(c, c24).resources.filter((r) => r.resource.id === 'channel-divinity')
     expect(cd).toHaveLength(1)
     expect(cd[0].max).toBe(3)
+  })
+
+  it('XP: adjust up and down, never below 0', () => {
+    const c = hero('2024', [{ classId: 'fighter', level: 1 }])
+    const up = okR(adjustXp(c, 300))
+    expect(up.xp).toBe(300)
+    expect(adjustXp(up, -400)).toMatchObject({ ok: false, error: 'notEnoughXp' })
+  })
+
+  it('Hit Dice left can be set from the resources panel', () => {
+    const c = hero('2024', [{ classId: 'fighter', level: 3 }])
+    const after = okR(setHitDiceRemaining(c, computeSheet(c, c24), 10, 1))
+    expect(after.hitDiceUsed['10']).toBe(2)
+  })
+
+  it('a homebrew weapon property with a note shows on the attack', () => {
+    const srdPack = Pack.parse(JSON.parse(readFileSync('src/data/srd/2024.json', 'utf8')))
+    const blaster = { ...c24.getTyped('longbow', 'item')!, id: 'blaster', name: 'Blaster', propertyNotes: { misfire: 'on a 1 it jams' } }
+    const content = new ContentIndex('2024', [srdPack, Pack.parse({ id: 'hb', name: 'HB', edition: '2024', book: 'homebrew:hb', entities: [blaster] })])
+    const sheet = computeSheet(hero('2024', [{ classId: 'fighter', level: 1 }], { books: ['homebrew:hb'], inventory: [{ uid: 'b', itemId: 'blaster', quantity: 1, equipped: true }] }), content)
+    expect(sheet.attacks.find((a) => a.weapon?.id === 'blaster')?.notes).toContain('Misfire: on a 1 it jams')
   })
 })

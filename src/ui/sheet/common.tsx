@@ -1,3 +1,5 @@
+import { NumberAdjust } from './NumberAdjust'
+
 export function Panel({ title, icon, children, className = '' }: { title?: string; icon?: string; children: React.ReactNode; className?: string }) {
   return (
     <section className={`framed rounded-card border border-border bg-card p-3 shadow-sm ${className}`}>
@@ -37,19 +39,11 @@ export function Dots({
   slot?: boolean
 }) {
   if (max > 10 && !slot) {
+    // Large pools: the number with the usual editor (type a value, or ± an amount).
     return (
       <span className="inline-flex items-center gap-1 tabular-nums" aria-label={label}>
-        {onSet && (
-          <button className="rounded border border-border px-1 leading-4" aria-label="−1" onClick={() => onSet(remaining - 1)}>
-            −
-          </button>
-        )}
-        {remaining}/{max}
-        {onSet && (
-          <button className="rounded border border-border px-1 leading-4" aria-label="+1" onClick={() => onSet(remaining + 1)}>
-            +
-          </button>
-        )}
+        {onSet ? <NumberAdjust label={label ?? 'uses'} value={remaining} onSet={(v) => onSet(Math.max(0, Math.min(max, v)))} onDelta={(d) => onSet(Math.max(0, Math.min(max, remaining + d)))} /> : remaining}
+        <span className="text-muted">/ {max}</span>
       </span>
     )
   }

@@ -29,7 +29,7 @@ export function HomebrewPage({ uid }: { uid: string }) {
 
   async function importFile(f: File) {
     const r = parsePackFile(await f.text())
-    if (!r.ok) return setErrors(r.errors)
+    if (!r.ok) return setErrors(r.notJson ? [t('homebrew.notJson'), ...r.errors] : [t('homebrew.invalidPack'), ...r.errors])
     setErrors(undefined)
     let pack = r.pack
     // Homebrew packs keep their own book id; a pack you already have is imported as a copy (or replaces it).

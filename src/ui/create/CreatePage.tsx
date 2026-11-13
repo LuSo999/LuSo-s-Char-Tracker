@@ -176,7 +176,7 @@ function Wizard({
               disabled={i > index && !STEPS.slice(0, i).every((x) => valid[x])}
               onClick={() => setStep(s)}
             >
-              {i + 1}. {t(`create.steps.${s}`)}
+              {i + 1}. {t(`create.steps.${s === 'species' && edition === '2014' ? 'race' : s}`)}
             </button>
           </li>
         ))}

@@ -2,7 +2,7 @@
 
 Každý vzhled je složka v `src/themes/<id>/`:
 
-- `theme.json`: název, `mode` (`light` / `dark`), barvy (`bg`, `card`, `text`, `muted`, `accent`, `accentText`, `border`, `danger`), `cardOpacity` (jak moc barva karty kryje texturu, výchozí 0.88), volitelně `radius`.
+- `theme.json`: název, `mode` (`light` / `dark`), barvy (`bg`, `card`, `text`, `muted`, `accent`, `accentText`, `border`, `danger`), `cardOpacity` (jak moc barva karty kryje texturu, výchozí 0.88), volitelně `radius` (zaoblení karet) a `fontHeading` (font nadpisů, CSS font-family; musí být načtený, např. z Google Fonts v `index.html`).
 - `background.webp`: pozadí pod celou appkou (16:9, kolem 1920 px). Nepovinné.
 - `texture.webp`: textura karet a panelů (čtverec, kolem 512 px, opakuje se). Nepovinná.
 - `frame.svg` a `corners.svg`: zdobené rámečky (zapínají se zaškrtávátkem pod výběrem vzhledu). SVG 120×120 rozdělené na 9 dílů po 40: `frame.svg` kreslí okraje (horní díl x 40–80, opakuje se), `corners.svg` rohy (díl 0–40, zobrazí se větší a trochu přesahují). Nepovinné. Rámečky stávajících vzhledů generuje `python3 scripts/theme-frames.py src/themes` z barev v `theme.json`.
