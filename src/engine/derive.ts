@@ -282,6 +282,8 @@ type EffectContext = {
   anyAttack?: boolean
   /** No weapon and no shield equipped. */
   emptyHands?: boolean
+  /** Weapons a feature makes Monk weapons (Kensei). */
+  extraMonkWeapons?: Set<string>
 }
 
 /**
@@ -290,6 +292,8 @@ type EffectContext = {
  * and Martial melee weapons with the Light property.
  */
 const bgTools = (content: ContentIndex, char: Character) => content.getTyped(char.backgroundId, 'background')?.tools ?? []
+
+const isExtraMonk = (w: Weapon | undefined, extra: Set<string> | undefined) => !!w && !!extra && (extra.has(w.id) || (!!w.baseItem && extra.has(w.baseItem)))
 
 export function isMonkWeapon(w: Weapon | undefined, edition: Edition): boolean {
   if (!w || w.range !== 'melee') return false
@@ -335,7 +339,7 @@ function whenHolds(w: When, ae: ActiveEntity, ctx: EffectContext, toggles: Set<s
     case 'notHeavyArmor':
       return ctx.armor?.category !== 'heavy'
     case 'martialArts':
-      return !!ctx.unarmed || isMonkWeapon(ctx.weapon, ctx.edition)
+      return !!ctx.unarmed || isMonkWeapon(ctx.weapon, ctx.edition) || isExtraMonk(ctx.weapon, ctx.extraMonkWeapons)
     case 'heavyWeapon':
       return !!ctx.weapon?.properties?.includes('heavy')
     case 'thrownWeapon':
@@ -369,7 +373,17 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const bodyArmor = bodyArmorEntry?.armor
   const shield = equippedItems.find((r) => r.armor?.category === 'shield')?.armor
   const emptyHands = !shield && !equippedItems.some((r) => r.weapon)
-  const baseCtx: EffectContext = { armor: bodyArmor, shield: shield !== undefined, bloodied: false, edition: char.edition, emptyHands }
+  // "monkWeapon:<weapon id>" (Kensei Weapons, usually "monkWeapon:@weapons").
+  const extraMonkWeapons = new Set(
+    active.flatMap((ae) =>
+      ae.entity.effects.flatMap((e) => {
+        const m = /^monkWeapon:(.+)$/.exec(e.target)
+        if (!m) return []
+        return m[1].startsWith('@') ? selections(char, ae, m[1].slice(1)) : [m[1]]
+      }),
+    ),
+  )
+  const baseCtx: EffectContext = { armor: bodyArmor, shield: shield !== undefined, bloodied: false, edition: char.edition, emptyHands, extraMonkWeapons }
 
   // Effects keyed by the entity they come from, so formulas use the right level.
   // "@<choice>" in a target stands for each value picked in that choice of the entity
@@ -700,7 +714,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   function attackRow(key: string, name: string, w: Weapon | undefined, entry: InventoryEntry | undefined, natural?: { ability?: Ability; attackBonus?: number; damageBonus?: number }): AttackRow {
     const props = w?.properties ?? []
     const ranged = w?.range === 'ranged'
-    const monk = martialArts && (!w || isMonkWeapon(w, char.edition))
+    const monk = martialArts && (!w || isMonkWeapon(w, char.edition) || isExtraMonk(w, extraMonkWeapons))
     let ability: Ability = natural?.ability ?? (ranged ? 'dex' : (props.includes('finesse') || monk) && mods.dex > mods.str ? 'dex' : 'str')
     // "attackAbility:<ability>": that ability may be used instead when it's higher (Hex Warrior: Cha; Bladesong: Int).
     if (!natural?.ability) {
