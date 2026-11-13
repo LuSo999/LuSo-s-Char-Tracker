@@ -16,8 +16,8 @@ const ratio = (a: string, b: string) => {
 }
 
 describe('Themes', () => {
-  it('Light, Dark and the ten illustrated themes exist', () => {
-    expect(themes.map((t) => t.id)).toEqual(expect.arrayContaining(['light', 'dark', 'scroll', 'holy', 'ancient-temple', 'battlefield', 'forest', 'kraken', 'magic', 'music', 'ship', 'smithy']))
+  it('Light, Dark and the eleven illustrated themes exist', () => {
+    expect(themes.map((t) => t.id)).toEqual(expect.arrayContaining(['light', 'dark', 'scroll', 'holy', 'ancient-temple', 'battlefield', 'forest', 'kraken', 'magic', 'music', 'ship', 'smithy', 'dark-fey-forest']))
     for (const t of themes.filter((x) => !['light', 'dark'].includes(x.id))) {
       expect(t.background, t.id).toBeTruthy()
       expect(t.texture, t.id).toBeTruthy()

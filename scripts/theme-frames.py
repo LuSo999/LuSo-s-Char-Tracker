@@ -46,7 +46,7 @@ def leaf(x, y, ang, s, fill, vein):
 
 
 T = {k: json.load(open(f'{root}/{k}/theme.json'))['colors'] for k in
-     ['magic', 'scroll', 'battlefield', 'forest', 'holy', 'kraken', 'music', 'ship', 'smithy', 'ancient-temple']}
+     ['magic', 'scroll', 'battlefield', 'forest', 'holy', 'kraken', 'music', 'ship', 'smithy', 'ancient-temple', 'dark-fey-forest']}
 out = {}
 
 # ---------------- Magic: rune circles with a hexagram and a glowing star; a glowing rune band.
@@ -313,6 +313,67 @@ out['ancient-temple'] = frame(
     + f'<path d="{mean}" fill="none" stroke="{a}" stroke-width="1.4"/>'
     + f'<line x1="40" y1="27.6" x2="80" y2="27.6" stroke="{a}" stroke-width="0.4"/>',
     tdefs)
+
+# ---------------- Dark fey forest: gnarled thorny roots, glowing violet toadstools, nightshade blossoms
+# and green will-o'-wisps; a thorny bramble along the (long) edges.
+c = T['dark-fey-forest']; a, card = c['accent'], c['card']
+droot, rootHi, thorn = '#5a3a78', '#b892d6', '#c23a62'
+ddefs = (rad('dc', [(0, '#fbe0ff', 1), (0.45, '#c46ae6', 1), (1, '#4e1868', 1)]) + lin('ds', [(0, '#e6d8f2', 1), (1, '#7d6699', 1)], 1, 0)
+         + rad('dg', [(0, a, 0.5), (0.5, '#a24fd0', 0.18), (1, '#a24fd0', 0)]) + rad('dn', [(0, '#ffb3dc', 1), (0.5, '#c2408a', 1), (1, '#4a1040', 1)])
+         + rad('dw', [(0, '#f4ffd0', 1), (0.35, '#b8f07a', 0.8), (1, '#7ad040', 0)]) + lin('dr', [(0, '#8a62aa', 1), (0.5, '#5a3a78', 1), (1, '#36214a', 1)], 1, 1))
+def bez(p0, p1, p2, p3, t):
+    u = 1 - t
+    return tuple(u ** 3 * p0[i] + 3 * u * u * t * p1[i] + 3 * u * t * t * p2[i] + t ** 3 * p3[i] for i in (0, 1))
+def thorns(seg, ts, side=1, size=2.2):
+    out_ = ''
+    for t in ts:
+        x, y = bez(*seg, t); x2, y2 = bez(*seg, min(t + 0.02, 1)); dx, dy = x2 - x, y2 - y; n = math.hypot(dx, dy) or 1
+        dx, dy = dx / n, dy / n; nx, ny = -dy * side, dx * side
+        tip = (x + nx * size + dx * size * 0.5, y + ny * size + dy * size * 0.5)
+        out_ += f'<path d="M{x - dx * 0.9:.2f} {y - dy * 0.9:.2f} L{tip[0]:.2f} {tip[1]:.2f} L{x + dx * 0.9:.2f} {y + dy * 0.9:.2f} Z" fill="{thorn}"/>'
+        side = -side
+    return out_
+def mush(x, y, w, h, ang=0, spots=3):
+    sp = ''.join(f'<circle cx="{px:.2f}" cy="{py:.2f}" r="{w * 0.06:.2f}" fill="#fbe9ff" opacity="0.85"/>' for px, py in [(-w * 0.2, -h * 0.82), (w * 0.15, -h * 0.9), (w * 0.3, -h * 0.66), (-w * 0.33, -h * 0.62)][:spots])
+    gills = ''.join(f'<line x1="{gx:.2f}" y1="{-h * 0.5:.2f}" x2="{gx * 0.4:.2f}" y2="{-h * 0.44:.2f}" stroke="#7a3a98" stroke-width="0.25"/>' for gx in [w * k / 10 for k in (-4, -2, 0, 2, 4)])
+    return (f'<g transform="translate({x} {y}) rotate({ang})">'
+            f'<ellipse cx="0" cy="{-h * 0.7:.2f}" rx="{w * 0.9:.2f}" ry="{h * 0.65:.2f}" fill="url(#dg)"/>'
+            f'<path d="M{-w * 0.13:.2f} 0 C{-w * 0.16:.2f} {-h * 0.2:.2f} {-w * 0.08:.2f} {-h * 0.4:.2f} {-w * 0.1:.2f} {-h * 0.52:.2f} H{w * 0.1:.2f} C{w * 0.08:.2f} {-h * 0.4:.2f} {w * 0.16:.2f} {-h * 0.2:.2f} {w * 0.13:.2f} 0 Z" fill="url(#ds)" stroke="#4e3a66" stroke-width="0.25"/>'
+            f'<path d="M{-w / 2:.2f} {-h * 0.5:.2f} C{-w / 2:.2f} {-h * 1.12:.2f} {w / 2:.2f} {-h * 1.12:.2f} {w / 2:.2f} {-h * 0.5:.2f} Q0 {-h * 0.4:.2f} {-w / 2:.2f} {-h * 0.5:.2f} Z" fill="url(#dc)" stroke="#3a1050" stroke-width="0.35"/>'
+            f'{gills}{sp}<path d="M{-w * 0.3:.2f} {-h * 0.78:.2f} C{-w * 0.2:.2f} {-h * 0.92:.2f} {-w * 0.05:.2f} {-h * 0.96:.2f} {w * 0.05:.2f} {-h * 0.95:.2f}" fill="none" stroke="#fff" stroke-width="0.35" opacity="0.6"/></g>')
+def shade(x, y, r, rotate=0):
+    p = f'M0 0 C{-r * 0.45:.2f} {-r * 0.3:.2f} {-r * 0.35:.2f} {-r * 0.8:.2f} 0 {-r:.2f} C{r * 0.35:.2f} {-r * 0.8:.2f} {r * 0.45:.2f} {-r * 0.3:.2f} 0 0 Z'
+    petals = ''.join(f'<path d="{p}" transform="rotate({rotate + i * 72})" fill="url(#dn)" stroke="#3a0a30" stroke-width="0.3"/>' for i in range(5))
+    veins = ''.join(f'<path d="M0 {-r * 0.2:.2f} V{-r * 0.75:.2f}" transform="rotate({rotate + i * 72})" stroke="#ffd0ea" stroke-width="0.25" opacity="0.6"/>' for i in range(5))
+    return f'<g transform="translate({x} {y})">{petals}{veins}<polygon points="{star(0, 0, r * 0.32, r * 0.14, 5, rotate - 90)}" fill="#e8f080"/><circle r="{r * 0.1:.2f}" fill="#5a6a10"/></g>'
+wisp = lambda x, y, r: f'<circle cx="{x}" cy="{y}" r="{r * 2.6}" fill="url(#dw)" opacity="0.7"/><circle cx="{x}" cy="{y}" r="{r * 0.55}" fill="#f8ffe0"/>'
+r1 = ((40, 9), (26, 8), (12, 9), (9, 18)); r2 = ((9, 18), (6, 26), (8, 34), (9, 40))
+dff_root = f'M40 9 C26 8 12 9 9 18 C6 26 8 34 9 40'
+out['dark-fey-forest'] = frame(
+    f'<circle cx="16" cy="16" r="19" fill="url(#dg)"/>'
+    # gnarled root with rootlets and thorns
+    f'<path d="{dff_root}" fill="none" stroke="url(#dr)" stroke-width="4" stroke-linecap="round"/>'
+    f'<path d="{dff_root}" fill="none" stroke="{rootHi}" stroke-width="0.6" transform="translate(-0.8 -0.8)" opacity="0.8"/>'
+    f'<g fill="none" stroke="{droot}" stroke-width="0.9" stroke-linecap="round"><path d="M30 8.6 C29 5 31 2.5 33.5 2"/><path d="M8.6 30 C5 29 2.5 31 2 33.5"/>'
+    f'<path d="M14 9.5 C11 6.5 7 6 4 7.5"/><path d="M9.5 14 C6.5 11 6 7 7.5 4" stroke-width="0.6"/><path d="M33.5 2 C35.5 1.8 37 3 37.5 4.5 M2 33.5 C1.8 35.5 3 37 4.5 37.5" stroke-width="0.5"/></g>'
+    + thorns(r1, [0.12, 0.3, 0.5], 1) + thorns(r2, [0.45, 0.65, 0.88], 1)
+    # toadstools growing out of the root, toward the corner
+    + mush(31, 10.5, 9, 12, -20, 2) + mush(10.5, 31, 9, 12, -70, 2) + mush(23, 23, 17, 23, -45, 4)
+    + shade(19, 4.2, 4, 10) + shade(4.2, 19, 4, 40)
+    + wisp(36, 20, 1.1) + wisp(20, 36, 0.9) + wisp(3, 4, 0.9),
+    # bramble: two twisted thorny strands, a nightshade blossom, small toadstools, wisps
+    f'<path d="M40 20 C73 12 107 12 140 20 C173 28 207 28 240 20" fill="none" stroke="url(#dr)" stroke-width="3"/>'
+    f'<path d="M40 20 C73 12 107 12 140 20 C173 28 207 28 240 20" fill="none" stroke="{rootHi}" stroke-width="0.45" transform="translate(0 -0.8)"/>'
+    f'<path d="M40 20 C73 27 107 27 140 20 C173 13 207 13 240 20" fill="none" stroke="#7a2a5e" stroke-width="1.6"/>'
+    + thorns(((40, 20), (73, 12), (107, 12), (140, 20)), [0.15, 0.35, 0.62, 0.85], 1, 3)
+    + thorns(((140, 20), (173, 28), (207, 28), (240, 20)), [0.15, 0.38, 0.65, 0.85], -1, 3)
+    + thorns(((40, 20), (73, 27), (107, 27), (140, 20)), [0.25, 0.72], -1, 1.6)
+    + thorns(((140, 20), (173, 13), (207, 13), (240, 20)), [0.28, 0.75], 1, 1.6)
+    + f'<g fill="none" stroke="{droot}" stroke-width="0.6" stroke-linecap="round"><path d="M104 14.5 C106 10.5 110 9.5 112 11.5"/><path d="M176 25.5 C174 29.5 170 30.5 168 28.5"/></g>'
+    + mush(84, 15, 11, 14, -6, 3) + mush(94, 14, 6.5, 9, 10, 1) + mush(196, 25, 9, 12, 180, 2)
+    + shade(140, 20, 11.5, 8) + shade(62, 15.6, 5, 30) + shade(218, 24.4, 5, 0)
+    + wisp(122, 27, 1) + wisp(160, 12, 1) + wisp(50, 12, 0.8) + wisp(230, 28, 0.8),
+    ddefs, 280)
 
 for k, (e, c_) in out.items():
     open(f'{root}/{k}/frame.svg', 'w').write(e + '\n')

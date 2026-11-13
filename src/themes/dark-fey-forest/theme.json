@@ -1,0 +1,15 @@
+{
+  "name": "Dark Fey Forest",
+  "mode": "dark",
+  "colors": {
+    "bg": "#1c1528",
+    "card": "#211a2e",
+    "text": "#ece4f5",
+    "muted": "#b4a6c8",
+    "accent": "#d98ae8",
+    "accentText": "#1d1029",
+    "border": "#4a3a5e",
+    "danger": "#ff8a9a"
+  },
+  "cardOpacity": 0.88
+}
