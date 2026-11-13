@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { ActionResult } from './actions'
 import { takeDamage } from './actions'
 import type { CharacterInput } from './character'
-import { eligibleShapes, grantCreatures } from './creatures'
+import { eligibleShapes, grantCreatures, viewCreature } from './creatures'
 import { computeSheet } from './derive'
 import { makeCharacter, srd } from './fixtures'
 import { longRest } from './rest'
@@ -119,5 +119,21 @@ describe('Companions', () => {
     const c = hero('2014', 'wizard', 1, { companions: [{ uid: 'x', creatureId: 'creature-cat', sourceId: 'find-familiar', grantId: 'familiar', hp: 2, tempHp: 1 }] })
     const after = okR(adjustCompanionHp(c, 'x', 2, -2, 'Cat'))
     expect(after.companions[0]).toMatchObject({ hp: 1, tempHp: 0 })
+  })
+})
+
+describe('Stat block adjustments and extra forms', () => {
+  it('a grant can add pb to AC, attacks and damage and set an HP minimum (2014 Ranger’s Companion)', () => {
+    const wolf = c14.getTyped('creature-wolf', 'creature')!
+    const v = viewCreature(wolf, { pb: 3, level: 5 }, { ac: 'pb', attack: 'pb', damage: 'pb', hpMin: '4 * level' })
+    expect(v.ac).toBe(13 + 3)
+    expect(v.hpMax).toBe(20)
+    expect(v.actions[0].attack?.bonus).toBe(4 + 3)
+    expect(v.actions[0].damage).toBe('2d4+5 piercing')
+  })
+
+  it('shape:creature:<id> adds a form outside the CR and beast limits (Elemental Wild Shape)', () => {
+    const shapes = eligibleShapes(c14, { maxCr: 0.25, fly: false, swim: false, extra: ['creature-air-elemental'] })
+    expect(shapes.some((c) => c.id === 'creature-air-elemental')).toBe(true)
   })
 })

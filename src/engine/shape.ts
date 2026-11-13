@@ -51,7 +51,7 @@ export function addCompanion(char: Character, sheet: Sheet, content: ContentInde
   if (!creature) return { ok: false, error: 'noChange' }
   const temp: Character = { ...char, companions: [...char.companions, { uid: uid(), creatureId, sourceId: source.entity.id, grantId: source.grant.id, hp: 0, tempHp: 0, slot }] }
   // Resolve its HP with the owner's numbers (scaled stat blocks).
-  const hp = viewCreature(creature, { ...sheet.mods, pb: sheet.pb.value, characterLevel: sheet.characterLevel, level: source.classLevel, classLevel: source.classLevel, slot: slot ?? 0, spellAttack: source.spellAttack, spellDc: source.spellDc }).hpMax
+  const hp = viewCreature(creature, { ...sheet.mods, pb: sheet.pb.value, characterLevel: sheet.characterLevel, level: source.classLevel, classLevel: source.classLevel, slot: slot ?? 0, spellAttack: source.spellAttack, spellDc: source.spellDc }, source.grant.adjust).hpMax
   const last = temp.companions[temp.companions.length - 1]
   last.hp = hp
   const single = source.grant.kind === 'familiar' || source.grant.kind === 'steed' || source.grant.kind === 'companion'

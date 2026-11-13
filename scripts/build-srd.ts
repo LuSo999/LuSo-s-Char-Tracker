@@ -44,9 +44,6 @@ async function load(edition: Edition, name: string): Promise<Raw[]> {
 
 // --- Helpers -----------------------------------------------------------------
 
-/** Non-Beast stat blocks spells and pacts call on. */
-const CREATURE_EXTRAS = ['Imp', 'Pseudodragon', 'Quasit', 'Sprite', 'Skeleton', 'Zombie', 'Slaad Tadpole', 'Sphinx of Wonder']
-
 const feet = (s: unknown) => Number(/(\d+)/.exec(String(s))?.[1] ?? 0)
 
 /** A 5e-bits monster as a Creature entity ("creature-<index>"). */
@@ -790,9 +787,8 @@ async function build(edition: Edition) {
     })
   }
 
-  // Creatures: every Beast (Wild Shape, familiars, steeds, companions) and the few other stat
-  // blocks spells and pacts summon (Pact of the Chain familiars, Animate Dead).
-  for (const m of files.Monsters) if (m.type === 'beast' || CREATURE_EXTRAS.includes(m.name)) entities.push(creature(m, edition, source))
+  // Creatures: every SRD stat block (Wild Shape forms, familiars, steeds, summons, elementals…).
+  for (const m of files.Monsters) entities.push(creature(m, edition, source))
 
   for (const c of files.Conditions) entities.push({ ...base(c), type: 'condition' })
   for (const m of files['Weapon-Mastery-Properties'] ?? []) entities.push({ ...base(m), type: 'weaponMastery' })

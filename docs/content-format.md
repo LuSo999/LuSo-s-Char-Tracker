@@ -93,7 +93,7 @@ Cíle (`target`):
 - **Smysly a odolnosti:** `sense:darkvision` (op `max`, nebo `add` pro rozšíření), `resistance:<typ>`, `immunity:<typ>`, `conditionImmunity:<stav>`.
 - **Kouzla:** `spellDc`, `spellAttack`, `spellDc:<classa>`, `spellDamage:<kouzlo>`, `spellNote:<kouzlo>`.
 - **Připomínky:** `note` (text v `note`), `advantage:save:condition` (poznámka u záchran).
-- **Wild Shape:** `shape:maxCr` (nejvyšší CR formy, op `max`), `shape:fly` / `shape:swim` (1 = formy s létáním / plaváním povolené), `shape:forms` (2024: počet známých forem), `shape:ac` (AC ve formě, op `max`, např. Circle of the Moon `"13 + wis"`).
+- **Wild Shape:** `shape:maxCr` (nejvyšší CR formy, op `max`), `shape:fly` / `shape:swim` (1 = formy s létáním / plaváním povolené), `shape:forms` (2024: počet známých forem), `shape:ac` (AC ve formě, op `max`, např. Circle of the Moon `"13 + wis"`), `shape:creature:<id>` (tento tvor je navíc dostupná forma, např. elementálové).
 
 `op`: `add` (výchozí), `set`, `max`, `min`. Do cíle jde vložit `@<id volby>`, které se nahradí každou vybranou hodnotou, např. `resistance:@types`.
 
@@ -150,7 +150,7 @@ Kouzla z předmětů jdou vždy jen zdarma z nábojů předmětu.
 { "id": "steed", "kind": "steed", "creatures": ["creature-otherworldly-steed"], "slot": true, "note": "…" }
 ```
 
-`kind`: `familiar`, `steed`, `companion` (od každého zdroje jen jeden naráz), `summon` (víc naráz). Tvory určuje seznam `creatures` (id) a/nebo `filter: { creatureType, maxCr, tag }`. `slot: true` = stat block škáluje s úrovní kouzla. `spellClass` = jejíž spell attack / DC tvor používá.
+`kind`: `familiar`, `steed`, `companion` (od každého zdroje jen jeden naráz), `summon` (víc naráz). Tvory určuje seznam `creatures` (id) a/nebo `filter: { creatureType, maxCr, tag }`. `slot: true` = stat block škáluje s úrovní kouzla. `spellClass` = jejíž spell attack / DC tvor používá. `adjust: { ac, attack, damage, hpBonus, hpMin }` upraví stat block (vzorce s čísly majitele, např. Ranger’s Companion `{ "ac": "pb", "attack": "pb", "damage": "pb", "hpMin": "4 * level" }`).
 
 ### Podmínky (`prerequisite`, u featu, možnosti nebo subclassy)
 

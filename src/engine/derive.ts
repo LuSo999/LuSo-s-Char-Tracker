@@ -1005,6 +1005,10 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
           fly: applyEffects('shape:fly', 0, '', vars).value > 0,
           swim: applyEffects('shape:swim', 0, '', vars).value > 0,
           forms: applyEffects('shape:forms', 0, '', vars).value || undefined,
+          ...(() => {
+            const extra = allEffects.filter(({ effect, ae }) => effect.target.startsWith('shape:creature:') && effectApplies(effect, ae, baseCtx, toggleSet)).map(({ effect }) => effect.target.slice('shape:creature:'.length))
+            return extra.length ? { extra } : {}
+          })(),
         }
       : undefined
   const ownerMods = { ...mods }
@@ -1040,7 +1044,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const creature = content.getTyped(entry.creatureId, 'creature')
     if (!creature) return []
     const source = companionSources.find((s) => s.entity.id === entry.sourceId && s.grant.id === entry.grantId)
-    return [{ ...viewCreature(creature, companionVars(source, entry.slot)), entry, source }]
+    return [{ ...viewCreature(creature, companionVars(source, entry.slot), source?.grant.adjust), entry, source }]
   })
   const shape = shapeCreature
     ? (() => {

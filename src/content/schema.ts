@@ -133,6 +133,8 @@ export type EffectWhen = z.infer<typeof EffectWhen>
  *   attackAbility:<ability> (weapon attacks may use it when higher; narrow with when / a toggle),
  *   sense:<darkvision|blindsight|tremorsense|truesight> (feet; op "max", or "add" to extend),
  *   speed:<fly|swim|climb|burrow> (feet; value "walk" = equal to Speed),
+ *   shape:maxCr / shape:fly / shape:swim / shape:forms / shape:ac (Wild Shape limits; op max),
+ *   shape:creature:<creature id> (that creature is also a Wild Shape form: elementals),
  *   resistance:<damage type>, immunity:<damage type>, conditionImmunity:<condition>,
  *   note (a reminder line in the notes; text in `note`).
  */
@@ -313,6 +315,11 @@ export const CompanionGrant = z.object({
   spellClass: z.string().optional(),
   /** Short rules reminder shown with the companion. */
   note: z.string().optional(),
+  /**
+   * Changes to the stat block (2014 Ranger's Companion: + pb to AC, attacks and damage; HP at least 4 × level).
+   * Formulas see the owner's numbers.
+   */
+  adjust: z.object({ ac: Scaled.optional(), attack: Scaled.optional(), damage: Scaled.optional(), hpBonus: Scaled.optional(), hpMin: Scaled.optional() }).optional(),
 })
 export type CompanionGrant = z.infer<typeof CompanionGrant>
 

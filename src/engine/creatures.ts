@@ -27,7 +27,7 @@ const signed = (n: number) => (n >= 0 ? `+${n}` : `${n}`)
 const mod = (score: number) => Math.floor((score - 10) / 2)
 
 /** Numbers of a creature with the owner's formula vars (slot, pb, spellAttack, spellDc, wis…). */
-export function viewCreature(creature: Creature, vars: FormulaVars): CreatureView {
+export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: CompanionGrant['adjust']): CreatureView {
   const n = (v: Parameters<typeof resolveScaled>[0]) => {
     try {
       return Math.floor(resolveScaled(v, vars))
@@ -40,20 +40,23 @@ export function viewCreature(creature: Creature, vars: FormulaVars): CreatureVie
     const ft = n(v)
     if (ft > 0) speeds[k] = ft
   }
+  const adj = (v: Parameters<typeof resolveScaled>[0] | undefined) => (v === undefined ? 0 : n(v))
+  const hp = n(creature.hp) + adj(adjust?.hpBonus)
   return {
     creature,
-    ac: n(creature.ac),
-    hpMax: Math.max(1, n(creature.hp)),
+    ac: n(creature.ac) + adj(adjust?.ac),
+    hpMax: Math.max(1, hp, adj(adjust?.hpMin)),
     speeds,
     mods: Object.fromEntries(Object.entries(creature.scores).map(([a, s]) => [a, mod(s)])) as Record<Ability, number>,
     actions: creature.actions.map((a) => ({
       name: a.name,
       description: a.description,
       actionType: a.actionType,
-      attack: a.attack ? { bonus: n(a.attack.bonus), range: a.attack.range } : undefined,
+      attack: a.attack ? { bonus: n(a.attack.bonus) + adj(adjust?.attack), range: a.attack.range } : undefined,
       damage: a.damage
-        .map((d) => {
-          const bonus = n(d.bonus)
+        .map((d, i) => {
+          // The damage bonus goes on the first part of an attack (Ranger's Companion: + pb).
+          const bonus = n(d.bonus) + (i === 0 && a.attack ? adj(adjust?.damage) : 0)
           const amount = d.dice ? `${d.dice}${bonus ? signed(bonus) : ''}` : String(bonus)
           return `${amount} ${d.type}`
         })
@@ -66,16 +69,16 @@ export function viewCreature(creature: Creature, vars: FormulaVars): CreatureVie
 export const crLabel = (cr: number) => (cr === 0.125 ? '1/8' : cr === 0.25 ? '1/4' : cr === 0.5 ? '1/2' : String(cr))
 
 /** Wild Shape limits from effects (shape:maxCr, shape:fly, shape:swim, shape:forms). */
-export type ShapeRules = { maxCr: number; fly: boolean; swim: boolean; forms?: number }
+export type ShapeRules = { maxCr: number; fly: boolean; swim: boolean; forms?: number; extra?: string[] }
 
 /** Beasts the druid could turn into under these rules. */
 export function eligibleShapes(content: ContentIndex, rules: ShapeRules): Creature[] {
   return content
     .all('creature')
-    .filter((c) => c.creatureType === 'beast' && c.cr <= rules.maxCr)
     .filter((c) => {
+      if (rules.extra?.includes(c.id)) return true
       const speeds = c.speed as Record<string, unknown>
-      return (rules.fly || !speeds.fly) && (rules.swim || !speeds.swim)
+      return c.creatureType === 'beast' && c.cr <= rules.maxCr && (rules.fly || !speeds.fly) && (rules.swim || !speeds.swim)
     })
     .sort((a, b) => a.cr - b.cr || a.name.localeCompare(b.name))
 }
