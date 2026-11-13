@@ -151,3 +151,22 @@ describe('Hit Point Dice as a cost', () => {
     expect(after.hp.current).toBe(5 + 4 + 1)
   })
 })
+
+describe('Spells cast from an item', () => {
+  it('free casts spend the item\'s own charges', async () => {
+    const { ContentIndex } = await import('../content')
+    const { Pack } = await import('../content/schema')
+    const base = (await import('../data/srd/2024.json')).default
+    const pack = Pack.parse({
+      id: 'x', name: 'X', edition: '2024', book: 'x',
+      entities: [{ id: 'x-wand', edition: '2024', type: 'item', kind: 'wand', name: 'Test Wand', source: { book: 'x' }, magic: true, charges: { id: 'charges', name: 'Charges', max: 3, recharge: [{ on: 'dawn', amount: 'all' }] }, spells: [{ id: 'magic-missile', freeCast: 'charges' }] }],
+    })
+    const content = new ContentIndex('2024', [Pack.parse(base), pack])
+    const c = makeCharacter({ edition: '2024', classes: [{ classId: 'fighter', level: 3 }], speciesId: 'human', backgroundId: 'soldier', baseScores: { str: 15, dex: 14, con: 14, int: 10, wis: 10, cha: 10 }, hp: { current: 20 }, inventory: [{ uid: 'w', itemId: 'x-wand', quantity: 1, equipped: true }] })
+    const s = computeSheet(c, content)
+    const row = s.spellcasting.rows.find((r) => r.spell.id === 'magic-missile')!
+    expect(row.freeCast).toBe('item:w:charges')
+    const { castOptions } = await import('./spellActions')
+    expect(castOptions(row, s).some((o) => o.kind === 'free')).toBe(true)
+  })
+})

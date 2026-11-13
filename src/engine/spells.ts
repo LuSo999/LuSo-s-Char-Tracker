@@ -265,7 +265,8 @@ export function computeSpellcasting(
         rows.push({
           key: `${ae.grantKey}:${id}`, spell, grantedBy: ae, ability, dc: dcFor(ability), attackBonus: atkFor(ability),
           castable: !('ritualOnly' in g && g.ritualOnly), always: true, ritualOnly: 'ritualOnly' in g && !!g.ritualOnly, canRitual: spell.ritual,
-          freeCast: 'freeCast' in g ? g.freeCast : undefined,
+          // An item's own charges / uses are keyed per inventory entry.
+          freeCast: 'freeCast' in g && g.freeCast ? (ae.item && ae.entity.type === 'item' && [...ae.entity.resources, ae.entity.charges].some((r) => r?.id === g.freeCast) ? `item:${ae.item.uid}:${g.freeCast}` : g.freeCast) : undefined,
           atWill: 'atWill' in g ? g.atWill : undefined,
           limit: 'limit' in g ? g.limit : undefined,
           freeLevel: 'freeLevel' in g ? g.freeLevel : undefined,
