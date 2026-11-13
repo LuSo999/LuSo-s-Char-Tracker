@@ -353,6 +353,11 @@ function SheetLayout() {
   const [levelUp, setLevelUp] = useState(() => levelTo > sheet.characterLevel)
   const [queueStopped, setQueueStopped] = useState(false)
   const [choices, setChoices] = useState(false)
+  const openOnly = (panel: 'spells' | 'inventory' | 'history') => {
+    setSpells(panel === 'spells')
+    setInventory(panel === 'inventory')
+    setHistory(panel === 'history')
+  }
   const edit = useEditMode((s) => s.on)
 
   return (
@@ -405,16 +410,17 @@ function SheetLayout() {
       {spells && <SpellcastingDrawer onClose={() => setSpells(false)} />}
 
       {/* Phone: panels open full screen from a bottom bar. */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-card pb-[env(safe-area-inset-bottom)] sm:hidden">
+      {/* The bar switches straight between panels (it doesn't count as a click outside them). */}
+      <nav data-keep-panels className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-card pb-[env(safe-area-inset-bottom)] sm:hidden">
         {sheet.spellcasting.any && (
-          <button className="flex-1 border-r border-border py-2.5 text-sm font-semibold" onClick={() => setSpells(true)}>
+          <button className="flex-1 border-r border-border py-2.5 text-sm font-semibold" onClick={() => openOnly('spells')}>
             ✨ {t('spells.title')}
           </button>
         )}
-        <button className="flex-1 py-2.5 text-sm font-semibold" onClick={() => setInventory(true)}>
+        <button className="flex-1 py-2.5 text-sm font-semibold" onClick={() => openOnly('inventory')}>
           🎒 {t('inventory.title')}
         </button>
-        <button className="flex-1 border-l border-border py-2.5 text-sm font-semibold" onClick={() => setHistory(true)}>
+        <button className="flex-1 border-l border-border py-2.5 text-sm font-semibold" onClick={() => openOnly('history')}>
           📜 {t('sheet.buttons.history')}
         </button>
       </nav>
