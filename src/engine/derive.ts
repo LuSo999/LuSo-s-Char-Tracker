@@ -348,6 +348,8 @@ function whenHolds(w: When, ae: ActiveEntity, ctx: EffectContext, toggles: Set<s
       return !!ctx.emptyHands
     case 'wearingMediumArmor':
       return ctx.armor?.category === 'medium'
+    case 'noMediumOrHeavyArmor':
+      return ctx.armor?.category !== 'medium' && ctx.armor?.category !== 'heavy'
   }
 }
 
@@ -790,7 +792,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       damage: override(`damage:${key}`, dmg.value, dmg.parts),
       damageType: w?.damage?.type ?? 'bludgeoning',
       critRange: crit.value,
-      reach: ranged ? undefined : props.includes('reach') ? 10 : 5,
+      reach: ranged ? undefined : (props.includes('reach') ? 10 : 5) + applyEffects('reach', 0, '', vars, ctx).value,
       range: ranged ? w?.distance : undefined,
       thrown: props.includes('thrown') ? w?.distance : undefined,
       properties: props,
@@ -844,6 +846,10 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       const v = {
         ...vars(ae),
         hpMax: hpMax.value,
+        // mod_<choice id>: modifier of the ability picked in that choice (Fey Step DC with the lineage's ability).
+        ...Object.fromEntries(
+          ae.entity.choices.filter((ch) => ch.kind === 'ability').map((ch) => [`mod_${ch.id.replace(/[^a-z0-9]/gi, '_')}`, mods[(selections(char, ae, ch.id)[0] as Ability) ?? 'str'] ?? 0]),
+        ),
         ...Object.fromEntries(Object.entries(skillValues).map(([k, sv]) => [k.replace(/-/g, '_'), sv.value])),
         ...Object.fromEntries(resources.flatMap((r) => [[`used_${r.key.replace(/[^a-z0-9]/gi, '_')}`, Math.max(0, r.used)], [`max_${r.key.replace(/[^a-z0-9]/gi, '_')}`, r.max]])),
       }

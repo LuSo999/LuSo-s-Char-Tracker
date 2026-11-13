@@ -101,6 +101,8 @@ const WhenSingle = z.union([
     'emptyHands',
     /** Wearing Medium armor (Medium Armor Master). */
     'wearingMediumArmor',
+    /** No Medium or Heavy armor (Aarakocra / Harengon flight, Aasimar wings). */
+    'noMediumOrHeavyArmor',
   ]),
   z.object({ toggle: z.string() }),
 ])
@@ -124,6 +126,7 @@ export type EffectWhen = z.infer<typeof EffectWhen>
  *   martialArts (1 = Dex may replace Str for those attacks),
  *   unarmedDamage (flat damage die size for Unarmed Strike, op "max"),
  *   monkWeapon:<weapon id> (counts as a Monk weapon; "monkWeapon:@weapons" for picked ones),
+ *   reach (extra melee reach in feet, Bugbear Long-Limbed),
  *   attackAbility:<ability> (weapon attacks may use it when higher; narrow with when / a toggle),
  *   sense:<darkvision|blindsight|tremorsense|truesight> (feet; op "max", or "add" to extend),
  *   speed:<fly|swim|climb|burrow> (feet; value "walk" = equal to Speed),
