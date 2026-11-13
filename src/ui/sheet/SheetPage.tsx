@@ -21,7 +21,10 @@ import { ActionList } from './ActionList'
 import { SheetContext, undoGroup, useRun, useSheet } from './context'
 import { useEditMode } from './editMode'
 import { EntityEditHost } from './EntityEditDialog'
-import { resetAllOverrides, setBooks as setBooksAction, setLegacyOrigins, setLegacySubclasses, setName } from '../../engine/edits'
+import { resetAllOverrides, setBooks as setBooksAction, setCharacterTheme, setLegacyOrigins, setLegacySubclasses, setName } from '../../engine/edits'
+import { useSettings } from '../../state/settings'
+import { ThemePicker } from '../ThemePicker'
+import { useThemeOverride } from '../theme'
 import { EquippedPanel } from './EquippedPanel'
 import { Dialog, RestDialog } from './RestDialog'
 import { BooksPicker } from './BooksPicker'
@@ -80,6 +83,13 @@ export function SheetView({ character, content, store }: { character: Character;
       return { error: e instanceof Error ? e.message : String(e) }
     }
   }, [character, view])
+
+  // The character's own theme while its sheet is open.
+  const themeId = character.settings.theme
+  useEffect(() => {
+    useThemeOverride.setState({ id: themeId })
+    return () => useThemeOverride.setState({ id: undefined })
+  }, [themeId])
 
   // A new character starts a fresh turn tracker, outside edit mode.
   useEffect(() => {
@@ -166,6 +176,7 @@ function TopBar({
         <button className={button} onClick={onLevelUp}>
           ⬆️ {t('sheet.buttons.levelUp')}
         </button>
+        <ThemeButton className={button} />
         <EditToggle className={button} />
         <button
           className={button}
@@ -196,6 +207,28 @@ function LevelQueue({ active, onNext }: { active: boolean; onNext: () => void })
     if (active) onNext()
   }, [active, onNext])
   return null
+}
+
+/** 🎨: this character's theme (or the account's). */
+function ThemeButton({ className }: { className: string }) {
+  const { t } = useTranslation()
+  const { character } = useSheet()
+  const run = useRun()
+  const account = useSettings((s) => s.theme)
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button className={className} title={t('theme.title')} aria-label={t('theme.title')} onClick={() => setOpen(true)}>
+        🎨
+      </button>
+      {open && (
+        <Dialog title={t('theme.title')} onClose={() => setOpen(false)} wide>
+          <p className="mb-3 text-sm text-muted">{t('theme.characterHint')}</p>
+          <ThemePicker value={character.settings.theme} inherit={account} onChange={(id) => void run(setCharacterTheme(character, id), { quiet: true })} />
+        </Dialog>
+      )}
+    </>
+  )
 }
 
 function EditToggle({ className }: { className: string }) {

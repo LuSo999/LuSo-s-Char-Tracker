@@ -1,0 +1,15 @@
+{
+  "name": "Ship",
+  "mode": "dark",
+  "colors": {
+    "bg": "#1f1c19",
+    "card": "#2b241c",
+    "text": "#f0e7d7",
+    "muted": "#b5a58d",
+    "accent": "#e2b766",
+    "accentText": "#1f170c",
+    "border": "#4f4232",
+    "danger": "#ff8a7a"
+  },
+  "cardOpacity": 0.88
+}

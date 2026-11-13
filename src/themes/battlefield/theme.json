@@ -1,0 +1,15 @@
+{
+  "name": "Battlefield",
+  "mode": "dark",
+  "colors": {
+    "bg": "#1d1b17",
+    "card": "#272420",
+    "text": "#ede5d8",
+    "muted": "#ab9f8d",
+    "accent": "#d97f55",
+    "accentText": "#1c130d",
+    "border": "#4b4036",
+    "danger": "#ff8a7a"
+  },
+  "cardOpacity": 0.88
+}

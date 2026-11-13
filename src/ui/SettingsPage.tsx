@@ -8,6 +8,7 @@ import { effectLevels, saveSettings, turnModes, useSettings } from '../state/set
 import { fx } from './fx/fx'
 import { BackToSheet } from './BackToSheet'
 import { Card } from './Card'
+import { ThemePicker } from './ThemePicker'
 
 export function SettingsPage({ uid }: { uid: string }) {
   const { t } = useTranslation()
@@ -38,6 +39,11 @@ export function SettingsPage({ uid }: { uid: string }) {
             </label>
           ))}
         </div>
+      </Card>
+      <Card>
+        <h2 className="font-heading text-xl">🎨 {t('theme.title')}</h2>
+        <p className="mt-1 mb-3 text-sm text-muted">{t('theme.accountHint')}</p>
+        <ThemePicker value={settings.theme} onChange={(id) => void saveSettings(uid, { theme: id ?? 'system' })} />
       </Card>
       <Card>
         <h2 className="font-heading text-xl">🎲 {t('settings.play')}</h2>

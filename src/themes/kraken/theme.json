@@ -1,0 +1,15 @@
+{
+  "name": "Kraken",
+  "mode": "dark",
+  "colors": {
+    "bg": "#0c1f26",
+    "card": "#0b2328",
+    "text": "#e0f1ef",
+    "muted": "#92b4b0",
+    "accent": "#62cbb7",
+    "accentText": "#04191c",
+    "border": "#204448",
+    "danger": "#ff8a7a"
+  },
+  "cardOpacity": 0.88
+}

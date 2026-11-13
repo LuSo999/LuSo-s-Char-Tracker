@@ -1,0 +1,15 @@
+{
+  "name": "Holy",
+  "mode": "light",
+  "colors": {
+    "bg": "#e9dcc2",
+    "card": "#fcf8ee",
+    "text": "#262015",
+    "muted": "#6a604d",
+    "accent": "#8a5c12",
+    "accentText": "#fffaf0",
+    "border": "#e2d3b2",
+    "danger": "#a3241a"
+  },
+  "cardOpacity": 0.88
+}

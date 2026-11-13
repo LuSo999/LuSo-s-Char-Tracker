@@ -1,0 +1,15 @@
+{
+  "name": "Smithy",
+  "mode": "dark",
+  "colors": {
+    "bg": "#1b1813",
+    "card": "#25221d",
+    "text": "#efe7db",
+    "muted": "#ada190",
+    "accent": "#f39150",
+    "accentText": "#1d1208",
+    "border": "#4b3d2f",
+    "danger": "#ff8a7a"
+  },
+  "cardOpacity": 0.88
+}

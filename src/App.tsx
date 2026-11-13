@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HashRouter, Navigate, Route, Routes } from 'react-router'
 import { CreatePage } from './ui/create/CreatePage'
+import { ThemeApplier } from './ui/ThemePicker'
 import { HomebrewPage } from './ui/homebrew/HomebrewPage'
 import { PackPage } from './ui/homebrew/PackPage'
 import { EntityEditor } from './ui/homebrew/EntityEditor'
@@ -30,6 +31,7 @@ const DevPreview = import.meta.env.DEV ? lazy(() => import('./ui/DevPreview')) :
 export default function App() {
   return (
     <HashRouter>
+      <ThemeApplier />
       <Layout>
         <Main />
       </Layout>

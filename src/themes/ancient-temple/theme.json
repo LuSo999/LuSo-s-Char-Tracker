@@ -1,0 +1,15 @@
+{
+  "name": "Ancient Temple",
+  "mode": "dark",
+  "colors": {
+    "bg": "#1c211b",
+    "card": "#2a2d26",
+    "text": "#e7e9dd",
+    "muted": "#a7ac97",
+    "accent": "#b4bf74",
+    "accentText": "#191c12",
+    "border": "#474c3d",
+    "danger": "#f97066"
+  },
+  "cardOpacity": 0.88
+}

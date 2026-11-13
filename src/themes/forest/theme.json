@@ -1,0 +1,15 @@
+{
+  "name": "Forest",
+  "mode": "dark",
+  "colors": {
+    "bg": "#1a281c",
+    "card": "#1d2c1b",
+    "text": "#e6efdc",
+    "muted": "#a2b393",
+    "accent": "#a9d06f",
+    "accentText": "#132010",
+    "border": "#3b5333",
+    "danger": "#ff8a7a"
+  },
+  "cardOpacity": 0.88
+}

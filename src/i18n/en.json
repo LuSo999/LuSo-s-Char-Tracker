@@ -414,7 +414,8 @@
       "spellCopied": "Copied {{name}} into the spellbook ({{gp}} GP, {{hours}} h)",
       "books": "Allowed books",
       "legacySubclasses": "5e subclasses allowed",
-      "legacyOrigins": "5e species and feats allowed"
+      "legacyOrigins": "5e species and feats allowed",
+      "theme": "Theme"
     },
     "attackAction": "Attack action"
   },
@@ -1071,5 +1072,12 @@
       "strDex": "Str (Dex if finesse)",
       "moreInJson": "Choices, scaling by level and other options: JSON tab."
     }
+  },
+  "theme": {
+    "title": "Theme",
+    "system": "System (light / dark)",
+    "account": "Account: {{name}}",
+    "accountHint": "The default for all your characters. Each character can have its own (🎨 on its sheet).",
+    "characterHint": "This character's theme. The first tile follows your account setting."
   }
 }

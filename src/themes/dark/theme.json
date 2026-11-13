@@ -1,0 +1,14 @@
+{
+  "name": "Dark",
+  "mode": "dark",
+  "colors": {
+    "bg": "#15130f",
+    "card": "#221f1a",
+    "text": "#ece6dc",
+    "muted": "#a89f92",
+    "accent": "#d9894f",
+    "accentText": "#15130f",
+    "border": "#3a352d",
+    "danger": "#f97066"
+  }
+}

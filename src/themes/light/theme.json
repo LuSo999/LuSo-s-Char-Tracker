@@ -1,0 +1,14 @@
+{
+  "name": "Light",
+  "mode": "light",
+  "colors": {
+    "bg": "#f4f1ea",
+    "card": "#ffffff",
+    "text": "#1f1b16",
+    "muted": "#6b6258",
+    "accent": "#7a3b12",
+    "accentText": "#ffffff",
+    "border": "#ddd5c7",
+    "danger": "#b42318"
+  }
+}

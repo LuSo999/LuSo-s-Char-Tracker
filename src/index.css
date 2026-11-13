@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* dark: utilities follow the theme's mode (data-mode on <html>, set by src/ui/theme.ts), not only the OS. */
+@custom-variant dark (&:where([data-mode='dark'], [data-mode='dark'] *));
+
 /* Design tokens. Themes (milestone 13) override these variables. */
 :root {
   --color-bg: #f4f1ea;
@@ -11,7 +14,8 @@
   --color-border: #ddd5c7;
   --color-danger: #b42318;
   --radius-card: 0.75rem;
-  --font-heading: Georgia, 'Times New Roman', serif;
+  --font-heading: 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
+  --font-body: Roboto, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   color-scheme: light;
 }
 
@@ -43,8 +47,28 @@
 }
 
 body {
-  background: var(--color-bg);
+  background-color: var(--color-bg);
   color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+/* Illustrated themes (src/themes): the picture under the whole app, a veil of the
+   theme's background color so text between cards stays readable. */
+html[data-app-theme] body {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-bg) 35%, transparent), color-mix(in srgb, var(--color-bg) 35%, transparent)),
+    var(--app-bg, none);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Cards and side panels: the texture under a mostly opaque layer of the card color. */
+html[data-textured] .bg-card {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-card) var(--card-opacity, 88%), transparent), color-mix(in srgb, var(--color-card) var(--card-opacity, 88%), transparent)),
+    var(--card-texture);
+  background-size: auto, 384px;
 }
 
 /* ---- Visual effects (src/ui/fx). --fx scales size and strength: 0.55 subtle, 1 standard, 1.6 strong. ---- */

@@ -1,0 +1,15 @@
+{
+  "name": "Scroll",
+  "mode": "light",
+  "colors": {
+    "bg": "#dfcba9",
+    "card": "#f7eedb",
+    "text": "#2b1d10",
+    "muted": "#6b5641",
+    "accent": "#8a4116",
+    "accentText": "#fff8ec",
+    "border": "#d6c09b",
+    "danger": "#a3241a"
+  },
+  "cardOpacity": 0.88
+}

@@ -414,7 +414,8 @@
       "spellCopied": "Zkopírováno {{name}} do spellbooku ({{gp}} GP, {{hours}} h)",
       "books": "Povolené knihy",
       "legacySubclasses": "Subclassy z 5e povoleny",
-      "legacyOrigins": "Rasy a featy z 5e povoleny"
+      "legacyOrigins": "Rasy a featy z 5e povoleny",
+      "theme": "Vzhled"
     },
     "attackAction": "Attack action"
   },
@@ -1071,5 +1072,12 @@
       "strDex": "Str (Dex u finesse)",
       "moreInJson": "Volby, škálování po levelech a další možnosti: záložka JSON."
     }
+  },
+  "theme": {
+    "title": "Vzhled",
+    "system": "Podle systému (světlý / tmavý)",
+    "account": "Podle účtu: {{name}}",
+    "accountHint": "Výchozí pro všechny tvé postavy. Každá postava může mít vlastní (🎨 na jejím sheetu).",
+    "characterHint": "Vzhled této postavy. První dlaždice se řídí nastavením účtu."
   }
 }

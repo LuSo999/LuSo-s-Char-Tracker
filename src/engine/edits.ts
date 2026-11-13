@@ -111,3 +111,11 @@ export function setLegacyOrigins(char: Character, on: boolean): ActionResult {
   if (char.settings.legacyOrigins === on) return { ok: false, error: 'noChange' }
   return { ok: true, character: { ...char, settings: { ...char.settings, legacyOrigins: on } }, items: [{ type: 'legacyOrigins', before: String(char.settings.legacyOrigins), after: String(on) }], groupType: 'edit', kind: 'sheet' }
 }
+
+/** The character's own theme (undefined: follow the account). */
+export function setCharacterTheme(char: Character, theme: string | undefined): ActionResult {
+  if (char.settings.theme === theme) return { ok: false, error: 'noChange' }
+  const settings = { ...char.settings, theme }
+  if (theme === undefined) delete settings.theme
+  return { ok: true, character: { ...char, settings }, items: [{ type: 'theme', before: char.settings.theme ?? '—', after: theme ?? '—' }], groupType: 'settings', kind: 'sheet' }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Magic",
+  "mode": "dark",
+  "colors": {
+    "bg": "#13142a",
+    "card": "#1c1832",
+    "text": "#ebe7f8",
+    "muted": "#a9a2c8",
+    "accent": "#b7a0f0",
+    "accentText": "#16122a",
+    "border": "#3c3462",
+    "danger": "#ff8a9a"
+  },
+  "cardOpacity": 0.88
+}

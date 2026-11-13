@@ -152,6 +152,8 @@ export const Character = z.object({
       legacySubclasses: z.boolean().default(false),
       /** 5.5e character: 2014 species and feats may be chosen (marked as another edition). */
       legacyOrigins: z.boolean().default(false),
+      /** This character's theme; unset = the account's theme. */
+      theme: z.string().optional(),
     })
     .default({ multiclass: true, trackAmmunition: true, legacySubclasses: false, legacyOrigins: false }),
   notes: z.string().default(''),

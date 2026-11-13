@@ -1,0 +1,15 @@
+{
+  "name": "Music",
+  "mode": "dark",
+  "colors": {
+    "bg": "#26151b",
+    "card": "#2b131a",
+    "text": "#f4e6e7",
+    "muted": "#c4a2a6",
+    "accent": "#ee8588",
+    "accentText": "#25090f",
+    "border": "#57282f",
+    "danger": "#ffb36b"
+  },
+  "cardOpacity": 0.88
+}

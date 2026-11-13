@@ -17,12 +17,15 @@ export type Settings = {
   turnMode: TurnMode
   /** Size and visibility of visual effects. */
   effects: EffectLevel
+  /** Theme id (src/themes) or "system"; a character may override it. */
+  theme: string
 }
 
 export const defaultSettings: Settings = {
   linkSite: { '2014': 'wikidot', '2024': 'wikidot' },
   turnMode: 'track',
   effects: 'standard',
+  theme: 'system',
 }
 
 export const useSettings = create<Settings>(() => defaultSettings)
