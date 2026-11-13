@@ -855,7 +855,10 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
         hpMax: hpMax.value,
         // mod_<choice id>: modifier of the ability picked in that choice (Fey Step DC with the lineage's ability).
         ...Object.fromEntries(
-          ae.entity.choices.filter((ch) => ch.kind === 'ability').map((ch) => [`mod_${ch.id.replace(/[^a-z0-9]/gi, '_')}`, mods[(selections(char, ae, ch.id)[0] as Ability) ?? 'str'] ?? 0]),
+          // (for an ability increase, the ability it raised: "int+1" → Int)
+          ae.entity.choices
+            .filter((ch) => ch.kind === 'ability' || ch.kind === 'abilityPoints')
+            .map((ch) => [`mod_${ch.id.replace(/[^a-z0-9]/gi, '_')}`, mods[(selections(char, ae, ch.id)[0]?.split('+')[0] as Ability) ?? 'str'] ?? 0]),
         ),
         ...Object.fromEntries(Object.entries(skillValues).map(([k, sv]) => [k.replace(/-/g, '_'), sv.value])),
         ...Object.fromEntries(resources.flatMap((r) => [[`used_${r.key.replace(/[^a-z0-9]/gi, '_')}`, Math.max(0, r.used)], [`max_${r.key.replace(/[^a-z0-9]/gi, '_')}`, r.max]])),
