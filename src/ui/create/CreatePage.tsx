@@ -167,7 +167,7 @@ function Wizard({
   const radio = (on: boolean) => `flex cursor-pointer items-start gap-2 rounded border p-2 text-sm ${on ? 'border-accent bg-accent/5' : 'border-border hover:bg-bg'}`
 
   return (
-    <div className="rounded-card border border-border bg-card p-4 shadow-sm">
+    <div className="framed rounded-card border border-border bg-card p-4 shadow-sm">
       <ol className="mb-4 flex flex-wrap gap-1 text-xs">
         {STEPS.map((s, i) => (
           <li key={s}>

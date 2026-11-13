@@ -21,9 +21,9 @@ import { ActionList } from './ActionList'
 import { SheetContext, undoGroup, useRun, useSheet } from './context'
 import { useEditMode } from './editMode'
 import { EntityEditHost } from './EntityEditDialog'
-import { resetAllOverrides, setBooks as setBooksAction, setCharacterTheme, setLegacyOrigins, setLegacySubclasses, setName } from '../../engine/edits'
+import { resetAllOverrides, setBooks as setBooksAction, setCharacterFrames, setCharacterTheme, setLegacyOrigins, setLegacySubclasses, setName } from '../../engine/edits'
 import { useSettings } from '../../state/settings'
-import { ThemePicker } from '../ThemePicker'
+import { FramesToggle, ThemePicker } from '../ThemePicker'
 import { useThemeOverride } from '../theme'
 import { EquippedPanel } from './EquippedPanel'
 import { Dialog, RestDialog } from './RestDialog'
@@ -86,10 +86,11 @@ export function SheetView({ character, content, store }: { character: Character;
 
   // The character's own theme while its sheet is open.
   const themeId = character.settings.theme
+  const frames = character.settings.frames
   useEffect(() => {
-    useThemeOverride.setState({ id: themeId })
-    return () => useThemeOverride.setState({ id: undefined })
-  }, [themeId])
+    useThemeOverride.setState({ id: themeId, frames })
+    return () => useThemeOverride.setState({ id: undefined, frames: undefined })
+  }, [themeId, frames])
 
   // A new character starts a fresh turn tracker, outside edit mode.
   useEffect(() => {
@@ -128,7 +129,7 @@ function TopBar({
   const button = 'rounded border border-border px-3 py-1.5 text-sm hover:bg-bg disabled:opacity-50 disabled:hover:bg-transparent'
 
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-card border border-border bg-card px-4 py-1.5 shadow-sm">
+    <div className="framed-sm mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-card border border-border bg-card px-4 py-1.5 shadow-sm">
       <div className="min-w-0">
         <CharacterName />
         <div className="text-sm text-muted">
@@ -215,6 +216,7 @@ function ThemeButton({ className }: { className: string }) {
   const { character } = useSheet()
   const run = useRun()
   const account = useSettings((s) => s.theme)
+  const accountFrames = useSettings((s) => s.frames)
   const [open, setOpen] = useState(false)
   return (
     <>
@@ -225,6 +227,7 @@ function ThemeButton({ className }: { className: string }) {
         <Dialog title={t('theme.title')} onClose={() => setOpen(false)} wide>
           <p className="mb-3 text-sm text-muted">{t('theme.characterHint')}</p>
           <ThemePicker value={character.settings.theme} inherit={account} onChange={(id) => void run(setCharacterTheme(character, id), { quiet: true })} />
+          <FramesToggle value={character.settings.frames} inherit={accountFrames} onChange={(v) => void run(setCharacterFrames(character, v), { quiet: true })} />
         </Dialog>
       )}
     </>

@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { themeById, type Theme } from '../themes'
 
 /** A character's theme, set while its sheet is shown (undefined: the account's). */
-export const useThemeOverride = create<{ id?: string }>(() => ({}))
+export const useThemeOverride = create<{ id?: string; frames?: boolean }>(() => ({}))
 
 const vars: Record<keyof Theme['colors'], string> = {
   bg: '--color-bg',
@@ -18,19 +18,22 @@ const vars: Record<keyof Theme['colors'], string> = {
 
 const systemDark = () => typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
 let current: string | undefined
+let currentFrames = false
 // "System" follows the OS when it switches between light and dark.
-if (typeof matchMedia === 'function') matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => applyTheme(current))
+if (typeof matchMedia === 'function') matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => applyTheme(current, currentFrames))
 
 /** "system" (or an unknown id) follows the OS light / dark setting through the CSS defaults. */
-export function applyTheme(id: string | undefined) {
+export function applyTheme(id: string | undefined, frames = false) {
   current = id
+  currentFrames = frames
   const root = document.documentElement
   const theme = themeById(id)
   root.dataset.mode = theme ? theme.mode : systemDark() ? 'dark' : 'light'
   for (const v of Object.values(vars)) root.style.removeProperty(v)
-  for (const v of ['--app-bg', '--card-texture', '--card-opacity', 'color-scheme']) root.style.removeProperty(v)
+  for (const v of ['--app-bg', '--card-texture', '--card-opacity', '--frame', '--frame-corners', 'color-scheme']) root.style.removeProperty(v)
   delete root.dataset.appTheme
   delete root.dataset.textured
+  delete root.dataset.frames
   if (!theme) return
   root.dataset.appTheme = theme.id
   for (const [k, v] of Object.entries(theme.colors)) root.style.setProperty(vars[k as keyof Theme['colors']], v)
@@ -41,5 +44,11 @@ export function applyTheme(id: string | undefined) {
     root.style.setProperty('--card-texture', `url("${theme.texture}")`)
     root.style.setProperty('--card-opacity', `${Math.round(theme.cardOpacity * 100)}%`)
     root.dataset.textured = ''
+  }
+  // Ornate frames, when switched on and the theme has them.
+  if (frames && theme.frame && theme.corners) {
+    root.style.setProperty('--frame', `url("${theme.frame}")`)
+    root.style.setProperty('--frame-corners', `url("${theme.corners}")`)
+    root.dataset.frames = ''
   }
 }

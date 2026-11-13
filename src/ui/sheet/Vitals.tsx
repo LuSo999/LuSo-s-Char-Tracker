@@ -9,7 +9,7 @@ import { Term } from '../rules/Term'
 
 function Stat({ icon, label, value, title, accent, term }: { icon: string; label: string; value: React.ReactNode; title?: string; accent?: boolean; term?: string }) {
   return (
-    <div className="rounded-card border border-border bg-card px-3 py-2 text-center shadow-sm" title={title}>
+    <div className="framed-sm rounded-card border border-border bg-card px-3 py-2 text-center shadow-sm" title={title}>
       <div className="text-[11px] font-semibold uppercase text-muted">
         <span aria-hidden>{icon} </span>
         {term ? <Term id={term}>{label}</Term> : label}
@@ -30,7 +30,7 @@ export function Vitals() {
 
   return (
     <div className="grid grid-cols-3 gap-2 sm:grid-cols-[2.2fr_1fr_1fr_1fr_1.4fr]">
-      <div className="col-span-3 rounded-card border border-border bg-card px-3 py-2 shadow-sm sm:col-span-1">
+      <div className="framed-sm col-span-3 rounded-card border border-border bg-card px-3 py-2 shadow-sm sm:col-span-1">
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-[11px] font-semibold uppercase text-muted" title={breakdown(sheet.hpMax)}>
             <span aria-hidden>❤️ </span>
@@ -88,7 +88,7 @@ function DeathSaves() {
   }
 
   return (
-    <div className={`col-span-3 rounded-card border bg-card px-3 py-2 shadow-sm sm:col-span-1 ${dying ? 'border-danger ring-2 ring-danger/30' : 'border-border'}`}>
+    <div className={`framed-sm col-span-3 rounded-card border bg-card px-3 py-2 shadow-sm sm:col-span-1 ${dying ? 'border-danger ring-2 ring-danger/30' : 'border-border'}`}>
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[11px] font-semibold uppercase text-muted">
           <span aria-hidden>💀 </span>

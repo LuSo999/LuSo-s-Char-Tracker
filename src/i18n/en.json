@@ -415,7 +415,8 @@
       "books": "Allowed books",
       "legacySubclasses": "5e subclasses allowed",
       "legacyOrigins": "5e species and feats allowed",
-      "theme": "Theme"
+      "theme": "Theme",
+      "frames": "Ornate frames"
     },
     "attackAction": "Attack action"
   },
@@ -1078,6 +1079,9 @@
     "system": "System (light / dark)",
     "account": "Account: {{name}}",
     "accountHint": "The default for all your characters. Each character can have its own (🎨 on its sheet).",
-    "characterHint": "This character's theme. The first tile follows your account setting."
+    "characterHint": "This character's theme. The first tile follows your account setting.",
+    "frames": "Ornate frames",
+    "framesHint": "Decorated frames around the boxes in the theme's style (illustrated themes only). Boxes get a little more room.",
+    "framesAccount": "Account default"
   }
 }

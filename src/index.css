@@ -71,6 +71,42 @@ html[data-textured] .bg-card {
   background-size: auto, 384px;
 }
 
+/* Ornate frames (src/themes/<id>/frame.svg + corners.svg), switched on in Settings or per
+   character. Edges are drawn inside the box, the bigger corner ornaments stick out a bit,
+   so framed boxes get more padding and more room between them. */
+html[data-frames] .framed,
+html[data-frames] .framed-sm {
+  position: relative;
+  border-style: solid;
+  border-image: var(--frame) 40 / 20px round;
+}
+html[data-frames] .framed {
+  padding: 1.5rem;
+}
+html[data-frames] .framed-sm {
+  border-image-width: 14px;
+  padding: 0.75rem 1rem;
+}
+html[data-frames] .framed::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  z-index: 1;
+  pointer-events: none;
+  border: 1px solid transparent;
+  border-image: var(--frame-corners) 40 / 40px stretch;
+}
+html[data-frames] :is(.gap-2, .gap-3, .gap-4):has(> .framed, > .framed-sm) {
+  gap: 1.5rem;
+}
+html[data-frames] .space-y-4:has(> .framed) > :not(:last-child) {
+  margin-bottom: 1.5rem;
+}
+/* Scrolling columns would clip the corner ornaments that stick out. */
+html[data-frames] :is(.overflow-y-auto, .xl\:overflow-y-auto):has(> .framed) {
+  padding: 10px;
+}
+
 /* ---- Visual effects (src/ui/fx). --fx scales size and strength: 0.55 subtle, 1 standard, 1.6 strong. ---- */
 .fx-edge {
   position: absolute;

@@ -415,7 +415,8 @@
       "books": "Povolené knihy",
       "legacySubclasses": "Subclassy z 5e povoleny",
       "legacyOrigins": "Rasy a featy z 5e povoleny",
-      "theme": "Vzhled"
+      "theme": "Vzhled",
+      "frames": "Zdobené rámečky"
     },
     "attackAction": "Attack action"
   },
@@ -1078,6 +1079,9 @@
     "system": "Podle systému (světlý / tmavý)",
     "account": "Podle účtu: {{name}}",
     "accountHint": "Výchozí pro všechny tvé postavy. Každá postava může mít vlastní (🎨 na jejím sheetu).",
-    "characterHint": "Vzhled této postavy. První dlaždice se řídí nastavením účtu."
+    "characterHint": "Vzhled této postavy. První dlaždice se řídí nastavením účtu.",
+    "frames": "Zdobené rámečky",
+    "framesHint": "Ozdobné rámečky kolem boxů ve stylu vzhledu (jen u ilustrovaných vzhledů). Boxy dostanou trochu víc místa.",
+    "framesAccount": "Podle účtu"
   }
 }

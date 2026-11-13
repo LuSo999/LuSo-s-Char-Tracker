@@ -154,6 +154,8 @@ export const Character = z.object({
       legacyOrigins: z.boolean().default(false),
       /** This character's theme; unset = the account's theme. */
       theme: z.string().optional(),
+      /** This character's ornate frames on / off; unset = the account's setting. */
+      frames: z.boolean().optional(),
     })
     .default({ multiclass: true, trackAmmunition: true, legacySubclasses: false, legacyOrigins: false }),
   notes: z.string().default(''),

@@ -19,19 +19,23 @@ export const ThemeDef = z.object({
   cardOpacity: z.number().default(0.88),
   radius: z.string().optional(),
 })
-export type Theme = z.infer<typeof ThemeDef> & { id: string; background?: string; texture?: string }
+export type Theme = z.infer<typeof ThemeDef> & { id: string; background?: string; texture?: string; frame?: string; corners?: string }
 
 const defs = import.meta.glob('./*/theme.json', { eager: true, import: 'default' })
 // URLs only: the images themselves load when a theme using them is applied.
 const backgrounds = import.meta.glob('./*/background.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 const textures = import.meta.glob('./*/texture.webp', { eager: true, import: 'default', query: '?url' }) as Record<string, string>
 
+// Ornate frames: frame.svg holds the edges, corners.svg the (larger) corner ornaments.
+const frames = import.meta.glob('./*/frame.svg', { eager: true, import: 'default', query: '?url' }) as Record<string, string>
+const corners = import.meta.glob('./*/corners.svg', { eager: true, import: 'default', query: '?url' }) as Record<string, string>
+
 const folder = (path: string) => path.split('/')[1]
 
 export const themes: Theme[] = Object.entries(defs)
   .map(([path, raw]) => {
     const id = folder(path)
-    return { ...ThemeDef.parse(raw), id, background: backgrounds[`./${id}/background.webp`], texture: textures[`./${id}/texture.webp`] }
+    return { ...ThemeDef.parse(raw), id, background: backgrounds[`./${id}/background.webp`], texture: textures[`./${id}/texture.webp`], frame: frames[`./${id}/frame.svg`], corners: corners[`./${id}/corners.svg`] }
   })
   // Light and Dark first, then the illustrated themes by name.
   .sort((a, b) => Number(!!a.background) - Number(!!b.background) || a.name.localeCompare(b.name))

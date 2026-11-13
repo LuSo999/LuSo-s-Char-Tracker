@@ -7,8 +7,11 @@ import { applyTheme, useThemeOverride } from './theme'
 /** Keeps the page in the account's theme, or the open character's own. */
 export function ThemeApplier() {
   const account = useSettings((s) => s.theme)
+  const accountFrames = useSettings((s) => s.frames)
   const override = useThemeOverride((s) => s.id)
-  useEffect(() => applyTheme(override ?? account), [account, override])
+  const overrideFrames = useThemeOverride((s) => s.frames)
+  const frames = overrideFrames ?? accountFrames
+  useEffect(() => applyTheme(override ?? account, frames), [account, override, frames])
   return null
 }
 
@@ -43,6 +46,29 @@ export function ThemePicker({ value, onChange, inherit }: { value: string | unde
           </span>
         </button>
       ))}
+    </div>
+  )
+}
+
+/**
+ * The ornate-frames checkbox under the theme tiles. With `inherit` (a character)
+ * a second control lets it follow the account again.
+ */
+export function FramesToggle({ value, onChange, inherit }: { value: boolean | undefined; onChange: (v: boolean | undefined) => void; inherit?: boolean }) {
+  const { t } = useTranslation()
+  const checked = value ?? inherit ?? false
+  return (
+    <div className="mt-3">
+      <label className="flex items-center gap-2 text-sm font-medium">
+        <input type="checkbox" className="h-4 w-4 accent-[var(--color-accent)]" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+        🖼️ {t('theme.frames')}
+        {inherit !== undefined && value !== undefined && (
+          <button className="ml-2 text-xs text-accent underline" onClick={() => onChange(undefined)}>
+            {t('theme.framesAccount')}
+          </button>
+        )}
+      </label>
+      <p className="mt-0.5 pl-6 text-xs text-muted">{t('theme.framesHint')}</p>
     </div>
   )
 }

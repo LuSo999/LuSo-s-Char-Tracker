@@ -19,6 +19,8 @@ export type Settings = {
   effects: EffectLevel
   /** Theme id (src/themes) or "system"; a character may override it. */
   theme: string
+  /** Ornate themed frames around the boxes; a character may override it. */
+  frames: boolean
 }
 
 export const defaultSettings: Settings = {
@@ -26,6 +28,7 @@ export const defaultSettings: Settings = {
   turnMode: 'track',
   effects: 'standard',
   theme: 'system',
+  frames: false,
 }
 
 export const useSettings = create<Settings>(() => defaultSettings)
