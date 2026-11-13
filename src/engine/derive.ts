@@ -576,7 +576,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     let r = applyEffects(`save:${a}`, base, proficient ? 'Modifier + proficiency' : 'Modifier', vars)
     const all = applyEffects('save:all', 0, '', vars)
     r = withExhaustion({ value: r.value + all.value, parts: [...r.parts, ...all.parts.slice(1)] })
-    const beastSave = shapeCreature?.saves[a]
+    const beastSave = shapeCreature?.saves[a] === undefined ? undefined : resolveScaled(shapeCreature.saves[a]!, {})
     // Wild Shape: the beast's bonus when it is higher than yours.
     if (beastSave !== undefined && beastSave > r.value) r = { value: beastSave, parts: [{ label: shapeCreature!.name, value: beastSave }] }
     saves[a] = { ...override(`save:${a}`, r.value, r.parts), proficient }
@@ -592,7 +592,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const check = applyEffects(`check:${a}`, 0, '', vars, ctx)
     const checkAll = applyEffects('check:all', 0, '', vars, ctx)
     let v = withExhaustion({ value: r.value + check.value + checkAll.value, parts: [...r.parts, ...check.parts.slice(1), ...checkAll.parts.slice(1)] })
-    const beastSkill = shapeCreature?.skills[s]
+    const beastSkill = shapeCreature?.skills[s] === undefined ? undefined : resolveScaled(shapeCreature.skills[s]!, {})
     if (beastSkill !== undefined && beastSkill > v.value) v = { value: beastSkill, parts: [{ label: shapeCreature!.name, value: beastSkill }] }
     skillValues[s] = { ...override(`skill:${s}`, v.value, v.parts), proficiency }
   }
@@ -988,7 +988,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   }
   for (const [k, v] of Object.entries(senseAdds)) senses[k] = (senses[k] ?? 0) + v
   if (shapeCreature) {
-    for (const [k, v] of Object.entries(shapeCreature.senses)) senses[k] = Math.max(senses[k] ?? 0, v)
+    for (const [k, v] of Object.entries(shapeCreature.senses)) senses[k] = Math.max(senses[k] ?? 0, resolveScaled(v, {}))
     for (const k of Object.keys(speeds)) delete speeds[k]
     for (const [k, v] of Object.entries(shapeCreature.speed)) if (k !== 'walk') speeds[k] = resolveScaled(v, {})
     for (const r of shapeCreature.resistances) resistances.add(r)

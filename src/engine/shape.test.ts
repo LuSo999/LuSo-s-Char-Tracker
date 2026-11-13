@@ -137,3 +137,15 @@ describe('Stat block adjustments and extra forms', () => {
     expect(shapes.some((c) => c.id === 'creature-air-elemental')).toBe(true)
   })
 })
+
+describe('Formula stat blocks', () => {
+  it('scaling damage dice, formula saves, per-die HP and arrival temp HP', () => {
+    const wolf = c14.getTyped('creature-wolf', 'creature')!
+    const drake = { ...wolf, saves: { dex: '1 + pb' }, actions: [{ ...wolf.actions[0], damage: [{ dice: { count: { byLevel: { 3: 1, 7: 2 } }, die: 6 }, bonus: 'pb', type: 'acid' }] }] }
+    const v = viewCreature(drake, { pb: 3, classLevel: 7, level: 7 }, { hpPerDie: 2, tempHp: 'floor(level / 2)' })
+    expect(v.saves.dex).toBe(4)
+    expect(v.actions[0].damage).toBe('2d6+3 acid')
+    expect(v.hpMax).toBe(11 + 2 * 2)
+    expect(v.tempHp).toBe(3)
+  })
+})

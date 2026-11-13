@@ -319,7 +319,19 @@ export const CompanionGrant = z.object({
    * Changes to the stat block (2014 Ranger's Companion: + pb to AC, attacks and damage; HP at least 4 × level).
    * Formulas see the owner's numbers.
    */
-  adjust: z.object({ ac: Scaled.optional(), attack: Scaled.optional(), damage: Scaled.optional(), hpBonus: Scaled.optional(), hpMin: Scaled.optional() }).optional(),
+  adjust: z
+    .object({
+      ac: Scaled.optional(),
+      attack: Scaled.optional(),
+      damage: Scaled.optional(),
+      hpBonus: Scaled.optional(),
+      hpMin: Scaled.optional(),
+      /** Extra HP per Hit Die of the stat block (Mighty Summoner: 2). */
+      hpPerDie: Scaled.optional(),
+      /** Temporary HP it arrives with (Hound of Ill Omen: half the class level). */
+      tempHp: Scaled.optional(),
+    })
+    .optional(),
 })
 export type CompanionGrant = z.infer<typeof CompanionGrant>
 
@@ -716,8 +728,11 @@ export const CreatureAction = z.object({
   actionType: ActionType.default('action'),
   /** Attack roll bonus and reach / range text ("reach 5 ft.", "range 80/320 ft."). */
   attack: z.object({ bonus: Scaled, range: z.string().optional() }).optional(),
-  /** Damage parts: dice plus a (scaled) flat bonus, e.g. { dice: '1d8', bonus: '3 + slot', type: 'piercing' }. */
-  damage: z.array(z.object({ dice: z.string().default(''), bonus: Scaled.default(0), type: z.string() })).default([]),
+  /**
+   * Damage parts: dice plus a (scaled) flat bonus, e.g. { dice: '1d8', bonus: '3 + slot', type: 'piercing' }.
+   * Dice may scale: { count: { byLevel: { 7: 1, 15: 2 } }, die: 6 } (level of the granting class).
+   */
+  damage: z.array(z.object({ dice: z.union([z.string(), z.object({ count: Scaled, die: Scaled })]).default(''), bonus: Scaled.default(0), type: z.string() })).default([]),
   save: z.object({ ability: Ability, dc: Scaled }).optional(),
 })
 export type CreatureAction = z.infer<typeof CreatureAction>
@@ -736,10 +751,11 @@ export const Creature = z.object({
   /** Speeds in feet: walk, fly, swim, climb, burrow (may scale). */
   speed: z.record(z.string(), Scaled),
   scores: z.object({ str: z.number(), dex: z.number(), con: z.number(), int: z.number(), wis: z.number(), cha: z.number() }),
-  saves: z.partialRecord(Ability, z.number()).default({}),
-  skills: z.partialRecord(Skill, z.number()).default({}),
-  senses: z.record(z.string(), z.number()).default({}),
-  passivePerception: z.number().optional(),
+  /** Bonuses may be formulas (Steel Defender: '1 + pb'). */
+  saves: z.partialRecord(Ability, Scaled).default({}),
+  skills: z.partialRecord(Skill, Scaled).default({}),
+  senses: z.record(z.string(), Scaled).default({}),
+  passivePerception: Scaled.optional(),
   languages: z.string().default(''),
   resistances: z.array(z.string()).default([]),
   immunities: z.array(z.string()).default([]),

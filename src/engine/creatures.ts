@@ -16,6 +16,13 @@ export type CreatureActionView = {
 
 export type CreatureView = {
   creature: Creature
+  /** Resolved bonuses and senses (they may be formulas). */
+  saves: Partial<Record<Ability, number>>
+  skills: Record<string, number>
+  senses: Record<string, number>
+  passivePerception?: number
+  /** Temporary HP it arrives with. */
+  tempHp: number
   ac: number
   hpMax: number
   speeds: Record<string, number>
@@ -41,9 +48,16 @@ export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: Com
     if (ft > 0) speeds[k] = ft
   }
   const adj = (v: Parameters<typeof resolveScaled>[0] | undefined) => (v === undefined ? 0 : n(v))
-  const hp = n(creature.hp) + adj(adjust?.hpBonus)
+  const dieCount = Number(/^(\d+)d/.exec(creature.hitDice ?? '')?.[1] ?? 0) || (creature.hitDice ? n(creature.hitDice) : 0)
+  const hp = n(creature.hp) + adj(adjust?.hpBonus) + dieCount * adj(adjust?.hpPerDie)
+  const rec = <K extends string>(r: Partial<Record<K, Parameters<typeof resolveScaled>[0]>>) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, n(v as Parameters<typeof resolveScaled>[0])])) as Record<K, number>
   return {
     creature,
+    saves: rec(creature.saves),
+    skills: rec(creature.skills),
+    senses: rec(creature.senses),
+    passivePerception: creature.passivePerception === undefined ? undefined : n(creature.passivePerception),
+    tempHp: adj(adjust?.tempHp),
     ac: n(creature.ac) + adj(adjust?.ac),
     hpMax: Math.max(1, hp, adj(adjust?.hpMin)),
     speeds,
@@ -57,7 +71,8 @@ export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: Com
         .map((d, i) => {
           // The damage bonus goes on the first part of an attack (Ranger's Companion: + pb).
           const bonus = n(d.bonus) + (i === 0 && a.attack ? adj(adjust?.damage) : 0)
-          const amount = d.dice ? `${d.dice}${bonus ? signed(bonus) : ''}` : String(bonus)
+          const dice = typeof d.dice === 'string' ? d.dice : (() => { const c = n(d.dice.count); return c > 0 ? `${c}d${n(d.dice.die)}` : '' })()
+          const amount = dice ? `${dice}${bonus ? signed(bonus) : ''}` : String(bonus)
           return `${amount} ${d.type}`
         })
         .join(' + '),

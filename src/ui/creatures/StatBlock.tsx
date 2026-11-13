@@ -46,14 +46,14 @@ export function StatBlock({ view, hp }: { view: CreatureView; hp?: string }) {
         ))}
       </div>
       <div className="space-y-0.5 text-xs">
-        {line(t('statBlock.saves'), Object.entries(c.saves).map(([a, v]) => `${a.toUpperCase()} ${signed(v)}`).join(', '))}
-        {line(t('statBlock.skills'), Object.entries(c.skills).map(([s, v]) => `${s.replace(/-/g, ' ')} ${signed(v)}`).join(', '))}
+        {line(t('statBlock.saves'), Object.entries(view.saves).map(([a, v]) => `${a.toUpperCase()} ${signed(v)}`).join(', '))}
+        {line(t('statBlock.skills'), Object.entries(view.skills).map(([s, v]) => `${s.replace(/-/g, ' ')} ${signed(v)}`).join(', '))}
         {line(t('statBlock.resistances'), c.resistances.join(', '))}
         {line(t('statBlock.immunities'), c.immunities.join(', '))}
         {line(t('statBlock.conditionImmunities'), c.conditionImmunities.join(', '))}
         {line(
           t('statBlock.senses'),
-          [...Object.entries(c.senses).map(([k, v]) => `${k} ${v} ft`), c.passivePerception ? `${t('statBlock.passive')} ${c.passivePerception}` : ''].filter(Boolean).join(', '),
+          [...Object.entries(view.senses).map(([k, v]) => `${k} ${v} ft`), view.passivePerception ? `${t('statBlock.passive')} ${view.passivePerception}` : ''].filter(Boolean).join(', '),
         )}
         {line(t('statBlock.languages'), c.languages && c.languages !== 'None' ? c.languages : '')}
       </div>
