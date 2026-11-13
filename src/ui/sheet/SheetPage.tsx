@@ -219,6 +219,39 @@ function LevelQueue({ active, onNext }: { active: boolean; onNext: () => void })
   return null
 }
 
+/**
+ * Homebrew this character uses that changed since the sheet last looked (edited in the homebrew
+ * editor, maybe on another device): noted in the sheet history, once.
+ */
+function ContentWatch() {
+  const { character, sheet } = useSheet()
+  const run = useRun()
+  const checked = character.contentCheckedAt ?? 0
+  const used = [
+    ...sheet.active.map((ae) => ae.entity),
+    ...sheet.spellcasting.rows.map((r) => r.spell),
+    ...sheet.items.map((r) => r.item),
+    ...sheet.companions.map((c) => c.creature),
+  ]
+  const changed = [...new Map(used.filter((e) => e.source.book.startsWith('homebrew') && (e.updatedAt ?? 0) > checked).map((e) => [e.id, e])).values()]
+  const key = changed.map((e) => `${e.id}@${e.updatedAt}`).join(',')
+  useEffect(() => {
+    if (!changed.length) return
+    void run(
+      {
+        ok: true,
+        character: { ...character, contentCheckedAt: Math.max(...changed.map((e) => e.updatedAt ?? 0)) },
+        items: changed.map((e) => ({ type: 'contentChanged', params: { name: e.name }, entity: e.id })),
+        groupType: 'contentChanged',
+        kind: 'sheet',
+      },
+      { quiet: true },
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+  return null
+}
+
 /** While the sheet is open, the 🎨 button in the header edits this character's theme. */
 function ThemeTarget() {
   const { character } = useSheet()
@@ -433,6 +466,7 @@ function SheetLayout() {
       {!inventory && <EdgeHandle side="right" icon="🎒" label={t('inventory.title')} onClick={() => setInventory(true)} />}
       <EditBanner />
       <ThemeTarget />
+      <ContentWatch />
       <EntityEditHost />
 
       <LayoutToggle />

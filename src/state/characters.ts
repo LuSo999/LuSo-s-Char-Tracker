@@ -59,7 +59,7 @@ export function useCharacter(uid: string, id: string) {
 export const CharacterFile = Character.omit({ id: true })
 
 export async function addCharacter(uid: string, input: Omit<CharacterInput, 'id'>) {
-  const parsed = CharacterFile.parse(input)
+  const parsed = CharacterFile.parse({ contentCheckedAt: Date.now(), ...input })
   // Firestore rejects undefined values; drop them via JSON round-trip.
   const data = JSON.parse(JSON.stringify(parsed)) as Record<string, unknown>
   const ref = await addDoc(charactersCol(uid), { ...data, createdAt: serverTimestamp() })

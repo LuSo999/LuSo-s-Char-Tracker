@@ -1,6 +1,7 @@
 // The signed-in user's homebrew packs (users/{uid}/packs/{packId}), live.
 // Each document holds the pack as a JSON string, so any valid pack is stored
 // as is (Firestore can't store undefined values or very deep objects well).
+import { stampChanges } from '../engine/homebrew'
 import { collection, deleteDoc, doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore'
 import { create } from 'zustand'
 import { Pack } from '../content/schema'
@@ -50,7 +51,8 @@ export function enableMemoryHomebrew() {
 }
 
 export async function savePack(uid: string, pack: Pack) {
-  const clean = Pack.parse(JSON.parse(JSON.stringify(pack)))
+  const previous = useHomebrew.getState().packs.find((p) => p.id === pack.id)
+  const clean = Pack.parse(JSON.parse(JSON.stringify(stampChanges(pack, previous))))
   if (memory) {
     const others = useHomebrew.getState().packs.filter((p) => p.id !== clean.id)
     return void useHomebrew.setState({ packs: [...others, clean].sort((a, b) => a.name.localeCompare(b.name)) })

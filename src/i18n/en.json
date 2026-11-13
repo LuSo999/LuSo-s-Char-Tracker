@@ -344,7 +344,8 @@
       "shape": "Wild Shape",
       "companion": "Companion",
       "xp": "Experience",
-      "hitDice": "Hit Dice"
+      "hitDice": "Hit Dice",
+      "contentChanged": "Homebrew changed"
     },
     "items": {
       "damage": "Took {{amount}} damage: HP {{before}} → {{after}}",
@@ -447,7 +448,8 @@
       "attacksPerAction": "Attacks per Attack action",
       "slotMax": "Level {{level}} spell slots",
       "pactSlots": "Pact Magic slots",
-      "cantripDice": "{{name}}: damage"
+      "cantripDice": "{{name}}: damage",
+      "contentChanged": "Homebrew changed: {{name}}"
     },
     "attackAction": "Attack action"
   },

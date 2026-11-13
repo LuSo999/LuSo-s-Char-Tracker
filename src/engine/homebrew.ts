@@ -123,3 +123,10 @@ export function copyPack(pack: Pack, name = `${pack.name} (copy)`): Pack {
   const entities = (remap(pack.entities) as Entity[]).map((e) => ({ ...e, source: { ...e.source, book: fresh.book } }))
   return Pack.parse({ ...fresh, entities })
 }
+
+/** Entities whose content changed since the stored pack get a fresh `updatedAt`. */
+export function stampChanges(next: Pack, previous: Pack | undefined, now = Date.now()): Pack {
+  const strip = (e: object) => JSON.stringify({ ...e, updatedAt: undefined })
+  const before = new Map(previous?.entities.map((e) => [e.id, strip(e)]))
+  return { ...next, entities: next.entities.map((e) => (before.get(e.id) === strip(e) ? e : { ...e, updatedAt: now })) }
+}

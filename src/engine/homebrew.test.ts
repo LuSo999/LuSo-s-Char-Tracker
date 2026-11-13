@@ -1,6 +1,6 @@
 // Homebrew pack import: readable errors.
 import { describe, expect, it } from 'vitest'
-import { parsePackFile } from './homebrew'
+import { newPack, parsePackFile, stampChanges } from './homebrew'
 
 describe('Import errors', () => {
   it('name the entity and the field, using its own type’s rules', () => {
@@ -16,5 +16,16 @@ describe('Import errors', () => {
   it('says when the file isn’t JSON', () => {
     const r = parsePackFile('{ nope')
     expect(!r.ok && r.notJson).toBe(true)
+  })
+})
+
+describe('Homebrew change stamps', () => {
+  it('only changed entities get a new updatedAt', () => {
+    const p = newPack('2024', 'P')
+    const a = { id: 'a', edition: '2024', name: 'A', type: 'feature', source: { book: p.book } } as never
+    const b = { id: 'b', edition: '2024', name: 'B', type: 'feature', source: { book: p.book }, updatedAt: 5 } as never
+    const prev = { ...p, entities: [a, b] }
+    const next = stampChanges({ ...p, entities: [{ ...(a as object), name: 'A2' } as never, b] }, prev, 100)
+    expect(next.entities.map((e) => e.updatedAt)).toEqual([100, 5])
   })
 })

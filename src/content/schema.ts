@@ -348,6 +348,8 @@ const base = {
   verified: z.boolean().default(true),
   /** Marks content from recently released books (shown as a small "new" tag). */
   isNew: z.boolean().optional(),
+  /** Homebrew: when the entity was last changed (ms), so characters using it can note the change. */
+  updatedAt: z.number().optional(),
   effects: z.array(Effect).default([]),
   resources: z.array(Resource).default([]),
   activities: z.array(Activity).default([]),
