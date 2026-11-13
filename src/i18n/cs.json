@@ -256,7 +256,8 @@
       "levelUp": "{{name}}: výměna kouzla za tento level je využitá.",
       "longRestOne": "{{name}}: výměna kouzla za tento Long Rest je využitá."
     },
-    "spellbookLevel": "Pro kouzlo {{level}}. úrovně není volné místo zdarma; jen zkopírováním."
+    "spellbookLevel": "Pro kouzlo {{level}}. úrovně není volné místo zdarma; jen zkopírováním.",
+    "schoolLimit": "Jen kouzla škol {{schools}}, kromě {{max}} z libovolné školy."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -616,7 +617,8 @@
       "freePlace": "{{count}}× do {{level}}. úrovně",
       "freePlaces": "Zbývá přidat zdarma: {{list}}",
       "noFreePlaces": "Do dalšího levelu Wizarda už nic zdarma nepřidáš.",
-      "thisLevel": "Tento level: {{added}}/{{of}} nová kouzla do spellbooku (do {{level}}. úrovně)"
+      "thisLevel": "Tento level: {{added}}/{{of}} nová kouzla do spellbooku (do {{level}}. úrovně)",
+      "schoolConfirm": "Jen kouzla škol {{schools}}, kromě {{max}} z libovolné školy, a ta jsou využitá. Přesto se naučit {{name}}?"
     }
   },
   "actionCategory": {

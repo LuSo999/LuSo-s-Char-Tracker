@@ -343,6 +343,33 @@ const startingEquipment = {
 export const SwapRule = z.enum(['none', 'levelUp', 'longRestOne', 'longRestAll'])
 export type SwapRule = z.infer<typeof SwapRule>
 
+/** How a class (or a subclass: Eldritch Knight, Arcane Trickster) casts spells. */
+export const CasterInfo = z.object({
+  ability: Ability,
+  /** "known": a fixed list (5e Bard…); "prepared": chosen from the class list (count from the table or formula). */
+  mode: z.enum(['known', 'prepared']),
+  spellbook: z.boolean().default(false),
+  /** 5e prepared casters: number of prepared spells as a formula (e.g. "int + level"). */
+  preparedFormula: z.string().optional(),
+  /** Which spells can be cast as rituals: prepared/known ones, any in the spellbook, or none. */
+  ritual: z.enum(['none', 'prepared', 'book']),
+  /**
+   * When spells may be replaced: never, one per class level gained, one
+   * per Long Rest, or any after a Long Rest. Adding up to the limits is
+   * always fine; this governs removing one.
+   */
+  swap: z
+    .object({ cantrips: SwapRule, spells: SwapRule })
+    .default({ cantrips: 'none', spells: 'longRestAll' }),
+  /** Spell list to learn from when it isn't the class's own (Eldritch Knight, Arcane Trickster: "wizard"). */
+  spellList: z.string().optional(),
+  /** 2014 Eldritch Knight / Arcane Trickster: leveled spells only from these schools… */
+  schools: z.array(z.string()).optional(),
+  /** …except this many (by class level) from any school. */
+  anySchool: Scaled.optional(),
+})
+export type CasterInfo = z.infer<typeof CasterInfo>
+
 export const SpellcastingProgression = z.enum(['none', 'full', 'half', 'third', 'pact'])
 
 export const Class = z.object({
@@ -375,26 +402,7 @@ export const Class = z.object({
   progression: z.record(z.string(), z.record(z.string(), z.number())).default({}),
   spellcasting: SpellcastingProgression.default('none'),
   /** How the class casts: ability, prepared vs known spells, spellbook, rituals. */
-  caster: z
-    .object({
-      ability: Ability,
-      /** "known": a fixed list (5e Bard…); "prepared": chosen from the class list (count from the table or formula). */
-      mode: z.enum(['known', 'prepared']),
-      spellbook: z.boolean().default(false),
-      /** 5e prepared casters: number of prepared spells as a formula (e.g. "int + level"). */
-      preparedFormula: z.string().optional(),
-      /** Which spells can be cast as rituals: prepared/known ones, any in the spellbook, or none. */
-      ritual: z.enum(['none', 'prepared', 'book']),
-      /**
-       * When spells may be replaced: never, one per class level gained, one
-       * per Long Rest, or any after a Long Rest. Adding up to the limits is
-       * always fine; this governs removing one.
-       */
-      swap: z
-        .object({ cantrips: SwapRule, spells: SwapRule })
-        .default({ cantrips: 'none', spells: 'longRestAll' }),
-    })
-    .optional(),
+  caster: CasterInfo    .optional(),
   ...startingEquipment,
   /** Per class level: cantrips known, spells known/prepared, slots of levels 1–9 (Pact Magic: slots of one level). */
   spellTable: z.record(z.string(), z.object({ cantrips: z.number(), known: z.number().optional(), prepared: z.number().optional(), slots: z.array(z.number()) })).default({}),
@@ -406,6 +414,10 @@ export const Subclass = z.object({
   type: z.literal('subclass'),
   class: z.string(),
   levels: z.array(ClassLevel),
+  /** Subclasses that cast spells for a non-caster class (Eldritch Knight, Arcane Trickster: "third"). */
+  spellcasting: SpellcastingProgression.default('none'),
+  caster: CasterInfo.optional(),
+  spellTable: z.record(z.string(), z.object({ cantrips: z.number(), known: z.number().optional(), prepared: z.number().optional(), slots: z.array(z.number()) })).default({}),
 })
 export type Subclass = z.infer<typeof Subclass>
 

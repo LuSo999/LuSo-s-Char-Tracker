@@ -217,9 +217,9 @@ export function ManageSpells({ caster }: { caster: CasterState }) {
     () =>
       content
         .all('spell')
-        .filter((s) => (s.classes.includes(caster.classId) || expanded.split(',').includes(s.id)) && s.level <= caster.maxSpellLevel)
+        .filter((s) => (s.classes.includes(caster.spellList) || expanded.split(',').includes(s.id)) && s.level <= caster.maxSpellLevel)
         .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name)),
-    [content, caster.classId, caster.maxSpellLevel, expanded],
+    [content, caster.spellList, caster.maxSpellLevel, expanded],
   )
   const q = query.trim().toLowerCase()
   const shown = pool.filter((s) => (level === 'all' || s.level === level) && (!q || s.name.toLowerCase().includes(q)))
@@ -233,6 +233,7 @@ export function ManageSpells({ caster }: { caster: CasterState }) {
       spellTooHigh: 'spells.overLimit',
       spellbookFull: 'spells.rules.copyConfirm',
       spellbookLevel: 'spells.rules.copyLevelConfirm',
+      schoolLimit: 'spells.rules.schoolConfirm',
       spellbookRemove: 'spells.rules.bookRemoveConfirm',
       swapNone: 'spells.rules.swapNoneConfirm',
       swapCantripsNone: 'spells.rules.swapCantripsNoneConfirm',

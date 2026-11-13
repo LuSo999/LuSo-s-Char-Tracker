@@ -137,6 +137,14 @@ export function setClassSpell(
   }
   if (on && !force) {
     if (spell.level > caster.maxSpellLevel) return { ok: false, error: 'spellTooHigh', params: { level: spell.level } }
+    // 2014 Eldritch Knight / Arcane Trickster: most spells from two schools.
+    if (caster.schools && spell.level > 0 && !caster.schools.includes(spell.school.toLowerCase())) {
+      const outside = caster.known.filter((id) => {
+        const s = content.getTyped(id, 'spell')
+        return s && !caster.schools!.includes(s.school.toLowerCase())
+      }).length
+      if (outside >= (caster.anySchool ?? 0)) return { ok: false, error: 'schoolLimit', params: { schools: caster.schools.join(', '), max: caster.anySchool ?? 0 } }
+    }
     // Wizard: two free spells per level; more only by copying them from a scroll or another book.
     if (inBook && !fitsFree()) {
       const full = caster.known.length >= (caster.spellbookMax ?? 0)

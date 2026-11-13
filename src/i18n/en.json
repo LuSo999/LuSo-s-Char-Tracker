@@ -256,7 +256,8 @@
       "levelUp": "{{name}}: the spell replacement for this level is used up.",
       "longRestOne": "{{name}}: the spell replacement for this Long Rest is used up."
     },
-    "spellbookLevel": "No free place for a level {{level}} spell; only by copying."
+    "spellbookLevel": "No free place for a level {{level}} spell; only by copying.",
+    "schoolLimit": "Only {{schools}} spells, except {{max}} from any school."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -616,7 +617,8 @@
       "freePlace": "{{count}}× up to level {{level}}",
       "freePlaces": "Free spells left to add: {{list}}",
       "noFreePlaces": "No free spells left to add until the next Wizard level.",
-      "thisLevel": "This level: {{added}}/{{of}} new spells in the spellbook (up to level {{level}})"
+      "thisLevel": "This level: {{added}}/{{of}} new spells in the spellbook (up to level {{level}})",
+      "schoolConfirm": "Only {{schools}} spells, except {{max}} from any school, and those are used. Learn {{name}} anyway?"
     }
   },
   "actionCategory": {

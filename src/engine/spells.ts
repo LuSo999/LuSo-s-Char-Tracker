@@ -38,6 +38,13 @@ export type CasterState = {
   spellbookMax?: number
   /** Wizard: the free places by highest spell level (see spellbookPlaces). */
   spellbookPlaces?: number[]
+  /** Class whose spell list it learns from (Eldritch Knight: "wizard"). */
+  spellList: string
+  /** full / half / third / pact: for the multiclass slot table. */
+  progression: string
+  /** 2014 Eldritch Knight / Arcane Trickster: allowed schools, and how many spells may be from any school. */
+  schools?: string[]
+  anySchool?: number
   /** When cantrips / spells may be replaced, and how many replacements are used up. */
   swap: { cantrips: SwapRule; spells: SwapRule }
   swapsUsed: { cantrips: number; spells: number }
@@ -146,8 +153,13 @@ export function computeSpellcasting(
 ): Spellcasting {
   const casters: CasterState[] = []
   for (const entry of char.classes) {
-    const cls = content.getTyped(entry.classId, 'class')
-    if (!cls?.caster) continue
+    const klass = content.getTyped(entry.classId, 'class')
+    if (!klass) continue
+    // A class casts on its own, or through its subclass (Eldritch Knight, Arcane Trickster).
+    const sub = entry.subclassId ? content.getTyped(entry.subclassId, 'subclass') : undefined
+    const source = klass.caster ? klass : sub?.caster ? sub : undefined
+    if (!source?.caster) continue
+    const cls = { ...klass, caster: source.caster, spellTable: source.spellTable, spellcasting: source.spellcasting }
     const row = tableRow(cls, entry.level)
     const slots = row?.slots ?? []
     const vars: FormulaVars = { ...ctx.mods, pb: ctx.pb, level: entry.level, classLevel: entry.level, characterLevel: ctx.characterLevel }
@@ -180,6 +192,10 @@ export function computeSpellcasting(
       swap: cls.caster.swap,
       swapsUsed: { cantrips: swapsUsed(char, cls.id, 'cantrips', cls.caster.swap.cantrips), spells: swapsUsed(char, cls.id, 'spells', cls.caster.swap.spells) },
       expanded: active.filter((ae) => ae.classId === cls.id).flatMap((ae) => ae.entity.expandedSpells ?? []),
+      spellList: cls.caster.spellList ?? cls.id,
+      progression: cls.spellcasting,
+      schools: cls.caster.schools,
+      anySchool: cls.caster.anySchool !== undefined ? resolveScaled(cls.caster.anySchool, vars) : undefined,
     })
   }
 
@@ -187,11 +203,15 @@ export function computeSpellcasting(
   const regular = casters.filter((c) => !c.pact)
   let slotCounts: number[] = []
   if (regular.length === 1) {
-    slotCounts = tableRow(content.require(regular[0].classId, 'class'), regular[0].level)?.slots ?? []
+    const only = char.classes.find((e) => e.classId === regular[0].classId)
+    const sub = only?.subclassId ? content.getTyped(only.subclassId, 'subclass') : undefined
+    const table = sub?.caster ? sub : content.require(regular[0].classId, 'class')
+    slotCounts = tableRow(table as Class, regular[0].level)?.slots ?? []
   } else if (regular.length > 1) {
     const casterLevel = regular.reduce((sum, c) => {
-      const kind = content.require(c.classId, 'class').spellcasting
-      return sum + (kind === 'full' ? c.level : kind === 'half' ? halfRound(c.level, char.edition) : 0)
+      // Multiclass Spellcaster: full levels, half (Paladin, Ranger), a third rounded down (Eldritch Knight, Arcane Trickster).
+      const kind = c.progression
+      return sum + (kind === 'full' ? c.level : kind === 'half' ? halfRound(c.level, char.edition) : kind === 'third' ? Math.floor(c.level / 3) : 0)
     }, 0)
     const fullTable = content.all('class').find((k) => k.spellcasting === 'full' && k.caster)
     slotCounts = (fullTable && tableRow(fullTable, casterLevel)?.slots) ?? []
