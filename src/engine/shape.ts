@@ -1,7 +1,7 @@
 // Wild Shape forms and companions: changing shape, the beast's HP, adding and tracking companions.
 import type { Character } from './character'
 import type { CompanionSource } from './creatures'
-import { viewCreature } from './creatures'
+import { companionVars, viewCreature } from './creatures'
 import type { ContentIndex } from '../content'
 import type { Sheet } from './derive'
 import type { ActionResult } from './actions'
@@ -46,12 +46,12 @@ let seq = 0
 const uid = () => `c${Date.now().toString(36)}${(seq++).toString(36)}`
 
 /** A new familiar, steed, companion or summon at full HP. Familiars and steeds replace the previous one from the same grant. */
-export function addCompanion(char: Character, sheet: Sheet, content: ContentIndex, source: CompanionSource, creatureId: string, slot?: number): ActionResult {
+export function addCompanion(char: Character, sheet: Sheet, content: ContentIndex, source: CompanionSource, creatureId: string, slot?: number, choice?: string): ActionResult {
   const creature = content.getTyped(creatureId, 'creature')
   if (!creature) return { ok: false, error: 'noChange' }
-  const temp: Character = { ...char, companions: [...char.companions, { uid: uid(), creatureId, sourceId: source.entity.id, grantId: source.grant.id, hp: 0, tempHp: 0, slot }] }
+  const temp: Character = { ...char, companions: [...char.companions, { uid: uid(), creatureId, sourceId: source.entity.id, grantId: source.grant.id, hp: 0, tempHp: 0, slot, choice }] }
   // Resolve its HP with the owner's numbers (scaled stat blocks).
-  const view = viewCreature(creature, { ...sheet.mods, pb: sheet.pb.value, characterLevel: sheet.characterLevel, level: source.classLevel, classLevel: source.classLevel, slot: slot ?? 0, spellAttack: source.spellAttack, spellDc: source.spellDc }, source.grant.adjust)
+  const view = viewCreature(creature, companionVars(sheet, source, slot), source.grant.adjust, choice)
   const last = temp.companions[temp.companions.length - 1]
   last.hp = view.hpMax
   last.tempHp = view.tempHp

@@ -135,6 +135,7 @@ export type EffectWhen = z.infer<typeof EffectWhen>
  *   speed:<fly|swim|climb|burrow> (feet; value "walk" = equal to Speed),
  *   shape:maxCr / shape:fly / shape:swim / shape:forms / shape:ac (Wild Shape limits; op max),
  *   shape:creature:<creature id> (that creature is also a Wild Shape form: elementals),
+ *   shape:type:<creature type> (forms of that type count too, within the CR limit: Boon of Fluid Forms),
  *   resistance:<damage type>, immunity:<damage type>, conditionImmunity:<condition>,
  *   note (a reminder line in the notes; text in `note`).
  */
@@ -315,6 +316,10 @@ export const CompanionGrant = z.object({
   spellClass: z.string().optional(),
   /** Short rules reminder shown with the companion. */
   note: z.string().optional(),
+  /** Fixed numbers instead of the owner's (Cube of Summoning: +9 to hit, DC 17, level 5). */
+  fixed: z.object({ spellAttack: z.number().optional(), spellDc: z.number().optional(), slot: z.number().int().optional() }).optional(),
+  /** A pick made when the companion arrives (damage type, essence…); "@choice" in its stat block stands for it. */
+  choose: z.object({ label: z.string(), options: z.array(z.string()).min(1) }).optional(),
   /**
    * Changes to the stat block (2014 Ranger's Companion: + pb to AC, attacks and damage; HP at least 4 × level).
    * Formulas see the owner's numbers.
@@ -330,6 +335,8 @@ export const CompanionGrant = z.object({
       hpPerDie: Scaled.optional(),
       /** Temporary HP it arrives with (Hound of Ill Omen: half the class level). */
       tempHp: Scaled.optional(),
+      /** HP maximum multiplied (Phantasmal Creatures without a slot: 0.5, rounded down). */
+      hpFactor: z.number().optional(),
     })
     .optional(),
 })
@@ -754,7 +761,8 @@ export const Creature = z.object({
   hitDice: z.string().optional(),
   /** Speeds in feet: walk, fly, swim, climb, burrow (may scale). */
   speed: z.record(z.string(), Scaled),
-  scores: z.object({ str: z.number(), dex: z.number(), con: z.number(), int: z.number(), wis: z.number(), cha: z.number() }),
+  /** Missing for objects (Eldritch Cannon): no ability scores, every modifier 0. */
+  scores: z.object({ str: z.number(), dex: z.number(), con: z.number(), int: z.number(), wis: z.number(), cha: z.number() }).optional(),
   /** Bonuses may be formulas (Steel Defender: '1 + pb'). */
   saves: z.partialRecord(Ability, Scaled).default({}),
   skills: z.partialRecord(Skill, Scaled).default({}),

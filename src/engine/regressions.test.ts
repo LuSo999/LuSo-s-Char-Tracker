@@ -3,11 +3,11 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { ContentIndex } from '../content'
 import { Pack } from '../content/schema'
-import { adjustXp, heal, setHitDiceRemaining, setHp, takeDamage, toggleEffect, type ActionResult } from './actions'
+import { adjustXp, heal, toggleCondition, setHitDiceRemaining, setHp, takeDamage, toggleEffect, type ActionResult } from './actions'
 import { Character, type CharacterInput } from './character'
 import { computeSheet } from './derive'
 import { makeCharacter, srd } from './fixtures'
-import { longRest } from './rest'
+import { longRest, shortRest } from './rest'
 import { startShape } from './shape'
 import { fontOfMagic } from './spellActions'
 
@@ -147,5 +147,18 @@ describe('Review fixes', () => {
     expect(s.resources.find((r) => r.key === 'slot:2')?.max).toBe(5)
     expect(s.hitDice[0]).toMatchObject({ die: 6, total: 7 })
     expect(s.attunementSlots).toBe(4)
+  })
+
+  it('Unconscious (and 2024 Incapacitated) ends Wild Shape', () => {
+    const c = okR(startShape(hero('2024', [{ classId: 'druid', level: 2 }]), c24, 'creature-wolf'))
+    const out = okR(toggleCondition(c, 'incapacitated', 'Incapacitated', computeSheet(c, c24)))
+    expect(out.shape).toBeUndefined()
+    expect(out.toggles).not.toContain('state:Wild Shape')
+  })
+
+  it('a spent Hit Die heals at least 1 HP in 2024 (0 in 2014)', () => {
+    const weak = { baseScores: { str: 10, dex: 10, con: 3, int: 10, wis: 10, cha: 10 }, hp: { current: 1 } }
+    expect(shortRest(hero('2024', [{ classId: 'wizard', level: 3 }], weak), c24, { 6: [1] }).character.hp.current).toBe(2)
+    expect(shortRest(hero('2014', [{ classId: 'wizard', level: 3 }], weak), c14, { 6: [1] }).character.hp.current).toBe(1)
   })
 })

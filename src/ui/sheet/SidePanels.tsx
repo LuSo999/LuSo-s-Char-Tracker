@@ -150,7 +150,7 @@ export function ConditionsPanel() {
               <RuleRef entity={content.get(c)} content={content} className="pl-2">
                 {name}
               </RuleRef>
-              <button className="px-1.5" aria-label={t('sheet.removeCondition', { name })} onClick={() => void run(toggleCondition(character, c, name))}>
+              <button className="px-1.5" aria-label={t('sheet.removeCondition', { name })} onClick={() => void run(toggleCondition(character, c, name, sheet))}>
                 ×
               </button>
             </li>
@@ -187,7 +187,7 @@ export function ConditionsPanel() {
               onChange={(e) => {
                 const c = content.get(e.target.value)
                 setAdding(false)
-                if (c) void run(toggleCondition(character, c.id, c.name))
+                if (c) void run(toggleCondition(character, c.id, c.name, sheet))
               }}
             >
               <option value="">{t('sheet.chooseCondition')}</option>

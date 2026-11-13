@@ -61,11 +61,11 @@ const creatures2024 = [
     scores: { str: 19, dex: 14, con: 17, int: 10, wis: 14, cha: 14 },
     resistances: ['acid', 'cold', 'fire', 'lightning', 'poison'], conditionImmunities: ['charmed', 'frightened', 'poisoned'],
     senses: { blindsight: 30, darkvision: 60 }, passivePerception: 12, languages: 'Draconic and the languages you know',
-    traits: [{ name: 'Shared Resistances', description: 'When you summon it, choose one of its Resistances; you have it too until the spell ends.' }],
+    traits: [{ name: 'Shared Resistances', description: 'You share its @choice Resistance until the spell ends.' }],
     actions: [
       { name: 'Multiattack', actionType: 'action', description: 'Rend attacks equal to half the spell’s level (round down), and it uses Breath Weapon.' },
       { name: 'Rend', actionType: 'action', description: 'Melee spell attack, reach 10 ft.', attack: { bonus: 'spellAttack', range: 'reach 10 ft.' }, damage: [{ dice: '1d6', bonus: '4 + slot', type: 'piercing' }] },
-      { name: 'Breath Weapon', actionType: 'action', description: '30-ft Cone, Dexterity save: 2d6 damage of the chosen resistance type, half on a success.', save: { ability: 'dex', dc: 'spellDc' }, damage: [{ dice: '2d6', bonus: 0, type: 'chosen type' }] },
+      { name: 'Breath Weapon', actionType: 'action', description: '30-ft Cone, Dexterity save: 2d6 @choice damage, half on a success.', save: { ability: 'dex', dc: 'spellDc' }, damage: [{ dice: '2d6', bonus: 0, type: '@choice' }] },
     ],
   }),
 ]
@@ -82,7 +82,7 @@ export const companions: ClassOverlay = {
     'find-familiar': { companions: [{ id: 'familiar', kind: 'familiar', filter: { creatureType: 'beast', maxCr: 0 }, note: 'Celestial, Fey or Fiend in the chosen form. It can’t attack.' }] },
     'find-steed': { companions: [{ id: 'steed', kind: 'steed', creatures: ['creature-otherworldly-steed'], slot: true, note: 'Shares your Initiative; a controlled mount while you ride it.' }] },
     'giant-insect': { companions: [{ id: 'insect', kind: 'summon', creatures: ['centipede', 'spider', 'wasp'].map((f) => `creature-giant-insect-${f}`), slot: true }] },
-    'summon-dragon': { companions: [{ id: 'dragon', kind: 'summon', creatures: ['creature-draconic-spirit'], slot: true }] },
+    'summon-dragon': { companions: [{ id: 'dragon', kind: 'summon', creatures: ['creature-draconic-spirit'], slot: true, choose: { label: 'Shared resistance (breath damage type)', options: ['acid', 'cold', 'fire', 'lightning', 'poison'] } }] },
     'animate-dead': { companions: [{ id: 'undead', kind: 'summon', creatures: ['creature-skeleton', 'creature-zombie'], note: 'Command them with a Bonus Action; control lasts 24 hours.' }] },
   },
 }

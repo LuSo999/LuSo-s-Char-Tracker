@@ -149,3 +149,23 @@ describe('Formula stat blocks', () => {
     expect(v.tempHp).toBe(3)
   })
 })
+
+describe('Grant extras', () => {
+  it('fixed numbers, HP factor, arrival choice, extra creature types, objects without scores', async () => {
+    const { companionVars } = await import('./creatures')
+    const wolf = c24.getTyped('creature-wolf', 'creature')!
+    const sheetLike = { mods: { str: 0, dex: 0, con: 0, int: 0, wis: 3, cha: 0 }, pb: { value: 2 }, characterLevel: 5 }
+    const grant = { id: 'g', kind: 'summon' as const, creatures: [], slot: false, fixed: { spellAttack: 9, spellDc: 17, slot: 5 } }
+    const vars = companionVars(sheetLike, { entity: wolf, grant, classLevel: 5, spellAttack: 4, spellDc: 12 }, 2)
+    expect(vars).toMatchObject({ spellAttack: 9, spellDc: 17, slot: 5 })
+    expect(viewCreature(wolf, {}, { hpFactor: 0.5 }).hpMax).toBe(Math.floor(wolf.hp as number / 2))
+    const drake = { ...wolf, immunities: ['@choice'], actions: [{ ...wolf.actions[0], damage: [{ dice: '1d6', bonus: 0, type: '@choice' }] }] }
+    const v = viewCreature(drake, {}, undefined, 'fire')
+    expect(v.immunities).toEqual(['fire'])
+    expect(v.actions[0].damage).toBe('1d6 fire')
+    const shapes = eligibleShapes(c24, { maxCr: 1, fly: true, swim: true, types: ['humanoid'] })
+    expect(shapes.some((c) => c.creatureType === 'humanoid')).toBe(true)
+    const cannon = { ...wolf, scores: undefined }
+    expect(viewCreature(cannon, {}).mods.str).toBe(0)
+  })
+})

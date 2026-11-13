@@ -36,20 +36,22 @@ export function StatBlock({ view, hp }: { view: CreatureView; hp?: string }) {
         {line(t('statBlock.hp'), hp ?? `${view.hpMax}${c.hitDice && !/slot/.test(c.hitDice) ? ` (${c.hitDice})` : ''}`)}
         {line(t('statBlock.speed'), speedText(view.speeds))}
       </div>
-      <div className="grid grid-cols-6 gap-1 text-center">
-        {abilities.map((a) => (
-          <div key={a} className="rounded border border-border px-1 py-0.5">
-            <div className="text-[10px] font-semibold uppercase text-muted">{a}</div>
-            <div className="font-semibold tabular-nums">{c.scores[a]}</div>
-            <div className="text-xs tabular-nums text-muted">{signed(view.mods[a])}</div>
-          </div>
-        ))}
-      </div>
+      {c.scores && (
+        <div className="grid grid-cols-6 gap-1 text-center">
+          {abilities.map((a) => (
+            <div key={a} className="rounded border border-border px-1 py-0.5">
+              <div className="text-[10px] font-semibold uppercase text-muted">{a}</div>
+              <div className="font-semibold tabular-nums">{c.scores![a]}</div>
+              <div className="text-xs tabular-nums text-muted">{signed(view.mods[a])}</div>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="space-y-0.5 text-xs">
         {line(t('statBlock.saves'), Object.entries(view.saves).map(([a, v]) => `${a.toUpperCase()} ${signed(v)}`).join(', '))}
         {line(t('statBlock.skills'), Object.entries(view.skills).map(([s, v]) => `${s.replace(/-/g, ' ')} ${signed(v)}`).join(', '))}
-        {line(t('statBlock.resistances'), c.resistances.join(', '))}
-        {line(t('statBlock.immunities'), c.immunities.join(', '))}
+        {line(t('statBlock.resistances'), view.resistances.join(', '))}
+        {line(t('statBlock.immunities'), view.immunities.join(', '))}
         {line(t('statBlock.conditionImmunities'), c.conditionImmunities.join(', '))}
         {line(
           t('statBlock.senses'),

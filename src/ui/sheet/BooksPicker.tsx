@@ -1,3 +1,4 @@
+import { useOfficial } from '../../state/official'
 import { useTranslation } from 'react-i18next'
 import type { ContentIndex } from '../../content'
 
@@ -22,6 +23,7 @@ export function BooksPicker({
   legacyOrigins?: Toggle
 }) {
   const { t } = useTranslation()
+  const official = useOfficial()
   const all = content.withLegacySubclasses(!!legacy?.on, !!legacyOrigins?.on).books()
   const box = (o: Toggle | undefined, label: string, hint: string) =>
     o && (
@@ -43,7 +45,7 @@ export function BooksPicker({
     return (
       <>
         {legacyBoxes}
-        <p className="text-xs text-muted">{t('books.none')}</p>
+        <p className="text-xs text-muted">{official.status === 'noAccess' ? t('content.noAccess') : official.status === 'error' ? t('content.error', { message: official.error }) : t('books.none')}</p>
       </>
     )
   const on = (id: string, defaultOff: boolean) => (books.length ? books.includes(id) : !defaultOff)

@@ -497,7 +497,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   // Your own Constitution keeps your HP maximum while in Wild Shape.
   const ownConMod = abilityMod(scores.con.value)
   // Wild Shape: the beast's Strength, Dexterity and Constitution (both editions).
-  if (shapeCreature) for (const a of ['str', 'dex', 'con'] as const) scores[a] = override(`score:${a}`, shapeCreature.scores[a], [{ label: shapeCreature.name, value: shapeCreature.scores[a] }])
+  if (shapeCreature?.scores) for (const a of ['str', 'dex', 'con'] as const) scores[a] = override(`score:${a}`, shapeCreature.scores[a], [{ label: shapeCreature.name, value: shapeCreature.scores[a] }])
   const mods = Object.fromEntries(abilities.map((a) => [a, abilityMod(scores[a].value)])) as Record<Ability, number>
 
   const attunedCount = char.inventory.filter((e) => e.attuned).length
@@ -1017,6 +1017,10 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
           swim: applyEffects('shape:swim', 0, '', vars).value > 0,
           forms: applyEffects('shape:forms', 0, '', vars).value || undefined,
           ...(() => {
+            const types = allEffects.filter(({ effect, ae }) => effect.target.startsWith('shape:type:') && effectApplies(effect, ae, baseCtx, toggleSet)).map(({ effect }) => effect.target.slice('shape:type:'.length))
+            return types.length ? { types } : {}
+          })(),
+          ...(() => {
             const extra = allEffects.filter(({ effect, ae }) => effect.target.startsWith('shape:creature:') && effectApplies(effect, ae, baseCtx, toggleSet)).map(({ effect }) => effect.target.slice('shape:creature:'.length))
             return extra.length ? { extra } : {}
           })(),
@@ -1047,15 +1051,15 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     characterLevel,
     level: source?.classLevel ?? characterLevel,
     classLevel: source?.classLevel ?? characterLevel,
-    slot: slot ?? 0,
-    spellAttack: source?.spellAttack ?? 0,
-    spellDc: source?.spellDc ?? 0,
+    slot: source?.grant.fixed?.slot ?? slot ?? 0,
+    spellAttack: source?.grant.fixed?.spellAttack ?? source?.spellAttack ?? 0,
+    spellDc: source?.grant.fixed?.spellDc ?? source?.spellDc ?? 0,
   })
   const companions = char.companions.flatMap((entry) => {
     const creature = content.getTyped(entry.creatureId, 'creature')
     if (!creature) return []
     const source = companionSources.find((s) => s.entity.id === entry.sourceId && s.grant.id === entry.grantId)
-    return [{ ...viewCreature(creature, companionVars(source, entry.slot), source?.grant.adjust), entry, source }]
+    return [{ ...viewCreature(creature, companionVars(source, entry.slot), source?.grant.adjust, entry.choice), entry, source }]
   })
   const shape = shapeCreature
     ? (() => {

@@ -77,7 +77,8 @@ export function shortRest(char: Character, content: ContentIndex, hitDiceRolls: 
   for (const pool of sheet.hitDice) {
     const rolls = (hitDiceRolls[pool.die] ?? []).slice(0, pool.total - pool.used)
     if (rolls.length === 0) continue
-    for (const roll of rolls) hp += Math.max(0, roll + sheet.mods.con)
+    // Per die: roll + Con modifier, at least 0 HP (2014) or at least 1 HP (2024).
+    for (const roll of rolls) hp += Math.max(char.edition === '2024' ? 1 : 0, roll + sheet.mods.con)
     hitDiceUsed[String(pool.die)] = pool.used + rolls.length
     changes.push({ kind: 'hitDice', die: pool.die, before: pool.total - pool.used, after: pool.total - pool.used - rolls.length, total: pool.total })
   }

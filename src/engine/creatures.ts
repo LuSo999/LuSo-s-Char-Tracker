@@ -21,6 +21,9 @@ export type CreatureView = {
   skills: Record<string, number>
   senses: Record<string, number>
   passivePerception?: number
+  /** With the arrival pick applied ("@choice"). */
+  resistances: string[]
+  immunities: string[]
   /** Temporary HP it arrives with. */
   tempHp: number
   ac: number
@@ -34,7 +37,8 @@ const signed = (n: number) => (n >= 0 ? `+${n}` : `${n}`)
 const mod = (score: number) => Math.floor((score - 10) / 2)
 
 /** Numbers of a creature with the owner's formula vars (slot, pb, spellAttack, spellDc, wis…). */
-export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: CompanionGrant['adjust']): CreatureView {
+export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: CompanionGrant['adjust'], choice?: string): CreatureView {
+  const pick = (s: string) => (choice ? s.replace(/@choice/g, choice) : s)
   const n = (v: Parameters<typeof resolveScaled>[0]) => {
     try {
       return Math.floor(resolveScaled(v, vars))
@@ -49,7 +53,7 @@ export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: Com
   }
   const adj = (v: Parameters<typeof resolveScaled>[0] | undefined) => (v === undefined ? 0 : n(v))
   const dieCount = Number(/^(\d+)d/.exec(creature.hitDice ?? '')?.[1] ?? 0) || (creature.hitDice ? n(creature.hitDice) : 0)
-  const hp = n(creature.hp) + adj(adjust?.hpBonus) + dieCount * adj(adjust?.hpPerDie)
+  const hp = Math.floor((n(creature.hp) + adj(adjust?.hpBonus) + dieCount * adj(adjust?.hpPerDie)) * (adjust?.hpFactor ?? 1))
   const rec = <K extends string>(r: Partial<Record<K, Parameters<typeof resolveScaled>[0]>>) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, n(v as Parameters<typeof resolveScaled>[0])])) as Record<K, number>
   return {
     creature,
@@ -61,10 +65,12 @@ export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: Com
     ac: n(creature.ac) + adj(adjust?.ac),
     hpMax: Math.max(1, hp, adj(adjust?.hpMin)),
     speeds,
-    mods: Object.fromEntries(Object.entries(creature.scores).map(([a, s]) => [a, mod(s)])) as Record<Ability, number>,
+    mods: Object.fromEntries(['str', 'dex', 'con', 'int', 'wis', 'cha'].map((a) => [a, creature.scores ? mod(creature.scores[a as Ability]) : 0])) as Record<Ability, number>,
+    resistances: creature.resistances.map(pick),
+    immunities: creature.immunities.map(pick),
     actions: creature.actions.map((a) => ({
-      name: a.name,
-      description: a.description,
+      name: pick(a.name),
+      description: pick(a.description),
       actionType: a.actionType,
       attack: a.attack ? { bonus: n(a.attack.bonus) + adj(adjust?.attack), range: a.attack.range } : undefined,
       damage: a.damage
@@ -73,7 +79,7 @@ export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: Com
           const bonus = n(d.bonus) + (i === 0 && a.attack ? adj(adjust?.damage) : 0)
           const dice = typeof d.dice === 'string' ? d.dice : (() => { const c = n(d.dice.count); return c > 0 ? `${c}d${n(d.dice.die)}` : '' })()
           const amount = dice ? `${dice}${bonus ? signed(bonus) : ''}` : String(bonus)
-          return `${amount} ${d.type}`
+          return `${amount} ${pick(d.type)}`
         })
         .join(' + '),
       save: a.save ? { ability: a.save.ability, dc: n(a.save.dc) } : undefined,
@@ -84,7 +90,7 @@ export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: Com
 export const crLabel = (cr: number) => (cr === 0.125 ? '1/8' : cr === 0.25 ? '1/4' : cr === 0.5 ? '1/2' : String(cr))
 
 /** Wild Shape limits from effects (shape:maxCr, shape:fly, shape:swim, shape:forms). */
-export type ShapeRules = { maxCr: number; fly: boolean; swim: boolean; forms?: number; extra?: string[] }
+export type ShapeRules = { maxCr: number; fly: boolean; swim: boolean; forms?: number; extra?: string[]; types?: string[] }
 
 /** Stat blocks made for one spell or feature (spirits, primal beasts): never ordinary forms or familiars. */
 const isSpecial = (c: Creature) => c.tags.includes('summon') || c.tags.includes('companion')
@@ -97,7 +103,8 @@ export function eligibleShapes(content: ContentIndex, rules: ShapeRules): Creatu
       if (rules.extra?.includes(c.id)) return true
       if (isSpecial(c)) return false
       const speeds = c.speed as Record<string, unknown>
-      return c.creatureType === 'beast' && c.cr <= rules.maxCr && (rules.fly || !speeds.fly) && (rules.swim || !speeds.swim)
+      const typeOk = c.creatureType === 'beast' || !!rules.types?.includes(c.creatureType)
+      return typeOk && c.cr <= rules.maxCr && (rules.fly || !speeds.fly) && (rules.swim || !speeds.swim)
     })
     .sort((a, b) => a.cr - b.cr || a.name.localeCompare(b.name))
 }
@@ -115,3 +122,17 @@ export function grantCreatures(grant: CompanionGrant, content: ContentIndex): Cr
 
 /** Where a companion can come from: a feature or a spell the character has. */
 export type CompanionSource = { entity: Entity; grant: CompanionGrant; classId?: string; classLevel: number; spellAttack: number; spellDc: number }
+
+/** The formula vars a companion's stat block reads. */
+export function companionVars(sheet: { mods: Record<Ability, number>; pb: { value: number }; characterLevel: number }, source: CompanionSource | undefined, slot: number | undefined): FormulaVars {
+  return {
+    ...sheet.mods,
+    pb: sheet.pb.value,
+    characterLevel: sheet.characterLevel,
+    level: source?.classLevel ?? sheet.characterLevel,
+    classLevel: source?.classLevel ?? sheet.characterLevel,
+    slot: source?.grant.fixed?.slot ?? slot ?? 0,
+    spellAttack: source?.grant.fixed?.spellAttack ?? source?.spellAttack ?? 0,
+    spellDc: source?.grant.fixed?.spellDc ?? source?.spellDc ?? 0,
+  }
+}

@@ -381,7 +381,7 @@ export function makeAttack(char: Character, attack: AttackRow, label?: string, o
 
 // --- Conditions and toggles -----------------------------------------------------------
 
-export function toggleCondition(char: Character, conditionId: string, name: string): ActionResult {
+export function toggleCondition(char: Character, conditionId: string, name: string, sheet?: Sheet): ActionResult {
   const has = char.conditions.includes(conditionId)
   const conditions = has ? char.conditions.filter((c) => c !== conditionId) : [...char.conditions, conditionId]
   const items: HistoryItem[] = [{ type: has ? 'conditionRemoved' : 'conditionAdded', params: { name }, entity: conditionId }]
@@ -391,7 +391,11 @@ export function toggleCondition(char: Character, conditionId: string, name: stri
     items.push({ type: 'concentrationEnd', params: { name: concentration.name } })
     concentration = undefined
   }
-  return ok({ ...char, conditions, concentration }, 'condition', items)
+  let next: Character = { ...char, conditions, concentration }
+  // Unconscious ends Rage, Wild Shape and other states; in 2024 any Incapacitated-type condition does.
+  const ends = conditionId === 'unconscious' || (char.edition === '2024' && incapacitating.has(conditionId))
+  if (!has && ends && sheet) next = endAllStates(next, sheet, items)
+  return ok(next, 'condition', items)
 }
 
 export function setExhaustion(char: Character, level: number): ActionResult {

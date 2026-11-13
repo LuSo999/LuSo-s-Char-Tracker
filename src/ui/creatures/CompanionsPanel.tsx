@@ -53,7 +53,8 @@ function CompanionCard({ c }: { c: Companion }) {
           </RuleRef>
           <button className="block text-left text-xs text-muted" onClick={() => setOpen(!open)} aria-expanded={open}>
             {kind}
-            {c.entry.slot ? ` · L${c.entry.slot}` : ''} · AC {c.ac} · {open ? '▴' : '▾'} {t('shape.statBlock')}
+            {c.entry.slot ? ` · L${c.entry.slot}` : ''}
+            {c.entry.choice ? ` · ${c.entry.choice}` : ''} · AC {c.ac} · {open ? '▴' : '▾'} {t('shape.statBlock')}
           </button>
         </div>
         <button
@@ -104,12 +105,14 @@ function AddCompanion({ onClose }: { onClose: () => void }) {
   const source: CompanionSource = sources[sourceIndex]
   const spellLevel = source.entity.type === 'spell' ? source.entity.level : 1
   const [slot, setSlot] = useState(Math.max(1, spellLevel))
+  const [choice, setChoice] = useState<string>()
   const [query, setQuery] = useState('')
   const creatures = useMemo(() => grantCreatures(source.grant, content), [source, content])
   const list = creatures.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()))
 
   async function add(creatureId: string) {
-    const r = addCompanion(character, sheet, content, source, creatureId, source.grant.slot ? slot : undefined)
+    const pick = source.grant.choose ? (choice ?? source.grant.choose.options[0]) : undefined
+    const r = addCompanion(character, sheet, content, source, creatureId, source.grant.slot && !source.grant.fixed?.slot ? slot : undefined, pick)
     if (await run(r)) onClose()
   }
 
@@ -125,7 +128,19 @@ function AddCompanion({ onClose }: { onClose: () => void }) {
           ))}
         </select>
       </label>
-      {source.grant.slot && (
+      {source.grant.choose && (
+        <label className="mt-2 block text-sm">
+          <span className="font-semibold">{source.grant.choose.label}</span>
+          <select className="ml-2 rounded border border-border bg-card px-2 py-1" value={choice ?? source.grant.choose.options[0]} onChange={(e) => setChoice(e.target.value)}>
+            {source.grant.choose.options.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {source.grant.slot && !source.grant.fixed?.slot && (
         <label className="mt-2 block text-sm">
           <span className="font-semibold">{t('companions.slot')}</span>
           <select className="ml-2 rounded border border-border bg-card px-2 py-1" value={slot} onChange={(e) => setSlot(Number(e.target.value))}>

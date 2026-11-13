@@ -179,6 +179,8 @@ export const Character = z.object({
         tempHp: z.number().int().min(0).default(0),
         /** Spell slot level it was cast with (scaled stat blocks). */
         slot: z.number().int().optional(),
+        /** The grant's `choose` pick (damage type…). */
+        choice: z.string().optional(),
         /** Temporary (concentration summons) or lasting (familiar, companion). */
         notes: z.string().optional(),
       }),
