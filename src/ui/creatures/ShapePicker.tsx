@@ -1,3 +1,4 @@
+import { RuleRef } from '../rules/RuleRef'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { crLabel, eligibleShapes, viewCreature } from '../../engine/creatures'
@@ -69,7 +70,9 @@ export function ShapePicker({ onPick, onClose }: { onPick: (creatureId: string) 
                   </button>
                 )}
                 <button className="min-w-0 flex-1 text-left" onClick={() => setOpen(isOpen ? undefined : c.id)}>
-                  <span className="font-semibold">{c.name}</span>{' '}
+                  <RuleRef entity={c} content={content} className="font-semibold">
+                    {c.name}
+                  </RuleRef>{' '}
                   <span className="text-xs text-muted">
                     CR {crLabel(c.cr)} · AC {view.ac} · HP {view.hpMax} · {Object.entries(view.speeds).map(([k, v]) => (k === 'walk' ? `${v} ft` : `${k} ${v}`)).join(', ')}
                   </span>

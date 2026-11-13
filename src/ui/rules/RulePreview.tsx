@@ -4,6 +4,8 @@ import type { Entity } from '../../content/schema'
 import { useSettings } from '../../state/settings'
 import { usePreview, type PreviewTarget } from './preview'
 import { BackClose } from '../useBackClose'
+import { viewCreature } from '../../engine/creatures'
+import { StatBlock } from '../creatures/StatBlock'
 
 const WIDTH = 420
 const MAX_HEIGHT = 420
@@ -51,7 +53,12 @@ function PreviewBody({ target }: { target: PreviewTarget }) {
         {content.isCustomized(entity.id) && <span className="rounded border border-accent px-1.5 text-[10px] text-accent">✎ {t('rules.customized')}</span>}
       </div>
       <div className="mt-2">
-        <RuleText text={entity.text ?? entity.description} />
+        {/* Stat blocks preview as stat blocks (scaled spirits keep their summary: their numbers need a slot level). */}
+        {entity.type === 'creature' && !entity.tags.includes('summon') && !entity.tags.includes('companion') ? (
+          <StatBlock view={viewCreature(entity, {})} />
+        ) : (
+          <RuleText text={entity.text ?? entity.description} />
+        )}
       </div>
       {/search[:?/]/.test(ruleLink(entity, content, site[entity.edition])) && <p className="mt-2 text-xs text-muted">🔎 {t('rules.noDirectLink')}</p>}
       <p className="mt-3 border-t border-border pt-2 text-xs text-muted">

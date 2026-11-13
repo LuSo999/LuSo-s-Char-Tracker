@@ -37,3 +37,12 @@ describe('wikidot links (patterns checked against the live sites)', () => {
     expect(ruleLink(e, c24, 'wikidot')).toBe('https://example.com/alert')
   })
 })
+
+describe('Creature links', () => {
+  it('SRD stat blocks open on open5e; spell spirits open their spell', async () => {
+    const { srd } = await import('../engine/fixtures')
+    const c24 = srd('2024')
+    expect(ruleLink(c24.get('creature-wolf')!, c24, 'wikidot')).toBe('https://open5e.com/monsters/srd-2024_wolf')
+    expect(ruleLink(c24.get('creature-otherworldly-steed')!, c24, 'wikidot')).toBe('https://dnd2024.wikidot.com/spell:find-steed')
+  })
+})

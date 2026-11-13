@@ -160,9 +160,26 @@ function roll20(entity: Entity): string {
   return `https://roll20.net/compendium/dnd5e/${encodeURIComponent(entity.name)}`
 }
 
+/** A stat block made for one spell or feature (spirits, steeds, companions): the spell or feature that grants it. */
+function grantingEntity(creature: Entity, content: ContentIndex): Entity | undefined {
+  for (const type of ['spell', 'feature', 'item'] as const) {
+    const e = content.all(type).find((x) => (x.companions ?? []).some((g) => g.creatures.includes(creature.id)))
+    if (e) return e
+  }
+  return undefined
+}
+
 export function ruleLink(entity: Entity, content: ContentIndex, site: LinkSite): string {
   if (entity.source.url) return entity.source.url
   const edition = entity.edition
+  if (entity.type === 'creature') {
+    if (entity.tags.includes('summon') || entity.tags.includes('companion')) {
+      const owner = grantingEntity(entity, content)
+      if (owner) return ruleLink(owner, content, site)
+    }
+    // Wikidot has no monster pages: SRD stat blocks open on open5e (both editions).
+    if (site === 'wikidot' || site === 'open5e') return `https://open5e.com/monsters/${edition === '2014' ? 'srd' : 'srd-2024'}_${slugify(entity.name)}`
+  }
   switch (site) {
     case 'wikidot':
       return wikidot(entity, content, edition)

@@ -1,3 +1,4 @@
+import { RuleRef } from '../rules/RuleRef'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { crLabel, grantCreatures, type CompanionSource } from '../../engine/creatures'
@@ -37,7 +38,7 @@ export function CompanionsPanel() {
 
 function CompanionCard({ c }: { c: Companion }) {
   const { t } = useTranslation()
-  const { character } = useSheet()
+  const { character, content } = useSheet()
   const run = useRun()
   const [open, setOpen] = useState(false)
   const name = c.entry.name ?? c.creature.name
@@ -46,13 +47,15 @@ function CompanionCard({ c }: { c: Companion }) {
   return (
     <li className="rounded border border-border p-2">
       <div className="flex items-start gap-2">
-        <button className="min-w-0 flex-1 text-left" onClick={() => setOpen(!open)} aria-expanded={open}>
-          <span className="block font-semibold">{name}</span>
-          <span className="block text-xs text-muted">
+        <div className="min-w-0 flex-1">
+          <RuleRef entity={c.creature} content={content} className="font-semibold">
+            {name}
+          </RuleRef>
+          <button className="block text-left text-xs text-muted" onClick={() => setOpen(!open)} aria-expanded={open}>
             {kind}
             {c.entry.slot ? ` · L${c.entry.slot}` : ''} · AC {c.ac} · {open ? '▴' : '▾'} {t('shape.statBlock')}
-          </span>
-        </button>
+          </button>
+        </div>
         <button
           className="text-sm text-danger hover:underline"
           title={t('companions.remove')}
@@ -165,7 +168,10 @@ export function ShapeBanner() {
     <div className="framed-sm rounded-card border-2 border-emerald-600/60 bg-emerald-600/10 px-3 py-2 shadow-sm">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-semibold">
-          🐾 {t('shape.in')}: {shape.creature.name}
+          🐾 {t('shape.in')}:{' '}
+          <RuleRef entity={shape.creature} content={content}>
+            {shape.creature.name}
+          </RuleRef>
         </span>
         {shape.hp && (
           <span className="flex items-center gap-1 text-sm">
