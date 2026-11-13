@@ -338,7 +338,7 @@ const base = {
  * picked. `level` is the character level for feats and the level in the
  * owning class for class options. The app checks everything except `text`.
  */
-export const Prerequisite = z.object({
+export const Prerequisite: z.ZodType<Prerequisite> = z.object({
   level: z.number().optional(),
   abilities: z.array(z.object({ ability: Ability, min: z.number() })).optional(),
   /** Every one of these entities must already apply to the character (Pact of the Blade…). */
@@ -350,8 +350,19 @@ export const Prerequisite = z.object({
   noTag: z.array(z.string()).optional(),
   /** Shown to the player; a requirement the app can't check, or the wording of the ones it does. */
   text: z.string().optional(),
+  /** At least one of these must be met as well (a feat OR Martial weapon training). */
+  anyOf: z.array(z.lazy(() => Prerequisite)).optional(),
 })
-export type Prerequisite = z.infer<typeof Prerequisite>
+export type Prerequisite = {
+  level?: number
+  abilities?: { ability: Ability; min: number }[]
+  features?: string[]
+  spells?: string[]
+  anyTag?: string[]
+  noTag?: string[]
+  text?: string
+  anyOf?: Prerequisite[]
+}
 
 export const Feature = z.object({
   ...base,

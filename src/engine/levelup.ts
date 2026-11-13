@@ -162,7 +162,7 @@ const textChecks: [RegExp, (sheet: Sheet) => boolean][] = [
 /** A text-only prerequisite the app can't check, if any. */
 export function uncheckedPrerequisite(pre: Prerequisite | undefined): string | undefined {
   // Texts that only restate the checked fields ("Warlock 5, Pact of the Blade", "level 5") need no warning.
-  if (!pre?.text || pre.features || pre.spells || pre.anyTag || pre.noTag || /^(level|[A-Z][a-z]+) \d+$/.test(pre.text)) return undefined
+  if (!pre?.text || pre.features || pre.spells || pre.anyTag || pre.noTag || pre.anyOf || /^(level|[A-Z][a-z]+) \d+$/.test(pre.text)) return undefined
   return textChecks.some(([re]) => re.test(pre.text!)) ? undefined : pre.text
 }
 
@@ -178,6 +178,7 @@ export function unmetPrerequisites(pre: Prerequisite | undefined, char: Characte
     const known = knownSpells(char, sheet)
     if (!pre.spells.some((s) => known.has(s))) out.push(pre.spells.join(' / '))
   }
+  if (pre.anyOf?.length && pre.anyOf.every((alt) => unmetPrerequisites(alt, char, sheet, level).length > 0)) out.push(pre.anyOf.map((alt) => alt.text ?? '…').join(' or '))
   const tags = new Set(sheet.active.flatMap((ae) => ae.entity.tags))
   if (pre.anyTag?.length && !pre.anyTag.some((t) => tags.has(t))) out.push(pre.anyTag.join(' / '))
   if (pre.noTag?.some((t) => tags.has(t))) out.push(`no ${pre.noTag.join(' / ')}`)
