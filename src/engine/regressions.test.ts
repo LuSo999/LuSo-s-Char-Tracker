@@ -138,4 +138,14 @@ describe('Review fixes', () => {
     const sheet = computeSheet(hero('2024', [{ classId: 'fighter', level: 1 }], { books: ['homebrew:hb'], inventory: [{ uid: 'b', itemId: 'blaster', quantity: 1, equipped: true }] }), content)
     expect(sheet.attacks.find((a) => a.weapon?.id === 'blaster')?.notes).toContain('Misfire: on a 1 it jams')
   })
+
+  it('edit mode can override spell DC / attack, slot counts, Hit Dice and attunement slots', () => {
+    const c = hero('2024', [{ classId: 'wizard', level: 3 }], { overrides: { 'spellDc:wizard': 17, 'spellAttack:wizard': 9, 'resource:slot:2:max': 5, 'hitDice:6': 7, attunementSlots: 4 } })
+    const s = computeSheet(c, c24)
+    expect(s.spellcasting.casters[0]).toMatchObject({ dc: 17, attack: 9 })
+    expect(s.spellcasting.casters[0].dcValue.overridden).toBe(true)
+    expect(s.resources.find((r) => r.key === 'slot:2')?.max).toBe(5)
+    expect(s.hitDice[0]).toMatchObject({ die: 6, total: 7 })
+    expect(s.attunementSlots).toBe(4)
+  })
 })

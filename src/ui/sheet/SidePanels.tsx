@@ -47,6 +47,19 @@ export function ResourcesPanel() {
             </span>
           </div>
           <SpellSlots interactive className="mt-1 text-sm" />
+          {/* Edit mode: the number of slots per level can be overridden. */}
+          {(edit || sheet.resources.some((r) => (r.key.startsWith('slot:') || r.key === 'pact') && r.maxOverridden)) && (
+            <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-muted">
+              {sheet.resources
+                .filter((r) => r.key.startsWith('slot:') || r.key === 'pact')
+                .map((r) => (
+                  <span key={r.key}>
+                    {r.key === 'pact' ? 'Pact' : `L${r.key.slice(5)}`} max{' '}
+                    <Editable value={{ value: r.max, computed: r.maxComputed, overridden: r.maxOverridden, parts: [] }} overrideKey={`resource:${r.key}:max`} label={`${r.resource.name}: max`} />
+                  </span>
+                ))}
+            </div>
+          )}
         </div>
       )}
       {sheet.resources.every((r) => r.key.startsWith('slot:') || r.key === 'pact' || r.resource.hidden) && !(sheet.spellcasting.slots.length > 0 || sheet.spellcasting.pact) && (
@@ -104,7 +117,14 @@ export function ResourcesPanel() {
                 ↻ <Term id="rule-long-rest">{rechargeLabel.longRest}</Term>
               </span>
             </span>
-            <Dots remaining={p.total - p.used} max={p.total} label={`Hit Dice d${p.die}`} onSet={(n) => void run(setHitDiceRemaining(character, sheet, p.die, n))} />
+            <span className="flex items-center gap-1.5">
+              <Dots remaining={p.total - p.used} max={p.total} label={`Hit Dice d${p.die}`} onSet={(n) => void run(setHitDiceRemaining(character, sheet, p.die, n))} />
+              {(edit || p.value.overridden) && (
+                <span className="text-xs text-muted">
+                  max <Editable value={p.value} overrideKey={`hitDice:${p.die}`} label={`Hit Dice d${p.die}: max`} />
+                </span>
+              )}
+            </span>
           </li>
         ))}
       </ul>

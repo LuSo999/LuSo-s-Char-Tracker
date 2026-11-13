@@ -1,3 +1,4 @@
+import { Editable } from '../sheet/Editable'
 import { useCallback, useMemo, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
@@ -69,7 +70,7 @@ function SpellLine({ row }: { row: SpellRow }) {
         >
           {fav ? '★' : '☆'}
         </button>
-        <RuleRef entity={s} content={content} className="font-semibold">
+        <RuleRef entity={s} content={content} className="font-semibold" editable>
           {s.name}
         </RuleRef>
         <SpellTags spell={s} />
@@ -280,7 +281,7 @@ export function ManageSpells({ caster }: { caster: CasterState }) {
             <li key={s.id} className="flex items-center gap-2 py-1">
               <span className="w-8 text-xs text-muted">{s.level || 'C'}</span>
               <div className="min-w-0 flex-1">
-                <RuleRef entity={s} content={content}>
+                <RuleRef entity={s} content={content} editable>
                   {s.name}
                   <SpellTags spell={s} />
                 </RuleRef>
@@ -539,9 +540,11 @@ export function SpellcastingDrawer({ onClose }: { onClose: () => void }) {
             <div key={c.classId} className="mt-1 flex flex-wrap items-center gap-x-3 text-sm">
               <strong>{c.name}</strong>
               <span>{c.ability.toUpperCase()}</span>
-              <Term id="rule-saving-throw">DC {c.dc}</Term>
+              <Term id="rule-saving-throw">
+                DC <Editable value={c.dcValue} overrideKey={`spellDc:${c.classId}`} label={`${c.name}: spell save DC`} />
+              </Term>
               <Term id="rule-spell-attack">
-                {signed(c.attack)} {t('spells.toHit')}
+                <Editable value={c.attackValue} overrideKey={`spellAttack:${c.classId}`} label={`${c.name}: spell attack`} format={signed} /> {t('spells.toHit')}
               </Term>
               <button className="ml-auto rounded border border-border px-2 py-0.5 text-xs hover:bg-bg" onClick={() => setManage(manage === c.classId ? undefined : c.classId)}>
                 {manage === c.classId ? `✅ ${t('edit.done')}` : `📖 ${t('spells.manage')}`}

@@ -50,7 +50,7 @@ export function EquippedPanel({ onOpen }: { onOpen: () => void }) {
           return (
             <li key={r.entry.uid} className={`rounded border px-2 py-1 ${r.item.magic ? 'border-accent bg-accent/5' : 'border-border'}`}>
               <div className="flex items-baseline justify-between gap-2">
-                <RuleRef entity={r.item} content={content} className="font-semibold">
+                <RuleRef entity={r.item} content={content} className="font-semibold" editable>
                   {r.item.magic && <span aria-hidden>✨ </span>}
                   {r.name}
                   {r.entry.quantity > 1 && <span className="ml-1 font-normal text-muted">×{r.entry.quantity}</span>}

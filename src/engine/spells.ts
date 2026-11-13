@@ -19,6 +19,9 @@ export type CasterState = {
   ability: Ability
   dc: number
   attack: number
+  /** The same with breakdown and override state (edit mode keys "spellDc:<class>", "spellAttack:<class>"). */
+  dcValue: Value
+  attackValue: Value
   mode: 'known' | 'prepared'
   spellbook: boolean
   ritual: 'none' | 'prepared' | 'book'
@@ -179,8 +182,17 @@ export function computeSpellcasting(
       name: cls.name,
       level: entry.level,
       ability: cls.caster.ability,
-      dc: 8 + ctx.pb + mod + ctx.dcBonus + (ctx.classBonus?.(cls.id).dc ?? 0),
-      attack: ctx.pb + mod + ctx.attackBonus + (ctx.classBonus?.(cls.id).attack ?? 0),
+      ...(() => {
+        const dc = 8 + ctx.pb + mod + ctx.dcBonus + (ctx.classBonus?.(cls.id).dc ?? 0)
+        const attack = ctx.pb + mod + ctx.attackBonus + (ctx.classBonus?.(cls.id).attack ?? 0)
+        const ov = (key: string, computed: number, parts: Value['parts']): Value => {
+          const o = char.overrides[key]
+          return typeof o === 'number' ? { value: o, computed, overridden: true, parts } : { value: computed, computed, overridden: false, parts }
+        }
+        const dcValue = ov(`spellDc:${cls.id}`, dc, [{ label: '8 + proficiency', value: 8 + ctx.pb }, { label: cls.caster.ability.toUpperCase(), value: mod }, { label: 'Bonuses', value: dc - 8 - ctx.pb - mod }])
+        const attackValue = ov(`spellAttack:${cls.id}`, attack, [{ label: 'Proficiency', value: ctx.pb }, { label: cls.caster.ability.toUpperCase(), value: mod }, { label: 'Bonuses', value: attack - ctx.pb - mod }])
+        return { dc: dcValue.value, attack: attackValue.value, dcValue, attackValue }
+      })(),
       mode: cls.caster.mode,
       spellbook: cls.caster.spellbook,
       ritual: cls.caster.ritual,

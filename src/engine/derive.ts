@@ -128,13 +128,15 @@ export type Sheet = {
   ac: Value
   speed: Value
   hpMax: Value
-  hitDice: { die: number; total: number; used: number }[]
+  /** Hit Point Dice per die size; `value` carries the override state (edit mode key "hitDice:<die>"). */
+  hitDice: { die: number; total: number; used: number; value: Value }[]
   attacks: AttackRow[]
   activities: ActivityRow[]
   resources: ResourceState[]
   toggles: Toggle[]
-  /** How many items can be attuned at once (3; target "attunementSlots", op max). */
+  /** How many items can be attuned at once (3; target "attunementSlots", op max; edit mode key "attunementSlots"). */
   attunementSlots: number
+  attunement: Value
   /** Effect notes that apply right now (shown in the reminders strip). */
   reminders: { note: string; entity: Entity }[]
   active: ActiveEntity[]
@@ -695,7 +697,10 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   }
   const hitDice = [...diceByDie.entries()]
     .sort((a, b) => b[0] - a[0])
-    .map(([die, total]) => ({ die, total, used: Math.min(total, char.hitDiceUsed[String(die)] ?? 0) }))
+    .map(([die, computed]) => {
+      const value = override(`hitDice:${die}`, computed, [{ label: 'Class levels', value: computed }])
+      return { die, total: value.value, used: Math.min(value.value, char.hitDiceUsed[String(die)] ?? 0), value }
+    })
 
   // --- Resources ----------------------------------------------------------
   const resources: ResourceState[] = []
@@ -1065,6 +1070,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   if (weight.total > weight.capacity) notes.push('Over carrying capacity')
 
   notes.push(...rules.exhaustionNotes(char.exhaustion))
+  const attunementR = applyEffects('attunementSlots', 3, 'Rules', vars)
+  const attunement = override('attunementSlots', attunementR.value, attunementR.parts)
   if (bodyArmor && !armorProf.has(bodyArmor.category) && !armorProf.has('all')) notes.push(`Not proficient with ${bodyArmorEntry!.name}`)
 
   return {
@@ -1085,7 +1092,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     resources,
     toggles,
     reminders,
-    attunementSlots: applyEffects('attunementSlots', 3, '', vars).value,
+    attunementSlots: attunement.value,
+    attunement,
     active,
     armorProficiencies: [...armorProf],
     weaponProficiencies: [...weaponProf],

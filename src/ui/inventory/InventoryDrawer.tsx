@@ -1,3 +1,4 @@
+import { Editable } from '../sheet/Editable'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { setResourceRemaining } from '../../engine/actions'
@@ -43,7 +44,7 @@ function ItemRow({ r }: { r: ResolvedEntry }) {
   return (
     <li className={`rounded border p-2 ${r.item.magic ? 'border-accent/60 bg-accent/5' : 'border-border'}`}>
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <RuleRef entity={r.item} content={content} className="min-w-0 flex-1 font-semibold">
+        <RuleRef entity={r.item} content={content} className="min-w-0 flex-1 font-semibold" editable>
           {r.item.magic && <span aria-hidden>✨ </span>}
           {r.name}
           {content.isForeign(r.item.id) && (
@@ -159,7 +160,7 @@ export function InventoryDrawer({ onClose }: { onClose: () => void }) {
               </div>
             </div>
             <div>
-              🔗 {t('sheet.attunement')}: <strong className={attuned >= sheet.attunementSlots ? 'text-violet-600' : ''}>{attuned}</strong>/{sheet.attunementSlots}
+              🔗 {t('sheet.attunement')}: <strong className={attuned >= sheet.attunementSlots ? 'text-violet-600' : ''}>{attuned}</strong>/<Editable value={sheet.attunement} overrideKey="attunementSlots" label={t('sheet.attunement')} />
             </div>
             <label className="col-span-2 flex items-center gap-2 text-xs text-muted">
               <input type="checkbox" checked={character.settings.trackAmmunition} onChange={(e) => void run(setAmmoTracking(character, e.target.checked))} />
