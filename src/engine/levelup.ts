@@ -258,7 +258,7 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
       const known = choice.knownOnly ? knownSpells(char, sheet) : undefined
       return content
         .all('spell')
-        .filter((s) => (choice.options ? choice.options.includes(s.id) : levelOk(s.level) && (!lists.length || s.classes.some((k) => lists.includes(k)))))
+        .filter((s) => (choice.options ? choice.options.includes(s.id) : levelOk(s.level) && (!lists.length || s.classes.some((k) => lists.includes(k)) || lists.some((k) => content.getTyped(k, 'class')?.caster?.extraSpells?.includes(s.id)))))
         .filter((s) => (!choice.spellSchools || choice.spellSchools.includes(s.school.toLowerCase())) && (!choice.ritualOnly || s.ritual))
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((s) => ({ id: s.id, label: s.name, entity: s, blocked: known && !known.has(s.id) && !chosen.has(s.id) ? 'notKnown' : undefined }))

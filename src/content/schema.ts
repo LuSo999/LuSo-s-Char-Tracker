@@ -407,6 +407,8 @@ export const CasterInfo = z.object({
     .default({ cantrips: 'none', spells: 'longRestAll' }),
   /** Spell list to learn from when it isn't the class's own (Eldritch Knight, Arcane Trickster: "wizard"). */
   spellList: z.string().optional(),
+  /** Spells on the class list besides those whose `classes` name it (a book class using SRD spells: Artificer). */
+  extraSpells: z.array(z.string()).optional(),
   /** 2014 Eldritch Knight / Arcane Trickster: leveled spells only from these schools… */
   schools: z.array(z.string()).optional(),
   /** …except this many (by class level) from any school. */
