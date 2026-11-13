@@ -348,6 +348,8 @@ function whenHolds(w: When, ae: ActiveEntity, ctx: EffectContext, toggles: Set<s
       return !!ctx.emptyHands
     case 'wearingMediumArmor':
       return ctx.armor?.category === 'medium'
+    case 'magicWeapon':
+      return !!(ctx.weapon as { magic?: boolean } | undefined)?.magic
     case 'noMediumOrHeavyArmor':
       return ctx.armor?.category !== 'medium' && ctx.armor?.category !== 'heavy'
   }
@@ -478,9 +480,12 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   }
   const mods = Object.fromEntries(abilities.map((a) => [a, abilityMod(scores[a].value)])) as Record<Ability, number>
 
+  const attunedCount = char.inventory.filter((e) => e.attuned).length
   const vars = (ae: ActiveEntity): FormulaVars => ({
     ...levelVars(ae),
     pb,
+    // Items the character is attuned to (Soul of Artifice: +1 to saves per item).
+    attuned: attunedCount,
     ...mods,
     strScore: scores.str.value,
     dexScore: scores.dex.value,

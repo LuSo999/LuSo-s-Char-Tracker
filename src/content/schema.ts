@@ -103,6 +103,8 @@ const WhenSingle = z.union([
     'wearingMediumArmor',
     /** No Medium or Heavy armor (Aarakocra / Harengon flight, Aasimar wings). */
     'noMediumOrHeavyArmor',
+    /** Attack with a magic weapon (Battle Smith: Battle Ready). */
+    'magicWeapon',
   ]),
   z.object({ toggle: z.string() }),
 ])
