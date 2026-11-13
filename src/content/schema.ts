@@ -354,6 +354,8 @@ export const Prerequisite: z.ZodType<Prerequisite> = z.object({
   noTag: z.array(z.string()).optional(),
   /** Proficiency with one of these weapon categories / weapons ("martial"). */
   weaponProficiency: z.array(z.string()).optional(),
+  /** Species or subspecies ids, one of which the character must be (racial feats). */
+  species: z.array(z.string()).optional(),
   /** Shown to the player; a requirement the app can't check, or the wording of the ones it does. */
   text: z.string().optional(),
   /** At least one of these must be met as well (a feat OR Martial weapon training). */
@@ -367,6 +369,7 @@ export type Prerequisite = {
   anyTag?: string[]
   noTag?: string[]
   weaponProficiency?: string[]
+  species?: string[]
   text?: string
   anyOf?: Prerequisite[]
 }

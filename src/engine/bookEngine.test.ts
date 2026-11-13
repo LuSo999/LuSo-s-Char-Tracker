@@ -139,3 +139,15 @@ describe('Once per state', () => {
     expect(after.resourcesUsed['focus-once']).toBeUndefined()
   })
 })
+
+describe('Hit Point Dice as a cost', () => {
+  it('"@hitDie" spends one Hit Point Die', () => {
+    const c = withFeature({ activities: [{ id: 'fort', name: 'Fortitude', actionType: 'bonusAction', cost: [{ resource: '@hitDie' }], roll: { bonus: 'con', kind: 'heal' } }] }, { hp: { current: 5 } })
+    const s = computeSheet(c, c24)
+    const row = s.activities.find((a) => a.activity.id === 'fort')!
+    expect(row.uses).toMatchObject({ remaining: 5, max: 5 })
+    const after = okR(performActivity(c, s, row, 4))
+    expect(after.hitDiceUsed).toEqual({ '6': 1 })
+    expect(after.hp.current).toBe(5 + 4 + 1)
+  })
+})

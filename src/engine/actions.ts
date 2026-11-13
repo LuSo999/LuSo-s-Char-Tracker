@@ -145,6 +145,10 @@ export function rollDeathSave(char: Character, roll: number): ActionResult {
 
 /** Remaining amount for a resource key as the sheet sees it. */
 function remainingOf(char: Character, sheet: Sheet, key: string): { remaining: number; max: number; name: string } | undefined {
+  if (key === 'hitDie') {
+    const left = sheet.hitDice.reduce((s, h) => s + h.total - (char.hitDiceUsed[String(h.die)] ?? 0), 0)
+    return { remaining: left, max: sheet.hitDice.reduce((s, h) => s + h.total, 0), name: 'Hit Point Dice' }
+  }
   if (key.startsWith('quantity:')) {
     const entry = char.inventory.find((e) => e.uid === key.slice('quantity:'.length))
     return entry && { remaining: entry.quantity, max: entry.quantity, name: entry.label ?? entry.itemId }
@@ -162,6 +166,18 @@ function currentRemaining(char: Character, sheet: Sheet, key: string): number | 
 }
 
 function withRemaining(char: Character, sheet: Sheet, key: string, remaining: number): Character {
+  if (key === 'hitDie') {
+    // Spend from the largest die that has some left.
+    let toSpend = (remainingOf(char, sheet, key)?.remaining ?? 0) - remaining
+    const used = { ...char.hitDiceUsed }
+    for (const h of [...sheet.hitDice].sort((a, b) => b.die - a.die)) {
+      while (toSpend > 0 && (used[String(h.die)] ?? 0) < h.total) {
+        used[String(h.die)] = (used[String(h.die)] ?? 0) + 1
+        toSpend--
+      }
+    }
+    return { ...char, hitDiceUsed: used }
+  }
   if (key.startsWith('quantity:')) {
     const uid = key.slice('quantity:'.length)
     return { ...char, inventory: char.inventory.map((e) => (e.uid === uid ? { ...e, quantity: remaining } : e)) }

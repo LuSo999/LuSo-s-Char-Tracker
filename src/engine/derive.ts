@@ -850,6 +850,11 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
         if (resource === '@quantity') {
           return ae.item ? { remaining: ae.item.quantity, max: ae.item.quantity, resourceKey: `quantity:${ae.item.uid}` } : undefined
         }
+        // "@hitDie": spends one Hit Point Die (the largest left).
+        if (resource === '@hitDie') {
+          const left = hitDice.reduce((s, h) => s + h.total - h.used, 0)
+          return { remaining: left, max: hitDice.reduce((s, h) => s + h.total, 0), resourceKey: 'hitDie' }
+        }
         const key = ae.item && ae.entity.type === 'item' && [...ae.entity.resources, ae.entity.charges].some((r) => r?.id === resource) ? `item:${ae.item.uid}:${resource}` : resource
         const r = resources.find((x) => x.key === key)
         return r && { remaining: r.remaining, max: r.max, resourceKey: r.key }
