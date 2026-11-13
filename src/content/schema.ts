@@ -154,6 +154,8 @@ export const Resource = z.object({
   die: Scaled.optional(),
   /** Bookkeeping only (e.g. how often Relentless Rage was used): not listed in the Resources panel. */
   hidden: z.boolean().optional(),
+  /** Comes back when this state ends ("once per Rage": "Raging"). */
+  resetWith: z.string().optional(),
   /** What each rest restores. "all", or a (scaled) number of uses. */
   /** What each rest restores: "all", a (scaled) number, or dice the player rolls (e.g. a wand's "1d6+1" at dawn). */
   recharge: z.array(z.object({ on: RechargeOn, amount: z.union([z.literal('all'), Scaled]), dice: z.string().optional() })).default([]),

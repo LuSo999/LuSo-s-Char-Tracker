@@ -129,3 +129,13 @@ describe('Attack ability', () => {
     expect(on.ability).toBe('int')
   })
 })
+
+describe('Once per state', () => {
+  it('a resource with resetWith comes back when the state ends', async () => {
+    const { endStates } = await import('./actions')
+    const c = withFeature({ resources: [{ id: 'focus-once', name: 'Once per Rage', max: 1, resetWith: 'Raging' }] }, { resourcesUsed: { 'focus-once': 1 }, toggles: ['state:Raging'] })
+    const s = computeSheet(c, c24)
+    const after = endStates(c, s, ['state:Raging']).character
+    expect(after.resourcesUsed['focus-once']).toBeUndefined()
+  })
+})

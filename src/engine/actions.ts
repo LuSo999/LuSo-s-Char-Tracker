@@ -364,7 +364,15 @@ export function endStates(char: Character, sheet: Sheet, keys: string[]): { char
       exhaustion = after
     }
   }
-  return { character: { ...char, exhaustion, toggles: char.toggles.filter((k) => !ending.has(k)) }, items }
+  // "Once per Rage": resources tied to an ending state come back.
+  const resourcesUsed = { ...char.resourcesUsed }
+  for (const r of sheet.resources) {
+    if (r.resource.resetWith && ending.has(`state:${r.resource.resetWith}`) && (resourcesUsed[r.key] ?? 0) > 0) {
+      items.push({ type: 'resource', params: { name: r.resource.name }, before: r.remaining, after: r.max })
+      delete resourcesUsed[r.key]
+    }
+  }
+  return { character: { ...char, exhaustion, resourcesUsed, toggles: char.toggles.filter((k) => !ending.has(k)) }, items }
 }
 
 // --- Rests ------------------------------------------------------------------------------
