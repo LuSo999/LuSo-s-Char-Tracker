@@ -703,7 +703,9 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const isProficient = (w: Weapon) => weaponProf.has(w.category) || weaponProf.has(w.id) || (w.baseItem !== undefined && weaponProf.has(w.baseItem))
 
   const offhandMod = applyEffects('offhandAbilityMod', 0, '', vars).value > 0
-  const sizeName = content.require(char.speciesId, 'species').size
+  // Species that let you choose (Human, Tiefling, many 2014 races): a "size" choice on the species.
+  const speciesAe = active.find((ae) => ae.entity.id === char.speciesId)
+  const sizeName = (speciesAe && selections(char, speciesAe, 'size')[0]) || content.require(char.speciesId, 'species').size
 
   // Martial Arts (Monk): Dex for Unarmed Strikes and Monk weapons, and the Martial Arts die.
   const martialArtsCtx: EffectContext = { ...baseCtx, unarmed: true }

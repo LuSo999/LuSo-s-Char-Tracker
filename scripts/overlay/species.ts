@@ -75,6 +75,9 @@ export const species: ClassOverlay = {
     'keen-senses': { choices: [{ id: 'skill', label: 'Keen Senses', kind: 'skill', options: ['insight', 'perception', 'survival'] }] },
     'gnomish-cunning': saveNote('Advantage on Int, Wis and Cha saves'),
     brave: saveNote('Advantage on saves to avoid or end Frightened'),
+    // Human and Tiefling: Medium or Small, chosen with the species.
+    human: { choices: [{ id: 'size', label: 'Size', kind: 'option', options: ['Medium', 'Small'] }] },
+    tiefling: { choices: [{ id: 'size', label: 'Size', kind: 'option', options: ['Medium', 'Small'] }] },
     resourceful: {
       resources: [{ id: 'heroic-inspiration', name: 'Heroic Inspiration', max: 1, recharge: longOnly }],
       activities: [{ id: 'use', name: 'Heroic Inspiration', actionType: 'other', cost: [{ resource: 'heroic-inspiration' }], summary: 'Reroll any die you just rolled; use the new roll.' }],
