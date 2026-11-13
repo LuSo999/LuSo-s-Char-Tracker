@@ -3,6 +3,7 @@ import { linkSiteLabels, ruleLink } from '../../content/links'
 import type { Entity } from '../../content/schema'
 import { useSettings } from '../../state/settings'
 import { usePreview, type PreviewTarget } from './preview'
+import { BackClose } from '../useBackClose'
 
 const WIDTH = 420
 const MAX_HEIGHT = 420
@@ -91,6 +92,7 @@ export function PinnedPreview() {
   const close = () => usePreview.setState({ pinned: undefined })
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center" onClick={close}>
+      <BackClose onClose={close} />
       <div
         className="max-h-[85vh] w-full overflow-y-auto rounded-t-card border border-border bg-card p-5 sm:max-w-lg sm:rounded-card"
         onClick={(e) => e.stopPropagation()}

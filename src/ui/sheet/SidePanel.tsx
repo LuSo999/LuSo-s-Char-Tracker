@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useBackClose } from '../useBackClose'
 
 /**
  * A panel sliding in from a side of the sheet. It doesn't block the rest of
@@ -22,6 +23,7 @@ export function SidePanel({
   header?: React.ReactNode
 }) {
   const { t } = useTranslation()
+  useBackClose(onClose)
   const ref = useRef<HTMLElement>(null)
   const close = useRef(onClose)
   useEffect(() => {

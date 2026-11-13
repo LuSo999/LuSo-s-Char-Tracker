@@ -4,6 +4,7 @@ import type { HistoryGroup } from '../../engine/history'
 import { RuleRef } from '../rules/RuleRef'
 import { useSheet } from '../sheet/context'
 import { groupTitle, itemText } from './text'
+import { useBackClose } from '../useBackClose'
 
 /** Consecutive attacks of one Attack action are shown together. */
 function blocks(list: HistoryGroup[]): (HistoryGroup | { groups: HistoryGroup[] })[] {
@@ -23,6 +24,7 @@ function blocks(list: HistoryGroup[]): (HistoryGroup | { groups: HistoryGroup[] 
  * action, split into play sessions. Searchable and filterable.
  */
 export function HistoryDrawer({ onClose }: { onClose: () => void }) {
+  useBackClose(onClose)
   const { t, i18n } = useTranslation()
   const { store, content } = useSheet()
   const [showGame, setShowGame] = useState(true)

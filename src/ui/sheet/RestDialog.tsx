@@ -5,8 +5,10 @@ import { dawnDice, longRest, shortRest } from '../../engine/rest'
 import { itemText } from '../history/text'
 import { useRun, useSheet } from './context'
 import { Term } from '../rules/Term'
+import { useBackClose } from '../useBackClose'
 
 export function Dialog({ title, onClose, children, wide }: { title: string; onClose: () => void; children: React.ReactNode; wide?: boolean }) {
+  useBackClose(onClose)
   return (
     <div className="fixed inset-0 z-40 flex items-end bg-black/50 sm:items-center sm:justify-center" onClick={onClose}>
       <div
