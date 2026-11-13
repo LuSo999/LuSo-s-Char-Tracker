@@ -264,6 +264,9 @@ export function collectActive(char: Character, content: ContentIndex): ActiveEnt
     if (usable) push(item, `item:${entry.uid}`, characterLevel, undefined, entry)
   }
 
+  // Features replaced by another active entity (Favored Foe for Favored Enemy) drop out.
+  const replaced = new Set(out.flatMap((ae) => ae.entity.replaces ?? []))
+  if (replaced.size) return out.filter((ae) => !replaced.has(ae.entity.id))
   return out
 }
 
@@ -914,7 +917,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   // Save advantages are listed with the saving throws, not in the reminders strip.
   const isSaveNote = (target: string) => /^(advantage|disadvantage):save:/.test(target)
   const reminders = allEffects
-    .filter(({ effect, ae }) => effect.note && !isSaveNote(effect.target) && !ae.hidden && effectApplies(effect, ae, { ...baseCtx, anyAttack: true }, toggleSet))
+    .filter(({ effect, ae }) => effect.note && !isSaveNote(effect.target) && !ae.hidden && effectApplies(effect, ae, { ...baseCtx, anyAttack: true, bloodied: char.hp.current <= hpMax.value / 2 }, toggleSet))
     .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
   const saveNotes = allEffects
     .filter(({ effect, ae }) => effect.note && isSaveNote(effect.target) && effectApplies(effect, ae, baseCtx, toggleSet))

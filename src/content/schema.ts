@@ -317,6 +317,8 @@ const base = {
   /** Spells added to the class list the entity belongs to, to learn or prepare (2014 Fiend: Expanded Spell List). */
   expandedSpells: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
+  /** Features this one replaces while it applies (Tasha's Favored Foe → Favored Enemy; a subclass's own smite). */
+  replaces: z.array(z.string()).default([]),
   /**
    * Attacks the entity gives that aren't items: natural weapons (claws, horns,
    * hooves), Psychic Blades, a conjured weapon. Listed with the weapon attacks.

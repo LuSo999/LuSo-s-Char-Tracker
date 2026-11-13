@@ -173,3 +173,18 @@ describe('Spells cast from an item', () => {
     expect(r.ok && r.character.inventory[0].chargesUsed).toBe(1)
   })
 })
+
+describe('Replacing features', () => {
+  it('an entity with replaces removes those features', () => {
+    const c = withFeature({ replaces: ['wizard-arcane-recovery'] })
+    expect(computeSheet(c, c24).active.some((a) => a.entity.id === 'wizard-arcane-recovery')).toBe(false)
+    expect(computeSheet(withFeature({}), c24).active.some((a) => a.entity.id === 'wizard-arcane-recovery')).toBe(true)
+  })
+
+  it('bloodied reminders show only when at half HP or less', () => {
+    const f = { effects: [{ target: 'note', note: 'Frenzy while bloodied', when: 'bloodied' }] }
+    const hp = computeSheet(withFeature(f), c24).hpMax.value
+    expect(computeSheet(withFeature(f, { hp: { current: hp } }), c24).reminders.some((r) => r.note.startsWith('Frenzy'))).toBe(false)
+    expect(computeSheet(withFeature(f, { hp: { current: 1 } }), c24).reminders.some((r) => r.note.startsWith('Frenzy'))).toBe(true)
+  })
+})
