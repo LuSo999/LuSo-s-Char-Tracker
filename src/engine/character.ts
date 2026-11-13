@@ -78,8 +78,8 @@ export const Character = z.object({
   choices: z.record(z.string(), z.array(z.string())).default({}),
   /** 2024 background ability increases, e.g. { con: 2, wis: 1 }. 2014 races use fixed data. */
   backgroundBonuses: z.partialRecord(Ability, z.number()).default({}),
-  /** Expended uses per resource id. */
-  resourcesUsed: z.record(z.string(), z.number().int().min(0)).default({}),
+  /** Expended uses per resource id (negative for spell slots created by Font of Magic until a Long Rest). */
+  resourcesUsed: z.record(z.string(), z.number().int()).default({}),
   hp: z.object({
     current: z.number().int().min(0),
     temp: z.number().int().min(0).default(0),

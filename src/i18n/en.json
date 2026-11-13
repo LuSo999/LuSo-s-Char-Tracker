@@ -289,7 +289,8 @@
     "confirmLong": "Take long rest",
     "foodAndDrink": "5e (2014): exhaustion goes down only if the character also ate and drank.",
     "dawn": "Dawn passes during the rest (items recharge)",
-    "dawnRoll": "roll {{dice}}"
+    "dawnRoll": "roll {{dice}}",
+    "zeroHp": "A Long Rest needs at least 1 HP. Heal first (or stabilize and regain 1 HP)."
   },
   "history": {
     "title": "History",

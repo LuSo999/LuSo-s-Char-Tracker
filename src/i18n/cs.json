@@ -289,7 +289,8 @@
     "confirmLong": "Dát long rest",
     "foodAndDrink": "5e (2014): exhaustion klesne jen tehdy, když postava také jedla a pila.",
     "dawn": "Během odpočinku proběhne úsvit (předměty se dobijí)",
-    "dawnRoll": "hoď {{dice}}"
+    "dawnRoll": "hoď {{dice}}",
+    "zeroHp": "Long Rest vyžaduje aspoň 1 HP. Nejdřív se vyleč (nebo se stabilizuj a získej 1 HP)."
   },
   "history": {
     "title": "Historie",

@@ -40,7 +40,9 @@ export function RestDialog({ kind, onClose }: { kind: 'short' | 'long'; onClose:
   const parsedDawn = Object.fromEntries(Object.entries(dawnRolls).map(([k, v]) => [k, Number.parseInt(v, 10)]).filter(([, n]) => Number.isFinite(n as number)))
   const result = kind === 'short' ? shortRest(character, content, parsedRolls) : longRest(character, content, { dawn, dawnRolls: parsedDawn })
   const items = restItems(result.changes)
-  const invalid = Object.entries(rolls).some(([die, list]) => list.some((v) => v !== '' && !(Number(v) >= 1 && Number(v) <= Number(die))))
+  // Both editions: a Long Rest needs at least 1 HP to start.
+  const atZero = kind === 'long' && character.hp.current === 0
+  const invalid = atZero || Object.entries(rolls).some(([die, list]) => list.some((v) => v !== '' && !(Number(v) >= 1 && Number(v) <= Number(die))))
 
   async function confirm() {
     await run({ ok: true, character: result.character, items, groupType: kind === 'short' ? 'shortRest' : 'longRest', kind: 'game' })
@@ -127,6 +129,7 @@ export function RestDialog({ kind, onClose }: { kind: 'short' | 'long'; onClose:
           </ul>
         )}
         {kind === 'long' && character.edition === '2014' && character.exhaustion > 0 && <p className="mt-2 text-xs text-muted">{t('rest.foodAndDrink')}</p>}
+        {atZero && <p className="mt-2 rounded border border-danger bg-danger/5 p-2 text-sm text-danger">{t('rest.zeroHp')}</p>}
       </section>
       <div className="mt-5 flex justify-end gap-2">
         <button className="rounded border border-border px-4 py-2" onClick={onClose}>

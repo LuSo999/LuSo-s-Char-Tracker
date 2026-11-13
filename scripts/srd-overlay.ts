@@ -49,6 +49,7 @@ const fightingStyles2014: Record<string, Patch> = {
 }
 
 const overlay2014: Record<string, Patch> = {
+  'helm-of-teleportation': { charges: { id: 'charges', name: 'Charges', max: 3, recharge: [{ on: 'dawn', amount: 0, dice: '1d3' }] } },
   ...fightingStyles2014,
   'second-wind': {
     actionType: 'bonusAction',
@@ -125,6 +126,12 @@ function asi2014(byId: Map<string, Raw>) {
 // --- 5.5e 2024 (SRD 5.2.1) ----------------------------------------------------------
 
 const overlay2024: Record<string, Patch> = {
+  // Source data errors (SRD 5.2 equipment table): weapon prices.
+  dart: { cost: { amount: 5, unit: 'cp' } },
+  javelin: { cost: { amount: 5, unit: 'sp' } },
+  longbow: { cost: { amount: 50, unit: 'gp' } },
+  spear: { cost: { amount: 1, unit: 'gp' } },
+  'wand-of-fear': { charges: { id: 'charges', name: 'Charges', max: 7, recharge: [{ on: 'dawn', amount: 0, dice: '1d6+1' }] } },
   'fighter-fighting-style': {
     choices: [{ id: 'feat', label: 'Fighting Style feat', kind: 'entity', from: { type: 'feat', tags: ['fighting-style'] }, changeable: 'levelUp' }],
   },

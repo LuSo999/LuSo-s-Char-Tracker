@@ -262,12 +262,15 @@ export function computeSpellcasting(
       const ids = g.id ? [g.id] : 'fromChoice' in g && g.fromChoice ? selections(char, ae, g.fromChoice) : []
       // The ability picked in a choice: an "ability" choice, or the ability raised by a feat's increase ("int+1").
       const chosen = 'abilityFromChoice' in g && g.abilityFromChoice ? (selections(char, ae, g.abilityFromChoice)[0]?.split('+')[0] as Ability | undefined) : undefined
-      const ability: Ability = ('ability' in g && g.ability) || chosen || bestCasterAbility || bestMental
+      // Spells from a class's own features (subclass spells, invocations) use that class's spellcasting.
+      const own = casters.find((c) => c.classId === ae.classId)
+      const ability: Ability = ('ability' in g && g.ability) || chosen || own?.ability || bestCasterAbility || bestMental
+      const ownNumbers = own && own.ability === ability
       for (const id of ids) {
         const spell = content.getTyped(id, 'spell')
         if (!spell) continue
         rows.push({
-          key: `${ae.grantKey}:${id}`, spell, grantedBy: ae, ability, dc: dcFor(ability), attackBonus: atkFor(ability),
+          key: `${ae.grantKey}:${id}`, spell, grantedBy: ae, ability, dc: ownNumbers ? own.dc : dcFor(ability), attackBonus: ownNumbers ? own.attack : atkFor(ability),
           castable: !('ritualOnly' in g && g.ritualOnly), always: true, ritualOnly: 'ritualOnly' in g && !!g.ritualOnly, canRitual: spell.ritual,
           // An item's own charges / uses are keyed per inventory entry.
           freeCast: 'freeCast' in g && g.freeCast ? (ae.item && ae.entity.type === 'item' && [...ae.entity.resources, ae.entity.charges].some((r) => r?.id === g.freeCast) ? `item:${ae.item.uid}:${g.freeCast}` : g.freeCast) : undefined,

@@ -705,8 +705,13 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     for (const resource of pools) {
       // Item resources are per inventory entry; others are per resource id.
       const key = ae.item ? `item:${ae.item.uid}:${resource.id}` : resource.id
-      if (resources.some((r) => r.key === key)) continue
       const maxComputed = Math.max(0, Math.floor(resolveScaled(resource.max, vars(ae))))
+      // The same pool from two classes (Cleric and Paladin Channel Divinity): the larger one counts.
+      const existing = resources.findIndex((r) => r.key === key)
+      if (existing >= 0) {
+        if (resources[existing].maxComputed >= maxComputed || resources[existing].maxOverridden) continue
+        resources.splice(existing, 1)
+      }
       const ov = char.overrides[`resource:${key}:max`]
       const max = typeof ov === 'number' ? ov : maxComputed
       if (max <= 0) continue
@@ -722,7 +727,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     mods,
     characterLevel,
     dcBonus: applyEffects('spellDc', 0, '', vars).value,
-    attackBonus: applyEffects('spellAttack', 0, '', vars).value,
+    attackBonus: applyEffects('spellAttack', 0, '', vars).value - d20Penalty,
     classBonus: (classId) => ({ dc: applyEffects(`spellDc:${classId}`, 0, '', vars).value, attack: applyEffects(`spellAttack:${classId}`, 0, '', vars).value }),
   })
   const casterAe = active.find((ae) => ae.entity.type === 'class') ?? active[0]
@@ -758,7 +763,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const props = w?.properties ?? []
     const ranged = w?.range === 'ranged'
     const monk = martialArts && (!w || isMonkWeapon(w, char.edition) || isExtraMonk(w, extraMonkWeapons))
-    let ability: Ability = natural?.ability ?? (ranged ? 'dex' : (props.includes('finesse') || monk) && mods.dex > mods.str ? 'dex' : 'str')
+    let ability: Ability = natural?.ability ?? (ranged && !props.includes('finesse') ? 'dex' : (props.includes('finesse') || monk) && mods.dex > mods.str ? 'dex' : 'str')
     // "attackAbility:<ability>": that ability may be used instead when it's higher (Hex Warrior: Cha; Bladesong: Int).
     if (!natural?.ability) {
       const probe: EffectContext = { ...baseCtx, weapon: w ?? ({ range: 'melee' } as Weapon), ability, unarmed: !w }

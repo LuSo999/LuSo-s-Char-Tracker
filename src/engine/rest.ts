@@ -135,8 +135,11 @@ export function longRest(char: Character, content: ContentIndex, opts: { dawn?: 
   if (char.hp.temp > 0) changes.push({ kind: 'tempHp', before: char.hp.temp, after: 0 })
 
   const hitDiceUsed: Record<string, number> = {}
+  // One budget for all dice (2014: half the character's total, at least 1), largest dice first.
+  let budget = rules.longRestHitDice(sheet.hitDice.reduce((s, p) => s + p.total, 0))
   for (const pool of sheet.hitDice) {
-    const back = Math.min(pool.used, rules.longRestHitDice(pool.total))
+    const back = Math.min(pool.used, budget)
+    budget -= back
     hitDiceUsed[String(pool.die)] = pool.used - back
     if (back > 0) changes.push({ kind: 'hitDice', die: pool.die, before: pool.total - pool.used, after: pool.total - pool.used + back, total: pool.total })
   }

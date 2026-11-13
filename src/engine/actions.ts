@@ -74,7 +74,8 @@ export function takeDamage(char: Character, sheet: Sheet, amount: number, critic
     if (remaining >= hpMax) items.push({ type: 'massiveDamage' })
     const failures = Math.min(3, deathSaves.failures + (critical ? 2 : 1))
     items.push({ type: 'deathSaveFailure', params: { amount }, before: deathSaves.failures, after: failures })
-    deathSaves = { ...deathSaves, failures }
+    // A stable creature that takes damage stops being stable.
+    deathSaves = { successes: deathSaves.successes >= 3 ? 0 : deathSaves.successes, failures }
   } else if (current === 0 && before > 0) {
     items.push({ type: 'unconscious' })
   }
@@ -82,9 +83,20 @@ export function takeDamage(char: Character, sheet: Sheet, amount: number, critic
     if (current === 0) items.push({ type: 'concentrationEnd', params: { name: char.concentration.name } })
     else items.push({ type: 'concentrationCheck', params: { name: char.concentration.name, dc: concentrationDc(amount, char.edition) } })
   }
-  // Dropping to 0 HP (Unconscious) ends Concentration.
+  // Dropping to 0 HP (Unconscious) ends Concentration, and states like Rage and Wild Shape.
   const concentration = current === 0 ? undefined : char.concentration
-  return ok({ ...char, hp: { current, temp }, deathSaves, concentration, shape, toggles }, 'damage', items)
+  let next: Character = { ...char, hp: { current, temp }, deathSaves, concentration, shape, toggles }
+  if (current === 0 && before > 0) next = endAllStates(next, sheet, items)
+  return ok(next, 'damage', items)
+}
+
+/** Unconscious (or 2024 Incapacitated): every state switched on by an activity ends, and the beast form with it. */
+function endAllStates(char: Character, sheet: Sheet, items: HistoryItem[]): Character {
+  const keys = char.toggles.filter((t) => t.startsWith('state:'))
+  if (!keys.length && !char.shape) return char
+  const ended = endStates(char, sheet, keys)
+  items.push(...ended.items)
+  return { ...ended.character, shape: undefined }
 }
 
 /** Healing: up to the HP maximum; any healing at 0 HP resets death saves. */
@@ -98,7 +110,8 @@ export function heal(char: Character, sheet: Sheet, amount: number, source?: { n
     return ok({ ...char, shape: { ...char.shape, hp: a } }, 'heal', [{ type: 'shapeHp', params: { amount }, before: b, after: a }])
   }
   const before = char.hp.current
-  const current = Math.min(sheet.hpMax.value, before + amount)
+  const current = Math.max(before, Math.min(sheet.hpMax.value, before + amount))
+  if (current === before) return { ok: false, error: 'noChange' }
   const items: HistoryItem[] = [{ type: 'heal', params: { amount, ...(source ? { source: source.name } : {}) }, before, after: current, entity: source?.entity }]
   let deathSaves = char.deathSaves
   if (before === 0 && current > 0 && (deathSaves.successes || deathSaves.failures)) {
@@ -117,7 +130,13 @@ export function adjustHp(char: Character, sheet: Sheet, delta: number): ActionRe
 export function setHp(char: Character, sheet: Sheet, value: number): ActionResult {
   const current = Math.max(0, Math.min(sheet.hpMax.value, Math.round(value)))
   if (current === char.hp.current) return { ok: false, error: 'noChange' }
-  return ok({ ...char, hp: { ...char.hp, current } }, 'setHp', [{ type: 'setHp', before: char.hp.current, after: current }])
+  const items: HistoryItem[] = [{ type: 'setHp', before: char.hp.current, after: current }]
+  let deathSaves = char.deathSaves
+  if (char.hp.current === 0 && current > 0 && (deathSaves.successes || deathSaves.failures)) {
+    deathSaves = { successes: 0, failures: 0 }
+    items.push({ type: 'deathSavesReset' })
+  }
+  return ok({ ...char, hp: { ...char.hp, current }, deathSaves }, 'setHp', items)
 }
 
 /** Temporary HP don't stack: the new value replaces the old one. */
@@ -409,7 +428,8 @@ export function endStates(char: Character, sheet: Sheet, keys: string[]): { char
       delete resourcesUsed[r.key]
     }
   }
-  return { character: { ...char, exhaustion, resourcesUsed, toggles: char.toggles.filter((k) => !ending.has(k)) }, items }
+  const shape = ending.has('state:Wild Shape') ? undefined : char.shape
+  return { character: { ...char, exhaustion, resourcesUsed, toggles: char.toggles.filter((k) => !ending.has(k)), shape }, items }
 }
 
 // --- Rests ------------------------------------------------------------------------------

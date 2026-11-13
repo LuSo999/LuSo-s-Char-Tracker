@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { ContentIndex } from '../../content'
 import type { ActionResult, HistoryItem } from '../../engine/actions'
 import type { Character } from '../../engine/character'
-import type { Sheet } from '../../engine/derive'
+import { computeSheet, type Sheet } from '../../engine/derive'
 import type { HistoryGroup } from '../../engine/history'
 import { undoable, type CharacterStore } from '../../state/history'
 import { fx } from '../fx/fx'
@@ -57,9 +57,22 @@ export function undoGroup(store: CharacterStore, group: HistoryGroup) {
 }
 
 /** Run an action: save it with its history group, play its effect and offer a quick undo. */
+/** A change that lowers the HP maximum (exhaustion, an item taken off, lower Con) also lowers current HP to it. */
+function clampHp(result: Extract<ActionResult, { ok: true }>, content: ContentIndex): Extract<ActionResult, { ok: true }> {
+  const c = result.character
+  let max: number
+  try {
+    max = computeSheet(c, content).hpMax.value
+  } catch {
+    return result
+  }
+  if (c.hp.current <= max) return result
+  return { ...result, character: { ...c, hp: { ...c.hp, current: max } }, items: [...result.items, { type: 'setHp', before: c.hp.current, after: max }] }
+}
+
 export function useRun() {
   const { t } = useTranslation()
-  const { store, draft } = useSheet()
+  const { store, draft, content } = useSheet()
   // Toasts outlive renders; they must check the current history, not the one they were created with.
   const latest = useRef(store)
   useEffect(() => {
@@ -73,7 +86,7 @@ export function useRun() {
       }
       return undefined
     }
-    const group = await store.commit(result, { actionId: opts.actionId })
+    const group = await store.commit(clampHp(result, content), { actionId: opts.actionId })
     if (draft) return group
     effectFor(result.groupType, result.items)
     const check = result.items.find((i) => i.type === 'concentrationCheck')

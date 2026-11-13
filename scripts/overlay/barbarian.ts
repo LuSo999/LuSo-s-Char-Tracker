@@ -74,6 +74,7 @@ export const barbarian: ClassOverlay = {
   },
 
   '2024': {
+    'barbarian-extra-attack': { effects: [{ target: 'attacksPerAction', op: 'max', value: 2 }] },
     'barbarian-rage': {
       resources: [{ id: 'rage', name: 'Rage', max: { byLevel: { 1: 2, 3: 3, 6: 4, 12: 5, 17: 6 } }, recharge: shortAndLong(1) }],
       activities: [

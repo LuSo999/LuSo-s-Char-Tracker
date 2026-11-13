@@ -8,8 +8,8 @@ export const monk: ClassOverlay = {
     'monk-unarmored-defense': { effects: [{ target: 'unarmoredAc', op: 'set', value: '10 + dex + wis', when: 'noShield' }] },
     'martial-arts': {
       effects: [
-        { target: 'martialArts', value: 1 },
-        { target: 'martialArtsDie', op: 'max', value: { byLevel: { 1: 4, 5: 6, 11: 8, 17: 10 } } },
+        { target: 'martialArts', value: 1, when: 'noArmorNoShield' },
+        { target: 'martialArtsDie', op: 'max', value: { byLevel: { 1: 4, 5: 6, 11: 8, 17: 10 } }, when: 'noArmorNoShield' },
       ],
       activities: [
         { id: 'strike', name: 'Martial Arts: Unarmed Strike', attack: true, actionType: 'bonusAction', fx: 'physical', summary: 'After the Attack action with an unarmed strike or a monk weapon: one unarmed strike.' },
@@ -83,8 +83,8 @@ export const monk: ClassOverlay = {
   '2024': {
     'monk-martial-arts': {
       effects: [
-        { target: 'martialArts', value: 1 },
-        { target: 'martialArtsDie', op: 'max', value: { byLevel: { 1: 6, 5: 8, 11: 10, 17: 12 } } },
+        { target: 'martialArts', value: 1, when: 'noArmorNoShield' },
+        { target: 'martialArtsDie', op: 'max', value: { byLevel: { 1: 6, 5: 8, 11: 10, 17: 12 } }, when: 'noArmorNoShield' },
       ],
       activities: [{ id: 'strike', name: 'Bonus Unarmed Strike', attack: true, actionType: 'bonusAction', fx: 'physical', summary: 'Make an Unarmed Strike.' }],
     },
