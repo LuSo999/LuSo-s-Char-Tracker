@@ -1,3 +1,4 @@
+import { create } from 'zustand'
 import { adjustXp } from '../../engine/actions'
 import { NumberAdjust } from './NumberAdjust'
 import { useEffect, useMemo, useState } from 'react'
@@ -267,6 +268,36 @@ function MoreMenu({ className, onLevelUp }: { className: string; onLevelUp: () =
   )
 }
 
+/** Layout of the sheet on this device: three columns (wide screens) or two (laptops). */
+const useLayout = create<{ two: boolean }>(() => {
+  try {
+    return { two: localStorage.getItem('sheetLayout') === 'two' }
+  } catch {
+    return { two: false }
+  }
+})
+
+/** The switch in the sheet's corner (from tablet width up). */
+function LayoutToggle() {
+  const { t } = useTranslation()
+  const two = useLayout((l) => l.two)
+  const toggle = () => {
+    useLayout.setState({ two: !two })
+    try {
+      localStorage.setItem('sheetLayout', two ? 'three' : 'two')
+    } catch {
+      // storage unavailable: the choice lasts until reload
+    }
+  }
+  return (
+    <div className="-mt-2 mb-1 hidden justify-end lg:flex">
+      <button className="rounded border border-border bg-card px-2 py-0.5 text-xs text-muted hover:bg-bg" title={t('sheet.layoutHint')} aria-pressed={two} onClick={toggle}>
+        {two ? `▥ ${t('sheet.layoutThree')}` : `◫ ${t('sheet.layoutTwo')}`}
+      </button>
+    </div>
+  )
+}
+
 function EditToggle({ className }: { className: string }) {
   const { t } = useTranslation()
   const { on, toggle } = useEditMode()
@@ -374,6 +405,24 @@ function SheetLayout() {
   }
   const edit = useEditMode((s) => s.on)
 
+  const twoColumns = useLayout((l) => l.two)
+  const middle = (
+    <>
+      <Vitals />
+      <ShapeBanner />
+      <Reminders />
+      <ActionList onOpenSpells={() => setSpells(true)} />
+    </>
+  )
+  const side = (
+    <>
+      <ResourcesPanel />
+      <ConditionsPanel />
+      <CompanionsPanel />
+      <FeaturesPanel />
+    </>
+  )
+
   return (
     // Side gutters on larger screens keep the edge handles off the content.
     <div className="mx-auto w-full max-w-[1920px] px-3 py-3 sm:px-11">
@@ -386,24 +435,26 @@ function SheetLayout() {
       <ThemeTarget />
       <EntityEditHost />
 
-      {/* On large screens the columns fill the viewport and scroll inside, so nothing important needs page scrolling. */}
-      <div className="grid grid-cols-1 gap-3 xl:h-[calc(100vh-15.5rem)] xl:min-h-[34rem] xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)_minmax(260px,340px)]">
-        <div className="order-3 xl:order-1 xl:min-h-0 xl:overflow-y-auto">
-          <AbilitiesPanel sheet={sheet} content={content} />
+      <LayoutToggle />
+      {twoColumns ? (
+        // Laptops: the action column and one side column (resources, conditions, companions, features, abilities).
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
+          <div className="flex min-w-0 flex-col gap-3">{middle}</div>
+          <div className="flex flex-col gap-3">
+            {side}
+            <AbilitiesPanel sheet={sheet} content={content} />
+          </div>
         </div>
-        <div className="order-1 flex min-w-0 flex-col gap-3 xl:order-2 xl:min-h-0">
-          <Vitals />
-          <ShapeBanner />
-          <Reminders />
-          <ActionList onOpenSpells={() => setSpells(true)} />
+      ) : (
+        // On large screens the columns fill the viewport and scroll inside, so nothing important needs page scrolling.
+        <div className="grid grid-cols-1 gap-3 xl:h-[calc(100vh-15.5rem)] xl:min-h-[34rem] xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)_minmax(260px,340px)]">
+          <div className="order-3 xl:order-1 xl:min-h-0 xl:overflow-y-auto">
+            <AbilitiesPanel sheet={sheet} content={content} />
+          </div>
+          <div className="order-1 flex min-w-0 flex-col gap-3 xl:order-2 xl:min-h-0">{middle}</div>
+          <div className="order-2 flex flex-col gap-3 xl:order-3 xl:min-h-0 xl:overflow-y-auto">{side}</div>
         </div>
-        <div className="order-2 flex flex-col gap-3 xl:order-3 xl:min-h-0 xl:overflow-y-auto">
-          <ResourcesPanel />
-          <ConditionsPanel />
-          <CompanionsPanel />
-          <FeaturesPanel />
-        </div>
-      </div>
+      )}
       <div className="mt-3">
         <EquippedPanel onOpen={() => setInventory(true)} />
       </div>

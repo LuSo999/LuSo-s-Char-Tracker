@@ -1,4 +1,5 @@
 // Per-user app settings, stored with the account (users/{uid}/meta/settings).
+import i18n, { setLanguage } from '../i18n'
 import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { create } from 'zustand'
 import type { LinkSite } from '../content/links'
@@ -21,6 +22,8 @@ export type Settings = {
   theme: string
   /** Ornate themed frames around the boxes; a character may override it. */
   frames: boolean
+  /** Interface language, kept with the account (all devices). */
+  language?: 'en' | 'cs'
 }
 
 export const defaultSettings: Settings = {
@@ -43,6 +46,7 @@ export function watchSettings(uid: string | undefined) {
   unsubscribe = onSnapshot(doc(db, 'users', uid, 'meta', 'settings'), (snap) => {
     const data = snap.data() as Partial<Settings> | undefined
     useSettings.setState({ ...defaultSettings, ...data, linkSite: { ...defaultSettings.linkSite, ...data?.linkSite } }, true)
+    if (data?.language && data.language !== i18n.language) setLanguage(data.language)
   })
 }
 

@@ -8,7 +8,7 @@ export type Language = (typeof languages)[number]
 
 const STORAGE_KEY = 'language'
 
-// Until settings live on the user account (milestone 13), remember the choice per browser.
+// The browser remembers the last language (used before sign-in); the account's choice wins once it loads.
 function storedLanguage(): Language {
   try {
     const v = localStorage.getItem(STORAGE_KEY)
@@ -25,6 +25,8 @@ void i18n.use(initReactI18next).init({
   fallbackLng: 'en',
   interpolation: { escapeValue: false },
 })
+
+if (typeof document !== 'undefined') document.documentElement.lang = storedLanguage()
 
 export function setLanguage(lang: Language) {
   void i18n.changeLanguage(lang)

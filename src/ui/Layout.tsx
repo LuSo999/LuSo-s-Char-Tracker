@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router'
 import { signOut } from '../firebase'
 import { languages, setLanguage, type Language } from '../i18n'
 import { useAuth } from '../state/auth'
+import { saveSettings } from '../state/settings'
 import { ShortcutsButton } from './ShortcutsButton'
 import { ThemeButton } from './ThemePicker'
 import { AdminBulb } from './feedback/AdminBulb'
@@ -36,7 +37,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <select
               className="rounded border border-border bg-card px-2 py-1 text-text"
               value={i18n.language}
-              onChange={(e) => setLanguage(e.target.value as Language)}
+              onChange={(e) => {
+                const lang = e.target.value as Language
+                setLanguage(lang)
+                if (user) void saveSettings(user.uid, { language: lang })
+              }}
             >
               {languages.map((l) => (
                 <option key={l} value={l}>

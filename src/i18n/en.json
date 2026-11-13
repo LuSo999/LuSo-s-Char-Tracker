@@ -124,7 +124,10 @@
       "saveNotes": "Saves",
       "speeds": "Other speeds",
       "immunities": "Immunities"
-    }
+    },
+    "layoutTwo": "2 columns",
+    "layoutThree": "3 columns",
+    "layoutHint": "Layout of the sheet on this device (two columns suit laptops)"
   },
   "settings": {
     "title": "Settings",
@@ -464,7 +467,8 @@
     "howMany": "How many",
     "back": "Back",
     "addConfirm": "Add",
-    "characterLabel": "Adding to {{name}}."
+    "characterLabel": "Adding to {{name}}.",
+    "ammo": "Ammunition"
   },
   "attackNotes": {
     "longRange": "Long range: Disadvantage",

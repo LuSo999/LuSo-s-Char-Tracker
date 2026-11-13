@@ -4,7 +4,7 @@ import i18n from '../../i18n'
 import type { ContentIndex } from '../../content'
 import type { ActionType, Entity } from '../../content/schema'
 import { makeAttack, performActivity } from '../../engine/actions'
-import { pickUpThrown, recoverAmmo, reload } from '../../engine/inventory'
+import { pickUpThrown, recoverAmmo, reload, selectAmmo } from '../../engine/inventory'
 import { offhandEligible } from '../../engine/items'
 import type { ActivityRow, AttackRow } from '../../engine/derive'
 import type { CreatureActionView } from '../../engine/creatures'
@@ -843,6 +843,27 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
               </div>
               {/* Extra buttons wrap into a narrow column on small phones instead of squeezing the name. */}
               <div className="flex shrink-0 flex-wrap items-start justify-end gap-1 max-sm:max-w-[5.5rem]">
+                {/* Several kinds of ammunition (plain / magic arrows): switch right here. */}
+                {r.attack?.item && r.attack.weapon?.ammunition && (() => {
+                  const choices = sheet.items.filter((x) => x.ammoKind === r.attack!.weapon!.ammunition && x.entry.quantity > 0)
+                  if (choices.length < 2) return null
+                  return (
+                    <select
+                      className="max-w-[9rem] rounded border border-border bg-card px-1 py-0.5 text-xs"
+                      aria-label={t('inventory.ammo')}
+                      value={r.attack.ammo?.uid ?? ''}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                      onChange={(e) => void run(selectAmmo(character, content, r.attack!.item!.uid, e.target.value))}
+                    >
+                      {choices.map((x) => (
+                        <option key={x.entry.uid} value={x.entry.uid}>
+                          {x.name} ×{x.entry.quantity}
+                        </option>
+                      ))}
+                    </select>
+                  )
+                })()}
                 {meleeThrown(r) && (
                   <button
                     className="shrink-0 rounded border border-border px-2 py-0.5 text-xs font-semibold hover:bg-bg disabled:opacity-40"

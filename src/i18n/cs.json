@@ -124,7 +124,10 @@
       "saveNotes": "Záchrany",
       "speeds": "Další rychlosti",
       "immunities": "Imunity"
-    }
+    },
+    "layoutTwo": "2 sloupce",
+    "layoutThree": "3 sloupce",
+    "layoutHint": "Rozložení deníku na tomto zařízení (dva sloupce se hodí na notebook)"
   },
   "settings": {
     "title": "Nastavení",
@@ -464,7 +467,8 @@
     "howMany": "Kolik",
     "back": "Zpět",
     "addConfirm": "Přidat",
-    "characterLabel": "Přidává se postavě {{name}}."
+    "characterLabel": "Přidává se postavě {{name}}.",
+    "ammo": "Munice"
   },
   "attackNotes": {
     "longRange": "Dlouhý dostřel: Disadvantage",
