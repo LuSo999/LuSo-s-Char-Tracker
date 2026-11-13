@@ -65,7 +65,6 @@ function choiceApplies(char: Character, ae: ActiveEntity, choice: Choice): boole
 export function allChoices(char: Character, sheet: Sheet): PendingChoice[] {
   const out: PendingChoice[] = []
   for (const ae of sheet.active) {
-    if (ae.item) continue
     for (const choice of ae.entity.choices) {
       if (choice.alternativeTo || ae.presets?.[choice.id] || !choiceApplies(char, ae, choice)) continue
       const count = choiceCount(choice, ae, sheet.characterLevel)

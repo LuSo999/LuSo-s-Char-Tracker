@@ -129,6 +129,7 @@ export type EffectWhen = z.infer<typeof EffectWhen>
  *   unarmedDamage (flat damage die size for Unarmed Strike, op "max"),
  *   monkWeapon:<weapon id> (counts as a Monk weapon; "monkWeapon:@weapons" for picked ones),
  *   reach (extra melee reach in feet, Bugbear Long-Limbed),
+ *   spellDc:<class id> / spellAttack:<class id> (only that class's spells: Rod of the Pact Keeper → warlock),
  *   attackAbility:<ability> (weapon attacks may use it when higher; narrow with when / a toggle),
  *   sense:<darkvision|blindsight|tremorsense|truesight> (feet; op "max", or "add" to extend),
  *   speed:<fly|swim|climb|burrow> (feet; value "walk" = equal to Speed),
@@ -290,6 +291,8 @@ export const GrantedSpell = z.object({
   ritualOnly: z.boolean().optional(),
   /** Only the free cast, never with spell slots (2014 Drow Magic; spells from items are always like this). */
   freeOnly: z.boolean().optional(),
+  /** Uses of the freeCast resource one cast takes (Staff of Healing: Mass Cure Wounds for 5 charges). */
+  freeCost: z.number().int().optional(),
 })
 export type GrantedSpell = z.infer<typeof GrantedSpell>
 

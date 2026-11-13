@@ -690,6 +690,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     characterLevel,
     dcBonus: applyEffects('spellDc', 0, '', vars).value,
     attackBonus: applyEffects('spellAttack', 0, '', vars).value,
+    classBonus: (classId) => ({ dc: applyEffects(`spellDc:${classId}`, 0, '', vars).value, attack: applyEffects(`spellAttack:${classId}`, 0, '', vars).value }),
   })
   const casterAe = active.find((ae) => ae.entity.type === 'class') ?? active[0]
   for (const resource of spellcasting.resources) {
@@ -746,7 +747,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       : undefined
 
     // Item bonuses to attack and damage apply only to attacks made with that item (or its ammunition).
-    const ownItem = (ae: ActiveEntity) => !(ae.item && ae.entity.type === 'item' && ae.item.uid !== entry?.uid)
+    // …and items tagged "unarmed" (Wraps of Unarmed Power) to Unarmed Strikes.
+    const ownItem = (ae: ActiveEntity) => !(ae.item && ae.entity.type === 'item' && ae.item.uid !== entry?.uid) || (!w && ae.entity.tags.includes('unarmed'))
     const ammoEffects = (target: string) =>
       (ammoEntry?.item.effects ?? []).filter((e) => e.target === target).map((e) => ({ label: ammoEntry!.name, value: resolveScaled(e.value, levelVars(active[0])) }))
     const withAmmo = (r: { value: number; parts: Part[] }, target: string) => {

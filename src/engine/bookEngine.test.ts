@@ -166,7 +166,10 @@ describe('Spells cast from an item', () => {
     const s = computeSheet(c, content)
     const row = s.spellcasting.rows.find((r) => r.spell.id === 'magic-missile')!
     expect(row.freeCast).toBe('item:w:charges')
-    const { castOptions } = await import('./spellActions')
+    const { castOptions, castSpell } = await import('./spellActions')
     expect(castOptions(row, s).some((o) => o.kind === 'free')).toBe(true)
+    expect(castOptions(row, s).some((o) => o.kind === 'slot')).toBe(false)
+    const r = castSpell(c, s, row, { kind: 'free' })
+    expect(r.ok && r.character.inventory[0].chargesUsed).toBe(1)
   })
 })

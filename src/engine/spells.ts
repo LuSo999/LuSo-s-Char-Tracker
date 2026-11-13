@@ -78,6 +78,8 @@ export type SpellRow = {
   damageBonus?: number
   /** Only the free cast / at will (spells from items, 2014 Drow Magic): no slots. */
   freeOnly?: boolean
+  /** Uses of freeCast per cast. */
+  freeCost?: number
   /** What features change about it (Eldritch Spear: range +30 ft per level). */
   notes: string[]
 }
@@ -151,7 +153,7 @@ export function computeSpellcasting(
   char: Character,
   content: ContentIndex,
   active: ActiveEntity[],
-  ctx: { pb: number; mods: Record<Ability, number>; characterLevel: number; dcBonus: number; attackBonus: number },
+  ctx: { pb: number; mods: Record<Ability, number>; characterLevel: number; dcBonus: number; attackBonus: number; classBonus?: (classId: string) => { dc: number; attack: number } },
 ): Spellcasting {
   const casters: CasterState[] = []
   for (const entry of char.classes) {
@@ -177,8 +179,8 @@ export function computeSpellcasting(
       name: cls.name,
       level: entry.level,
       ability: cls.caster.ability,
-      dc: 8 + ctx.pb + mod + ctx.dcBonus,
-      attack: ctx.pb + mod + ctx.attackBonus,
+      dc: 8 + ctx.pb + mod + ctx.dcBonus + (ctx.classBonus?.(cls.id).dc ?? 0),
+      attack: ctx.pb + mod + ctx.attackBonus + (ctx.classBonus?.(cls.id).attack ?? 0),
       mode: cls.caster.mode,
       spellbook: cls.caster.spellbook,
       ritual: cls.caster.ritual,
@@ -274,6 +276,7 @@ export function computeSpellcasting(
           freeLevel: 'freeLevel' in g ? g.freeLevel : undefined,
           notes: [],
           freeOnly: ('freeOnly' in g && !!g.freeOnly) || (!!ae.item && ae.entity.type === 'item'),
+          freeCost: 'freeCost' in g ? g.freeCost : undefined,
         })
       }
     }

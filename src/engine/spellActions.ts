@@ -33,7 +33,7 @@ export function castOptions(row: SpellRow, sheet: Sheet): CastHow[] {
     // Pact slots: the Warlock's own spells, or any spell when multiclassing (both SRDs).
     if (sc.pact && sc.pact.level >= spell.level && left('pact') > 0) out.push({ kind: 'pact' })
   }
-  if (row.atWill || (row.freeCast && left(row.freeCast) > 0)) out.push({ kind: 'free' })
+  if (row.atWill || (row.freeCast && left(row.freeCast) >= (row.freeCost ?? 1))) out.push({ kind: 'free' })
   if (row.canRitual) out.push({ kind: 'ritual' })
   return out
 }
@@ -51,11 +51,15 @@ export function castSpell(char: Character, sheet: Sheet, row: SpellRow, how: Cas
   const spell = row.spell
   const items: HistoryItem[] = []
   let next: Character = char
-  const spend = (key: string) => {
+  const spend = (key: string, amount = 1) => {
     const r = sheet.resources.find((x) => x.key === key)
-    if (!r || r.remaining <= 0) return false
-    next = { ...next, resourcesUsed: { ...next.resourcesUsed, [key]: r.used + 1 } }
-    items.push({ type: 'resource', params: { name: r.resource.name }, before: r.remaining, after: r.remaining - 1 })
+    if (!r || r.remaining < amount) return false
+    // An item's charges live on its inventory entry.
+    if (r.source.item && r.source.entity.type === 'item' && r.resource === r.source.entity.charges) {
+      const uid = r.source.item.uid
+      next = { ...next, inventory: next.inventory.map((e) => (e.uid === uid ? { ...e, chargesUsed: r.used + amount } : e)) }
+    } else next = { ...next, resourcesUsed: { ...next.resourcesUsed, [key]: r.used + amount } }
+    items.push({ type: 'resource', params: { name: r.resource.name }, before: r.remaining, after: r.remaining - amount })
     return true
   }
   let level = spell.level
@@ -68,7 +72,7 @@ export function castSpell(char: Character, sheet: Sheet, row: SpellRow, how: Cas
     if (!spend('pact')) return { ok: false, error: 'noSlot', params: { level: sheet.spellcasting.pact?.level ?? 0 } }
     level = sheet.spellcasting.pact!.level
   } else if (how.kind === 'free') {
-    if (!row.atWill && (!row.freeCast || !spend(row.freeCast))) return { ok: false, error: 'notEnough', params: { name: spell.name } }
+    if (!row.atWill && (!row.freeCast || !spend(row.freeCast, row.freeCost ?? 1))) return { ok: false, error: 'notEnough', params: { name: spell.name } }
     level = row.freeLevel ?? level
   } else if (how.kind === 'ritual') {
     if (!row.canRitual) return { ok: false, error: 'notRitual' }
