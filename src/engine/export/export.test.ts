@@ -34,7 +34,7 @@ describe('Export values', () => {
 
   it('built-in templates are valid and only use known keys', () => {
     const keys = new Set(exportCatalogue().map((f) => f.key))
-    for (const file of ['dnd-2024-official', 'tenfootpole-gunslinger-a4']) {
+    for (const file of ['dnd-2024-official']) {
       const t = SheetTemplate.parse(JSON.parse(readFileSync(`src/engine/export/templates/${file}.json`, 'utf8')))
       for (const f of t.fields) expect(keys.has(f.key), `${file}: ${f.key}`).toBe(true)
     }

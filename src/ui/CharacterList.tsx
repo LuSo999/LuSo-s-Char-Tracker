@@ -5,6 +5,8 @@ import { sampleChampion } from '../data/samples'
 import { addCharacter, deleteCharacter, parseCharacterFile, useCharacterList } from '../state/characters'
 import { useOfficial } from '../state/official'
 import { Card } from './Card'
+import { parseSheetImport, type SheetImport } from '../engine/exchange'
+import { SheetImportDialog } from './SheetImportDialog'
 
 export function CharacterList({ uid }: { uid: string }) {
   const { t } = useTranslation()
@@ -13,9 +15,17 @@ export function CharacterList({ uid }: { uid: string }) {
   const fileInput = useRef<HTMLInputElement>(null)
   const [importErrors, setImportErrors] = useState<string[]>([])
 
+  const [sheetImport, setSheetImport] = useState<SheetImport>()
+
   async function importFile(file: File) {
     setImportErrors([])
-    const result = parseCharacterFile(await file.text())
+    const text = await file.text()
+    // A character read off a sheet by the desktop app: review the matched names first.
+    if (text.includes('"luso-sheet-import"')) {
+      const r = parseSheetImport(text)
+      return r.ok ? setSheetImport(r.value) : setImportErrors(r.errors)
+    }
+    const result = parseCharacterFile(text)
     if (!result.ok) return setImportErrors(result.errors)
     await addCharacter(uid, result.value)
   }
@@ -114,6 +124,7 @@ export function CharacterList({ uid }: { uid: string }) {
         {official.status === 'noAccess' && t('content.noAccess')}
         {official.status === 'error' && t('content.error', { message: official.error })}
       </p>
+      {sheetImport && <SheetImportDialog data={sheetImport} onClose={() => setSheetImport(undefined)} onCreate={async (c) => void (await addCharacter(uid, c))} />}
     </div>
   )
 }

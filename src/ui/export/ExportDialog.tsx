@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { analyzeFields, proposalsToFields } from '../../engine/export/analyze'
 import { pdfFingerprint, type SheetTemplate } from '../../engine/export/template'
 import { exportValues } from '../../engine/export/values'
+import { makeCharacterExport } from '../../engine/exchange'
 import { useAuth } from '../../state/auth'
 import { deleteTemplate, saveTemplate, storedPdf, storePdf, useSheetTemplates } from '../../state/sheetTemplates'
 import { builtInTemplates } from './builtIn'
@@ -170,6 +171,25 @@ export default function ExportDialog({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       )}
+
+      <div className="mt-4 border-t border-border pt-3 text-sm">
+        <p className="font-semibold">🖥️ {t('export.desktopTitle')}</p>
+        <p className="text-xs text-muted">{t('export.desktopHint')}</p>
+        <button
+          className="mt-1 rounded border border-border px-3 py-1.5 hover:bg-bg"
+          onClick={() => {
+            const data = makeCharacterExport(character, sheet, content)
+            const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `${character.name.replace(/[^\p{L}\p{N}\- ]+/gu, '').trim() || 'character'}.luso-character.json`
+            a.click()
+            setTimeout(() => URL.revokeObjectURL(url), 5000)
+          }}
+        >
+          ⬇️ {t('export.desktopDownload')}
+        </button>
+      </div>
 
       <div className="mt-4 border-t border-border pt-3 text-sm">
         <label className="block">

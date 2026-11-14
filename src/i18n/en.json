@@ -1227,6 +1227,17 @@
     "editorHint": "Click a box on the page to choose what goes there. On sheets without form fields drag to add a text box, or pick “Dot” and click a proficiency circle. Values of this character are shown as a preview.",
     "legendAssigned": "assigned",
     "legendFree": "free form field",
-    "looksLike": "This looks like the sheet “{{name}}”, which already has a template. Use it?"
+    "looksLike": "This looks like the sheet “{{name}}”, which already has a template. Use it?",
+    "desktopTitle": "For the desktop app",
+    "desktopHint": "A file with this character and all its values. The desktop app (any sheet PDF or image, analysed by AI) fills it into the sheet you open there.",
+    "desktopDownload": "Character file for the desktop app"
+  },
+  "sheetImport": {
+    "title": "Import from a sheet: {{name}}",
+    "edition": "Edition:",
+    "summary": "Matched {{matched}} names to your content; {{unmatched}} not found (they go into the notes).",
+    "matched": "Matched",
+    "unmatched": "Not found in your content:",
+    "create": "Create the character"
   }
 }

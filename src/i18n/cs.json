@@ -1227,6 +1227,17 @@
     "editorHint": "Klepni na rámeček na stránce a vyber, co tam patří. U sheetů bez formulářových polí tažením přidáš rámeček textu, nebo vyber „Tečka“ a klepni na kolečko proficience. Údaje této postavy se ukazují jako náhled.",
     "legendAssigned": "přiřazené",
     "legendFree": "volné formulářové pole",
-    "looksLike": "Vypadá to jako sheet „{{name}}“, pro který už šablona je. Použít ji?"
+    "looksLike": "Vypadá to jako sheet „{{name}}“, pro který už šablona je. Použít ji?",
+    "desktopTitle": "Pro desktopovou appku",
+    "desktopHint": "Soubor s touto postavou a všemi jejími hodnotami. Desktopová appka (libovolné PDF nebo obrázek sheetu, analýza přes AI) ho vyplní do sheetu, který tam otevřeš.",
+    "desktopDownload": "Soubor postavy pro desktopovou appku"
+  },
+  "sheetImport": {
+    "title": "Import ze sheetu: {{name}}",
+    "edition": "Edice:",
+    "summary": "Spárováno {{matched}} názvů s tvým obsahem; {{unmatched}} nenalezeno (přidá se do poznámek).",
+    "matched": "Spárováno",
+    "unmatched": "V tvém obsahu nenalezeno:",
+    "create": "Vytvořit postavu"
   }
 }
