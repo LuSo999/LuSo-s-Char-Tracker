@@ -33,6 +33,8 @@ export const SheetTemplate = z.object({
   fingerprint: z.string().optional(),
   /** File name hint shown when the PDF has to be uploaded again. */
   fileName: z.string().optional(),
+  /** Where the blank PDF can be downloaded (shown when it has to be uploaded). */
+  pdfUrl: z.string().optional(),
   fields: z.array(TemplateField),
   builtIn: z.boolean().optional(),
 })

@@ -1193,6 +1193,7 @@
     "deleteConfirm": "Delete the template “{{name}}”?",
     "pdfReady": "The PDF of this sheet is ready in this browser.",
     "needPdf": "Upload the PDF of this sheet ({{file}}); it stays in this browser.",
+    "getPdf": "Download the blank sheet",
     "download": "Download filled PDF",
     "edit": "Edit the layout",
     "newFromPdf": "New sheet from your PDF",

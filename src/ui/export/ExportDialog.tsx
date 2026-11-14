@@ -158,6 +158,11 @@ export default function ExportDialog({ onClose }: { onClose: () => void }) {
           ) : (
             <label className="block">
               <span>{t('export.needPdf', { file: selected.fileName ?? 'PDF' })}</span>
+              {selected.pdfUrl && (
+                <a href={selected.pdfUrl} target="_blank" rel="noreferrer" className="ml-1 text-accent hover:underline">
+                  ⬇️ {t('export.getPdf')}
+                </a>
+              )}
               <input type="file" accept="application/pdf" className="mt-1 block text-xs file:mr-2 file:rounded file:border file:border-border file:bg-card file:px-2 file:py-1" onChange={(e) => e.target.files?.[0] && void upload(e.target.files[0])} />
             </label>
           )}

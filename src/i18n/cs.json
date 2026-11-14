@@ -1193,6 +1193,7 @@
     "deleteConfirm": "Smazat šablonu „{{name}}“?",
     "pdfReady": "PDF tohoto sheetu je v prohlížeči připravené.",
     "needPdf": "Nahraj PDF tohoto sheetu ({{file}}); zůstane jen v tomto prohlížeči.",
+    "getPdf": "Stáhnout prázdný sheet",
     "download": "Stáhnout vyplněné PDF",
     "edit": "Upravit rozmístění",
     "newFromPdf": "Nový sheet z tvého PDF",
