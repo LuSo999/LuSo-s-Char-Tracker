@@ -1,0 +1,1947 @@
+{
+"id": "builtin-dnd-2024-official",
+"name": "D&D 2024 Character Sheet (fillable, WotC)",
+"pages": [
+[
+603,
+774
+],
+[
+603,
+774
+]
+],
+"fileName": "DnD_2024_Character-Sheet-Fillable.pdf",
+"builtIn": true,
+"fields": [
+{
+"kind": "form",
+"name": "text_1imkp",
+"key": "name"
+},
+{
+"kind": "form",
+"name": "text_2qgox",
+"key": "background"
+},
+{
+"kind": "form",
+"name": "text_3bfkv",
+"key": "species"
+},
+{
+"kind": "form",
+"name": "text_4deth",
+"key": "level"
+},
+{
+"kind": "form",
+"name": "text_5mocb",
+"key": "xp"
+},
+{
+"kind": "form",
+"name": "text_9efgi",
+"key": "hp.max"
+},
+{
+"kind": "form",
+"name": "text_13wrft",
+"key": "initiative"
+},
+{
+"kind": "form",
+"name": "text_14lvnq",
+"key": "speed"
+},
+{
+"kind": "form",
+"name": "text_15cqja",
+"key": "size"
+},
+{
+"kind": "form",
+"name": "text_16wgea",
+"key": "passivePerception"
+},
+{
+"kind": "form",
+"name": "text_17vpmg",
+"key": "str.mod"
+},
+{
+"kind": "form",
+"name": "text_18ruyf",
+"key": "dex.mod"
+},
+{
+"kind": "form",
+"name": "text_19lqwv",
+"key": "int.mod"
+},
+{
+"kind": "form",
+"name": "text_20zbar",
+"key": "wis.mod"
+},
+{
+"kind": "form",
+"name": "text_21kabi",
+"key": "con.mod"
+},
+{
+"kind": "form",
+"name": "text_22bxjy",
+"key": "cha.mod"
+},
+{
+"kind": "form",
+"name": "text_23ewgq",
+"key": "str.score"
+},
+{
+"kind": "form",
+"name": "text_24rqar",
+"key": "int.score"
+},
+{
+"kind": "form",
+"name": "text_25blbj",
+"key": "wis.score"
+},
+{
+"kind": "form",
+"name": "text_26ccgh",
+"key": "dex.score"
+},
+{
+"kind": "form",
+"name": "text_27jhio",
+"key": "cha.score"
+},
+{
+"kind": "form",
+"name": "text_28owjh",
+"key": "con.score"
+},
+{
+"kind": "form",
+"name": "text_54bfgy",
+"key": "int.save"
+},
+{
+"kind": "form",
+"name": "text_55nptn",
+"key": "skill.arcana"
+},
+{
+"kind": "form",
+"name": "text_56ksru",
+"key": "skill.history"
+},
+{
+"kind": "form",
+"name": "text_57bjob",
+"key": "skill.investigation"
+},
+{
+"kind": "form",
+"name": "text_58zoel",
+"key": "skill.nature"
+},
+{
+"kind": "form",
+"name": "text_59mfqs",
+"key": "skill.religion"
+},
+{
+"kind": "form",
+"name": "text_60zpuk",
+"key": "str.save"
+},
+{
+"kind": "form",
+"name": "text_61knsn",
+"key": "skill.athletics"
+},
+{
+"kind": "form",
+"name": "text_62yaan",
+"key": "wis.save"
+},
+{
+"kind": "form",
+"name": "text_63uhiv",
+"key": "skill.animal-handling"
+},
+{
+"kind": "form",
+"name": "text_64odvk",
+"key": "skill.insight"
+},
+{
+"kind": "form",
+"name": "text_65hnhb",
+"key": "skill.medicine"
+},
+{
+"kind": "form",
+"name": "text_66djlf",
+"key": "skill.perception"
+},
+{
+"kind": "form",
+"name": "text_67cr",
+"key": "skill.survival"
+},
+{
+"kind": "form",
+"name": "text_68bipd",
+"key": "dex.save"
+},
+{
+"kind": "form",
+"name": "text_69srmm",
+"key": "skill.acrobatics"
+},
+{
+"kind": "form",
+"name": "text_70obrk",
+"key": "skill.sleight-of-hand"
+},
+{
+"kind": "form",
+"name": "text_71pflk",
+"key": "skill.stealth"
+},
+{
+"kind": "form",
+"name": "text_72gnbq",
+"key": "con.save"
+},
+{
+"kind": "form",
+"name": "text_73cwxt",
+"key": "cha.save"
+},
+{
+"kind": "form",
+"name": "text_74rkfi",
+"key": "skill.deception"
+},
+{
+"kind": "form",
+"name": "text_75pauh",
+"key": "skill.intimidation"
+},
+{
+"kind": "form",
+"name": "text_76vfsc",
+"key": "skill.performance"
+},
+{
+"kind": "form",
+"name": "text_77nads",
+"key": "skill.persuasion"
+},
+{
+"kind": "form",
+"name": "checkbox_78ywrl",
+"key": "prof.armor.light"
+},
+{
+"kind": "form",
+"name": "checkbox_79gwxi",
+"key": "prof.armor.medium"
+},
+{
+"kind": "form",
+"name": "checkbox_80xjpq",
+"key": "prof.armor.heavy"
+},
+{
+"kind": "form",
+"name": "checkbox_81xqwc",
+"key": "prof.armor.shields"
+},
+{
+"kind": "form",
+"name": "textarea_92aaks",
+"key": "feats"
+},
+{
+"kind": "form",
+"name": "checkbox_119phvx",
+"key": "int.saveProf"
+},
+{
+"kind": "form",
+"name": "checkbox_120drb",
+"key": "skill.arcana.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_121xgrv",
+"key": "skill.history.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_122zffm",
+"key": "skill.investigation.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_123smy",
+"key": "skill.nature.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_124zscb",
+"key": "skill.religion.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_125msvq",
+"key": "str.saveProf"
+},
+{
+"kind": "form",
+"name": "checkbox_126dqaq",
+"key": "skill.athletics.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_127neck",
+"key": "dex.saveProf"
+},
+{
+"kind": "form",
+"name": "checkbox_128cefr",
+"key": "skill.acrobatics.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_129tlov",
+"key": "skill.sleight-of-hand.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_130ukqx",
+"key": "skill.stealth.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_131jtbq",
+"key": "con.saveProf"
+},
+{
+"kind": "form",
+"name": "checkbox_245mnu",
+"key": "wis.saveProf"
+},
+{
+"kind": "form",
+"name": "checkbox_246hqns",
+"key": "skill.animal-handling.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_247lffe",
+"key": "skill.insight.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_248scbg",
+"key": "skill.medicine.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_249voxf",
+"key": "skill.perception.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_250mjvi",
+"key": "skill.survival.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_251dtie",
+"key": "cha.saveProf"
+},
+{
+"kind": "form",
+"name": "checkbox_252naxc",
+"key": "skill.deception.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_253mbyq",
+"key": "skill.intimidation.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_254ypds",
+"key": "skill.performance.prof"
+},
+{
+"kind": "form",
+"name": "checkbox_255ltdr",
+"key": "skill.persuasion.prof"
+},
+{
+"kind": "form",
+"name": "text_427aebp",
+"key": "pb"
+},
+{
+"kind": "form",
+"name": "textarea_259fnwq",
+"key": "languages"
+},
+{
+"kind": "form",
+"name": "textarea_260nudr",
+"key": "equipment"
+},
+{
+"kind": "form",
+"name": "text_265qztg",
+"key": "coins.cp"
+},
+{
+"kind": "form",
+"name": "text_266ykte",
+"key": "coins.sp"
+},
+{
+"kind": "form",
+"name": "text_267yykj",
+"key": "coins.ep"
+},
+{
+"kind": "form",
+"name": "text_268lycv",
+"key": "coins.gp"
+},
+{
+"kind": "form",
+"name": "text_269bzjf",
+"key": "coins.pp"
+},
+{
+"kind": "form",
+"name": "text_6agjh",
+"key": "ac"
+},
+{
+"kind": "form",
+"name": "text_12kvai",
+"key": "hitDice"
+},
+{
+"kind": "form",
+"name": "textarea_89gsxf",
+"key": "prof.weapons"
+},
+{
+"kind": "form",
+"name": "textarea_90mfnr",
+"key": "prof.tools"
+},
+{
+"kind": "form",
+"name": "textarea_93szqe",
+"key": "features.class.1"
+},
+{
+"kind": "form",
+"name": "textarea_94ci",
+"key": "features.class.2"
+},
+{
+"kind": "form",
+"name": "textarea_91jawi",
+"key": "features.species"
+},
+{
+"kind": "form",
+"name": "text_95mtme",
+"key": "attack.1.name"
+},
+{
+"kind": "form",
+"name": "text_101ohoi",
+"key": "attack.1.bonus"
+},
+{
+"kind": "form",
+"name": "text_107qvwl",
+"key": "attack.1.damage"
+},
+{
+"kind": "form",
+"name": "text_113tpwa",
+"key": "attack.1.notes"
+},
+{
+"kind": "form",
+"name": "text_96nzoa",
+"key": "attack.2.name"
+},
+{
+"kind": "form",
+"name": "text_102yibj",
+"key": "attack.2.bonus"
+},
+{
+"kind": "form",
+"name": "text_108aybq",
+"key": "attack.2.damage"
+},
+{
+"kind": "form",
+"name": "text_114lhuk",
+"key": "attack.2.notes"
+},
+{
+"kind": "form",
+"name": "text_97iydj",
+"key": "attack.3.name"
+},
+{
+"kind": "form",
+"name": "text_103rlae",
+"key": "attack.3.bonus"
+},
+{
+"kind": "form",
+"name": "text_109slbn",
+"key": "attack.3.damage"
+},
+{
+"kind": "form",
+"name": "text_115pcxn",
+"key": "attack.3.notes"
+},
+{
+"kind": "form",
+"name": "text_98wnad",
+"key": "attack.4.name"
+},
+{
+"kind": "form",
+"name": "text_104qwkw",
+"key": "attack.4.bonus"
+},
+{
+"kind": "form",
+"name": "text_110lbdh",
+"key": "attack.4.damage"
+},
+{
+"kind": "form",
+"name": "text_116sohv",
+"key": "attack.4.notes"
+},
+{
+"kind": "form",
+"name": "text_99bdzl",
+"key": "attack.5.name"
+},
+{
+"kind": "form",
+"name": "text_105gvuz",
+"key": "attack.5.bonus"
+},
+{
+"kind": "form",
+"name": "text_111ubex",
+"key": "attack.5.damage"
+},
+{
+"kind": "form",
+"name": "text_117fabc",
+"key": "attack.5.notes"
+},
+{
+"kind": "form",
+"name": "text_100zmbl",
+"key": "attack.6.name"
+},
+{
+"kind": "form",
+"name": "text_106vkdo",
+"key": "attack.6.bonus"
+},
+{
+"kind": "form",
+"name": "text_112omg",
+"key": "attack.6.damage"
+},
+{
+"kind": "form",
+"name": "text_118cokl",
+"key": "attack.6.notes"
+},
+{
+"kind": "text",
+"page": 0,
+"x": 149,
+"y": 725,
+"w": 100,
+"h": 11,
+"key": "class",
+"size": 9
+},
+{
+"kind": "text",
+"page": 0,
+"x": 149,
+"y": 702,
+"w": 100,
+"h": 11,
+"key": "subclass",
+"size": 9
+},
+{
+"kind": "form",
+"name": "text_270axdp",
+"key": "spell.mod"
+},
+{
+"kind": "form",
+"name": "text_271dmmw",
+"key": "spell.dc"
+},
+{
+"kind": "form",
+"name": "text_272rsuk",
+"key": "spell.attack"
+},
+{
+"kind": "text",
+"page": 1,
+"x": 60,
+"y": 728,
+"w": 60,
+"h": 10,
+"key": "spell.ability",
+"size": 8
+},
+{
+"kind": "text",
+"page": 1,
+"x": 181,
+"y": 678,
+"w": 13,
+"h": 12,
+"key": "slots.1",
+"align": "center",
+"size": 9
+},
+{
+"kind": "text",
+"page": 1,
+"x": 181,
+"y": 664,
+"w": 13,
+"h": 12,
+"key": "slots.2",
+"align": "center",
+"size": 9
+},
+{
+"kind": "text",
+"page": 1,
+"x": 181,
+"y": 650,
+"w": 13,
+"h": 12,
+"key": "slots.3",
+"align": "center",
+"size": 9
+},
+{
+"kind": "text",
+"page": 1,
+"x": 269,
+"y": 678,
+"w": 13,
+"h": 12,
+"key": "slots.4",
+"align": "center",
+"size": 9
+},
+{
+"kind": "text",
+"page": 1,
+"x": 269,
+"y": 664,
+"w": 13,
+"h": 12,
+"key": "slots.5",
+"align": "center",
+"size": 9
+},
+{
+"kind": "text",
+"page": 1,
+"x": 269,
+"y": 650,
+"w": 13,
+"h": 12,
+"key": "slots.6",
+"align": "center",
+"size": 9
+},
+{
+"kind": "text",
+"page": 1,
+"x": 347,
+"y": 678,
+"w": 13,
+"h": 12,
+"key": "slots.7",
+"align": "center",
+"size": 9
+},
+{
+"kind": "text",
+"page": 1,
+"x": 347,
+"y": 664,
+"w": 13,
+"h": 12,
+"key": "slots.8",
+"align": "center",
+"size": 9
+},
+{
+"kind": "text",
+"page": 1,
+"x": 347,
+"y": 650,
+"w": 13,
+"h": 12,
+"key": "slots.9",
+"align": "center",
+"size": 9
+},
+{
+"kind": "form",
+"name": "text_276tnnb",
+"key": "spell.1.level"
+},
+{
+"kind": "form",
+"name": "text_306noh",
+"key": "spell.1.name"
+},
+{
+"kind": "form",
+"name": "text_336ipws",
+"key": "spell.1.time"
+},
+{
+"kind": "form",
+"name": "text_366kvbn",
+"key": "spell.1.range"
+},
+{
+"kind": "form",
+"name": "text_396fpbx",
+"key": "spell.1.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_155igkk",
+"key": "spell.1.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_156dpdh",
+"key": "spell.1.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_157mcmr",
+"key": "spell.1.material"
+},
+{
+"kind": "form",
+"name": "text_277ozpu",
+"key": "spell.2.level"
+},
+{
+"kind": "form",
+"name": "text_307kiz",
+"key": "spell.2.name"
+},
+{
+"kind": "form",
+"name": "text_337wzyu",
+"key": "spell.2.time"
+},
+{
+"kind": "form",
+"name": "text_367lrli",
+"key": "spell.2.range"
+},
+{
+"kind": "form",
+"name": "text_397ytaj",
+"key": "spell.2.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_158tnpw",
+"key": "spell.2.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_159ykcu",
+"key": "spell.2.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_160leix",
+"key": "spell.2.material"
+},
+{
+"kind": "form",
+"name": "text_278naaw",
+"key": "spell.3.level"
+},
+{
+"kind": "form",
+"name": "text_308oany",
+"key": "spell.3.name"
+},
+{
+"kind": "form",
+"name": "text_338ytza",
+"key": "spell.3.time"
+},
+{
+"kind": "form",
+"name": "text_368gjzj",
+"key": "spell.3.range"
+},
+{
+"kind": "form",
+"name": "text_398joio",
+"key": "spell.3.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_161puyr",
+"key": "spell.3.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_162tygu",
+"key": "spell.3.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_163waps",
+"key": "spell.3.material"
+},
+{
+"kind": "form",
+"name": "text_279pbow",
+"key": "spell.4.level"
+},
+{
+"kind": "form",
+"name": "text_309vlmr",
+"key": "spell.4.name"
+},
+{
+"kind": "form",
+"name": "text_339arfm",
+"key": "spell.4.time"
+},
+{
+"kind": "form",
+"name": "text_369ncpf",
+"key": "spell.4.range"
+},
+{
+"kind": "form",
+"name": "text_399zzff",
+"key": "spell.4.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_164vghx",
+"key": "spell.4.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_165zsg",
+"key": "spell.4.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_166rrhd",
+"key": "spell.4.material"
+},
+{
+"kind": "form",
+"name": "text_280sjlk",
+"key": "spell.5.level"
+},
+{
+"kind": "form",
+"name": "text_310iatm",
+"key": "spell.5.name"
+},
+{
+"kind": "form",
+"name": "text_340ccjc",
+"key": "spell.5.time"
+},
+{
+"kind": "form",
+"name": "text_370fitk",
+"key": "spell.5.range"
+},
+{
+"kind": "form",
+"name": "text_400jtrv",
+"key": "spell.5.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_167ftoe",
+"key": "spell.5.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_168wqfx",
+"key": "spell.5.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_169vree",
+"key": "spell.5.material"
+},
+{
+"kind": "form",
+"name": "text_281pirp",
+"key": "spell.6.level"
+},
+{
+"kind": "form",
+"name": "text_311eska",
+"key": "spell.6.name"
+},
+{
+"kind": "form",
+"name": "text_341ifjx",
+"key": "spell.6.time"
+},
+{
+"kind": "form",
+"name": "text_371nwgj",
+"key": "spell.6.range"
+},
+{
+"kind": "form",
+"name": "text_401evaj",
+"key": "spell.6.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_170xhdq",
+"key": "spell.6.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_171wuib",
+"key": "spell.6.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_172yxmq",
+"key": "spell.6.material"
+},
+{
+"kind": "form",
+"name": "text_282ncxo",
+"key": "spell.7.level"
+},
+{
+"kind": "form",
+"name": "text_312trhs",
+"key": "spell.7.name"
+},
+{
+"kind": "form",
+"name": "text_342porh",
+"key": "spell.7.time"
+},
+{
+"kind": "form",
+"name": "text_372pdui",
+"key": "spell.7.range"
+},
+{
+"kind": "form",
+"name": "text_402rmvx",
+"key": "spell.7.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_173fcki",
+"key": "spell.7.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_174ux",
+"key": "spell.7.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_175jjkg",
+"key": "spell.7.material"
+},
+{
+"kind": "form",
+"name": "text_283dvfl",
+"key": "spell.8.level"
+},
+{
+"kind": "form",
+"name": "text_313jros",
+"key": "spell.8.name"
+},
+{
+"kind": "form",
+"name": "text_343pgkv",
+"key": "spell.8.time"
+},
+{
+"kind": "form",
+"name": "text_373ldhy",
+"key": "spell.8.range"
+},
+{
+"kind": "form",
+"name": "text_403alrh",
+"key": "spell.8.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_176hwey",
+"key": "spell.8.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_177gcrg",
+"key": "spell.8.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_178mfym",
+"key": "spell.8.material"
+},
+{
+"kind": "form",
+"name": "text_284xpfb",
+"key": "spell.9.level"
+},
+{
+"kind": "form",
+"name": "text_314gyue",
+"key": "spell.9.name"
+},
+{
+"kind": "form",
+"name": "text_344avnr",
+"key": "spell.9.time"
+},
+{
+"kind": "form",
+"name": "text_374zkkr",
+"key": "spell.9.range"
+},
+{
+"kind": "form",
+"name": "text_404cd",
+"key": "spell.9.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_179rogc",
+"key": "spell.9.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_180wozz",
+"key": "spell.9.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_181xloo",
+"key": "spell.9.material"
+},
+{
+"kind": "form",
+"name": "text_285hhix",
+"key": "spell.10.level"
+},
+{
+"kind": "form",
+"name": "text_315plkl",
+"key": "spell.10.name"
+},
+{
+"kind": "form",
+"name": "text_345dqn",
+"key": "spell.10.time"
+},
+{
+"kind": "form",
+"name": "text_375zhpt",
+"key": "spell.10.range"
+},
+{
+"kind": "form",
+"name": "text_405dpvo",
+"key": "spell.10.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_182fzje",
+"key": "spell.10.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_183jbbp",
+"key": "spell.10.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_184cqbx",
+"key": "spell.10.material"
+},
+{
+"kind": "form",
+"name": "text_286sxcn",
+"key": "spell.11.level"
+},
+{
+"kind": "form",
+"name": "text_316ndrn",
+"key": "spell.11.name"
+},
+{
+"kind": "form",
+"name": "text_346kmra",
+"key": "spell.11.time"
+},
+{
+"kind": "form",
+"name": "text_376igdr",
+"key": "spell.11.range"
+},
+{
+"kind": "form",
+"name": "text_406wdqh",
+"key": "spell.11.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_185eyvk",
+"key": "spell.11.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_186byvu",
+"key": "spell.11.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_187vtmi",
+"key": "spell.11.material"
+},
+{
+"kind": "form",
+"name": "text_287swf",
+"key": "spell.12.level"
+},
+{
+"kind": "form",
+"name": "text_317gkbw",
+"key": "spell.12.name"
+},
+{
+"kind": "form",
+"name": "text_347zdgy",
+"key": "spell.12.time"
+},
+{
+"kind": "form",
+"name": "text_377akvu",
+"key": "spell.12.range"
+},
+{
+"kind": "form",
+"name": "text_407rgml",
+"key": "spell.12.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_188nykl",
+"key": "spell.12.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_189xfur",
+"key": "spell.12.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_190psyl",
+"key": "spell.12.material"
+},
+{
+"kind": "form",
+"name": "text_288woyc",
+"key": "spell.13.level"
+},
+{
+"kind": "form",
+"name": "text_318ogf",
+"key": "spell.13.name"
+},
+{
+"kind": "form",
+"name": "text_348rbre",
+"key": "spell.13.time"
+},
+{
+"kind": "form",
+"name": "text_378ongo",
+"key": "spell.13.range"
+},
+{
+"kind": "form",
+"name": "text_408ekxz",
+"key": "spell.13.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_191mrty",
+"key": "spell.13.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_192mbn",
+"key": "spell.13.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_193lbfy",
+"key": "spell.13.material"
+},
+{
+"kind": "form",
+"name": "text_289qjuu",
+"key": "spell.14.level"
+},
+{
+"kind": "form",
+"name": "text_319huqd",
+"key": "spell.14.name"
+},
+{
+"kind": "form",
+"name": "text_349jhxa",
+"key": "spell.14.time"
+},
+{
+"kind": "form",
+"name": "text_379isil",
+"key": "spell.14.range"
+},
+{
+"kind": "form",
+"name": "text_409bfis",
+"key": "spell.14.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_194dlof",
+"key": "spell.14.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_195knvm",
+"key": "spell.14.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_196zsjg",
+"key": "spell.14.material"
+},
+{
+"kind": "form",
+"name": "text_290yetj",
+"key": "spell.15.level"
+},
+{
+"kind": "form",
+"name": "text_320kzak",
+"key": "spell.15.name"
+},
+{
+"kind": "form",
+"name": "text_350bvre",
+"key": "spell.15.time"
+},
+{
+"kind": "form",
+"name": "text_380vqyg",
+"key": "spell.15.range"
+},
+{
+"kind": "form",
+"name": "text_410ntrj",
+"key": "spell.15.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_197btgs",
+"key": "spell.15.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_198ylpb",
+"key": "spell.15.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_199bnrg",
+"key": "spell.15.material"
+},
+{
+"kind": "form",
+"name": "text_291kfeq",
+"key": "spell.16.level"
+},
+{
+"kind": "form",
+"name": "text_321ucnv",
+"key": "spell.16.name"
+},
+{
+"kind": "form",
+"name": "text_351cwtu",
+"key": "spell.16.time"
+},
+{
+"kind": "form",
+"name": "text_381ozpu",
+"key": "spell.16.range"
+},
+{
+"kind": "form",
+"name": "text_411ozsg",
+"key": "spell.16.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_200yvql",
+"key": "spell.16.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_201blxv",
+"key": "spell.16.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_202etpy",
+"key": "spell.16.material"
+},
+{
+"kind": "form",
+"name": "text_292feom",
+"key": "spell.17.level"
+},
+{
+"kind": "form",
+"name": "text_322wcdj",
+"key": "spell.17.name"
+},
+{
+"kind": "form",
+"name": "text_352kpni",
+"key": "spell.17.time"
+},
+{
+"kind": "form",
+"name": "text_382pvih",
+"key": "spell.17.range"
+},
+{
+"kind": "form",
+"name": "text_412awsp",
+"key": "spell.17.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_203kayy",
+"key": "spell.17.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_204fvv",
+"key": "spell.17.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_205vyoc",
+"key": "spell.17.material"
+},
+{
+"kind": "form",
+"name": "text_293caxd",
+"key": "spell.18.level"
+},
+{
+"kind": "form",
+"name": "text_323kmpj",
+"key": "spell.18.name"
+},
+{
+"kind": "form",
+"name": "text_353ealo",
+"key": "spell.18.time"
+},
+{
+"kind": "form",
+"name": "text_383fvoy",
+"key": "spell.18.range"
+},
+{
+"kind": "form",
+"name": "text_413nmfu",
+"key": "spell.18.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_206bbas",
+"key": "spell.18.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_207eqsq",
+"key": "spell.18.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_208szzi",
+"key": "spell.18.material"
+},
+{
+"kind": "form",
+"name": "text_294mbxc",
+"key": "spell.19.level"
+},
+{
+"kind": "form",
+"name": "text_324jzvi",
+"key": "spell.19.name"
+},
+{
+"kind": "form",
+"name": "text_354rrdf",
+"key": "spell.19.time"
+},
+{
+"kind": "form",
+"name": "text_384nbpp",
+"key": "spell.19.range"
+},
+{
+"kind": "form",
+"name": "text_414zrqc",
+"key": "spell.19.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_209cyju",
+"key": "spell.19.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_210kdhg",
+"key": "spell.19.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_211ytvj",
+"key": "spell.19.material"
+},
+{
+"kind": "form",
+"name": "text_295mhkj",
+"key": "spell.20.level"
+},
+{
+"kind": "form",
+"name": "text_325xpvz",
+"key": "spell.20.name"
+},
+{
+"kind": "form",
+"name": "text_355thdu",
+"key": "spell.20.time"
+},
+{
+"kind": "form",
+"name": "text_385otxt",
+"key": "spell.20.range"
+},
+{
+"kind": "form",
+"name": "text_415wftz",
+"key": "spell.20.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_212askh",
+"key": "spell.20.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_213mjyz",
+"key": "spell.20.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_214apke",
+"key": "spell.20.material"
+},
+{
+"kind": "form",
+"name": "text_296nuzy",
+"key": "spell.21.level"
+},
+{
+"kind": "form",
+"name": "text_326ydhp",
+"key": "spell.21.name"
+},
+{
+"kind": "form",
+"name": "text_356jgbg",
+"key": "spell.21.time"
+},
+{
+"kind": "form",
+"name": "text_386cqq",
+"key": "spell.21.range"
+},
+{
+"kind": "form",
+"name": "text_416aaoo",
+"key": "spell.21.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_215jxzh",
+"key": "spell.21.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_216apsx",
+"key": "spell.21.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_217iidt",
+"key": "spell.21.material"
+},
+{
+"kind": "form",
+"name": "text_297ormh",
+"key": "spell.22.level"
+},
+{
+"kind": "form",
+"name": "text_327kpws",
+"key": "spell.22.name"
+},
+{
+"kind": "form",
+"name": "text_357fywm",
+"key": "spell.22.time"
+},
+{
+"kind": "form",
+"name": "text_387rwzj",
+"key": "spell.22.range"
+},
+{
+"kind": "form",
+"name": "text_417ssbh",
+"key": "spell.22.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_218yxjn",
+"key": "spell.22.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_219bduk",
+"key": "spell.22.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_220gshh",
+"key": "spell.22.material"
+},
+{
+"kind": "form",
+"name": "text_298dend",
+"key": "spell.23.level"
+},
+{
+"kind": "form",
+"name": "text_328uom",
+"key": "spell.23.name"
+},
+{
+"kind": "form",
+"name": "text_358ttbz",
+"key": "spell.23.time"
+},
+{
+"kind": "form",
+"name": "text_388fzpy",
+"key": "spell.23.range"
+},
+{
+"kind": "form",
+"name": "text_418ffqz",
+"key": "spell.23.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_223shy",
+"key": "spell.23.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_222vhxa",
+"key": "spell.23.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_221jhtt",
+"key": "spell.23.material"
+},
+{
+"kind": "form",
+"name": "text_299jfya",
+"key": "spell.24.level"
+},
+{
+"kind": "form",
+"name": "text_329yurm",
+"key": "spell.24.name"
+},
+{
+"kind": "form",
+"name": "text_359sdzx",
+"key": "spell.24.time"
+},
+{
+"kind": "form",
+"name": "text_389njna",
+"key": "spell.24.range"
+},
+{
+"kind": "form",
+"name": "text_419cgqy",
+"key": "spell.24.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_224zwyr",
+"key": "spell.24.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_225xkfx",
+"key": "spell.24.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_226hdqs",
+"key": "spell.24.material"
+},
+{
+"kind": "form",
+"name": "text_300sbgt",
+"key": "spell.25.level"
+},
+{
+"kind": "form",
+"name": "text_330jyte",
+"key": "spell.25.name"
+},
+{
+"kind": "form",
+"name": "text_360qkby",
+"key": "spell.25.time"
+},
+{
+"kind": "form",
+"name": "text_390xssq",
+"key": "spell.25.range"
+},
+{
+"kind": "form",
+"name": "text_420inil",
+"key": "spell.25.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_227ktzl",
+"key": "spell.25.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_228tcym",
+"key": "spell.25.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_229denx",
+"key": "spell.25.material"
+},
+{
+"kind": "form",
+"name": "text_301jjge",
+"key": "spell.26.level"
+},
+{
+"kind": "form",
+"name": "text_331jfme",
+"key": "spell.26.name"
+},
+{
+"kind": "form",
+"name": "text_361zakc",
+"key": "spell.26.time"
+},
+{
+"kind": "form",
+"name": "text_391ujd",
+"key": "spell.26.range"
+},
+{
+"kind": "form",
+"name": "text_421kyai",
+"key": "spell.26.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_230hvot",
+"key": "spell.26.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_231dimi",
+"key": "spell.26.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_232djkv",
+"key": "spell.26.material"
+},
+{
+"kind": "form",
+"name": "text_302sawd",
+"key": "spell.27.level"
+},
+{
+"kind": "form",
+"name": "text_332xoqp",
+"key": "spell.27.name"
+},
+{
+"kind": "form",
+"name": "text_362lmcs",
+"key": "spell.27.time"
+},
+{
+"kind": "form",
+"name": "text_392jwxs",
+"key": "spell.27.range"
+},
+{
+"kind": "form",
+"name": "text_422beva",
+"key": "spell.27.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_233cbqw",
+"key": "spell.27.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_234tauj",
+"key": "spell.27.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_235ofts",
+"key": "spell.27.material"
+},
+{
+"kind": "form",
+"name": "text_303lxiz",
+"key": "spell.28.level"
+},
+{
+"kind": "form",
+"name": "text_333ekrb",
+"key": "spell.28.name"
+},
+{
+"kind": "form",
+"name": "text_363wmjv",
+"key": "spell.28.time"
+},
+{
+"kind": "form",
+"name": "text_393yigx",
+"key": "spell.28.range"
+},
+{
+"kind": "form",
+"name": "text_423zfql",
+"key": "spell.28.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_236shat",
+"key": "spell.28.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_237xylb",
+"key": "spell.28.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_238izpl",
+"key": "spell.28.material"
+},
+{
+"kind": "form",
+"name": "text_304nwpr",
+"key": "spell.29.level"
+},
+{
+"kind": "form",
+"name": "text_334zias",
+"key": "spell.29.name"
+},
+{
+"kind": "form",
+"name": "text_364cpss",
+"key": "spell.29.time"
+},
+{
+"kind": "form",
+"name": "text_394kcfb",
+"key": "spell.29.range"
+},
+{
+"kind": "form",
+"name": "text_424reea",
+"key": "spell.29.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_239oups",
+"key": "spell.29.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_240szbj",
+"key": "spell.29.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_241yngw",
+"key": "spell.29.material"
+},
+{
+"kind": "form",
+"name": "text_305gycb",
+"key": "spell.30.level"
+},
+{
+"kind": "form",
+"name": "text_335znlw",
+"key": "spell.30.name"
+},
+{
+"kind": "form",
+"name": "text_365zoza",
+"key": "spell.30.time"
+},
+{
+"kind": "form",
+"name": "text_395sjli",
+"key": "spell.30.range"
+},
+{
+"kind": "form",
+"name": "text_425sosz",
+"key": "spell.30.notes"
+},
+{
+"kind": "form",
+"name": "checkbox_242wdhz",
+"key": "spell.30.conc"
+},
+{
+"kind": "form",
+"name": "checkbox_243yotb",
+"key": "spell.30.ritual"
+},
+{
+"kind": "form",
+"name": "checkbox_244wrfp",
+"key": "spell.30.material"
+},
+{
+"kind": "form",
+"name": "text_262lxdq",
+"key": "attuned.1"
+},
+{
+"kind": "form",
+"name": "text_263nbcj",
+"key": "attuned.2"
+},
+{
+"kind": "form",
+"name": "text_264exxd",
+"key": "attuned.3"
+}
+]
+}

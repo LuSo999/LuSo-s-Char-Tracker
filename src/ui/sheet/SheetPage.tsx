@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { adjustXp } from '../../engine/actions'
 import { NumberAdjust } from './NumberAdjust'
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useParams } from 'react-router'
 import type { ContentIndex } from '../../content'
@@ -199,6 +199,7 @@ function TopBar({
         >
           ↶<span className="hidden sm:inline"> {t('undo')}</span>
         </button>
+        <ExportButton className={`${button} hidden sm:inline-block`} />
         <button className={`${button} hidden sm:inline-block`} onClick={onHistory}>
           📜 {t('sheet.buttons.history')}
         </button>
@@ -270,6 +271,25 @@ function ThemeTarget() {
   return null
 }
 
+/** 📄 PDF: export into a character sheet PDF (the PDF tools load only when it opens). */
+const ExportDialog = lazy(() => import('../export/ExportDialog'))
+function ExportButton({ className }: { className: string }) {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button className={className} title={t('export.title')} onClick={() => setOpen(true)}>
+        📄 {t('sheet.buttons.export')}
+      </button>
+      {open && (
+        <Suspense fallback={null}>
+          <ExportDialog onClose={() => setOpen(false)} />
+        </Suspense>
+      )}
+    </>
+  )
+}
+
 /** Phone: the less frequent top bar buttons (Level up, Edit) behind ⋯. */
 function MoreMenu({ className, onLevelUp }: { className: string; onLevelUp: () => void }) {
   const { t } = useTranslation()
@@ -290,6 +310,7 @@ function MoreMenu({ className, onLevelUp }: { className: string; onLevelUp: () =
               ⬆️ {t('sheet.buttons.levelUp')}
             </button>
             <EditToggle className={`${item} border-0`} />
+            <ExportButton className={`${item} border-0`} />
             <div className="flex items-center gap-1 px-3 py-2 text-sm" onClick={(e) => e.stopPropagation()}>
               XP
               <NumberAdjust label="XP" value={character.xp} valueClassName="font-semibold" onSet={(v) => void run(adjustXp(character, v - character.xp))} onDelta={(d) => void run(adjustXp(character, d))} />

@@ -14,8 +14,11 @@
     "content:merge": "node scripts/merge-packs.ts"
   },
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "firebase": "^13.2.0",
     "i18next": "^27.1.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.10.38",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-i18next": "^18.0.1",

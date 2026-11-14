@@ -7,6 +7,7 @@ import { HomebrewPage } from './ui/homebrew/HomebrewPage'
 import { PackPage } from './ui/homebrew/PackPage'
 import { EntityEditor } from './ui/homebrew/EntityEditor'
 import { watchHomebrew } from './state/homebrew'
+import { watchSheetTemplates } from './state/sheetTemplates'
 import { ADMIN_UIDS } from './config'
 import { isFirebaseConfigured } from './firebase/config'
 import { useAuth } from './state/auth'
@@ -51,6 +52,7 @@ function Main() {
   useEffect(() => {
     watchSettings(uid)
     watchHomebrew(uid)
+    watchSheetTemplates(uid)
     if (uid) void loadOfficial(true)
   }, [uid])
 

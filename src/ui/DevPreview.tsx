@@ -1,5 +1,6 @@
 // Development only: renders a sheet without signing in, so layout can be
 // checked in a headless browser. Uses private files when they exist locally.
+import { enableMemoryTemplates } from '../state/sheetTemplates'
 import { useEffect, useMemo, useState } from 'react'
 import { ContentIndex } from '../content'
 import { OfficialContent, Pack } from '../content/schema'
@@ -23,6 +24,7 @@ export default function DevPreview() {
   // #/dev?strict tries the strict turn mode without signing in.
   useEffect(() => {
     if (location.hash.includes('strict')) useSettings.setState({ turnMode: 'strict' })
+    enableMemoryTemplates()
   }, [])
   const [state, setState] = useState<{ character: Character; packs: Pack[] }>()
   useEffect(() => {
