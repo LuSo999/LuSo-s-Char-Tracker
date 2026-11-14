@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+/* The mapping editor is shared with the web app. */
+@source '../../src/ui/export';
+
+:root {
+  --color-bg: #f4f1ea;
+  --color-card: #ffffff;
+  --color-text: #1f1b16;
+  --color-muted: #6b6258;
+  --color-accent: #7a3b12;
+  --color-accent-text: #ffffff;
+  --color-border: #ddd5c7;
+  --color-danger: #b42318;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #15130f;
+    --color-card: #221f1a;
+    --color-text: #ece6dc;
+    --color-muted: #a89f92;
+    --color-accent: #d9894f;
+    --color-accent-text: #15130f;
+    --color-border: #3a352d;
+    --color-danger: #f97066;
+    color-scheme: dark;
+  }
+}
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-card: var(--color-card);
+  --color-text: var(--color-text);
+  --color-muted: var(--color-muted);
+  --color-accent: var(--color-accent);
+  --color-accent-text: var(--color-accent-text);
+  --color-border: var(--color-border);
+  --color-danger: var(--color-danger);
+}
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: Roboto, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+}

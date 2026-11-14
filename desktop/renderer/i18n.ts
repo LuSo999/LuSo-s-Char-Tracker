@@ -1,0 +1,184 @@
+// Languages: the web app's texts (the mapping editor uses them) plus the desktop app's own.
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import webCs from '../../src/i18n/cs.json'
+import webEn from '../../src/i18n/en.json'
+
+const en = {
+  title: 'LuSo Sheet Tool',
+  subtitle: 'Character sheets for LuSo’s Char Tracker',
+  tabExport: 'Character → sheet',
+  tabImport: 'Sheet → character',
+  tabSettings: 'Settings',
+  language: 'Language',
+  // Export
+  exportIntro: 'Fill any character sheet (PDF or picture) with a character exported from the web app.',
+  step1: '1. Character',
+  step1Hint: 'In the web app: character → PDF → “Character file for the desktop app”.',
+  pickCharacter: 'Choose a character file (.luso-character.json)',
+  badCharacter: 'This is not a character file from the web app.',
+  step2: '2. Character sheet',
+  step2Hint: 'A PDF (fillable or not) or a picture / scan of an empty sheet.',
+  pickSheet: 'Choose a sheet (PDF, PNG, JPG)',
+  templateFound: 'Known sheet: template “{{name}}”.',
+  templateNew: 'A new sheet: it needs a template (where each value goes).',
+  analyzeClaude: '🤖 Analyze with Claude',
+  analyzeLocal: '🔍 Local analysis only',
+  analyzeLocalHint: 'Works offline for fillable PDFs (form fields); for printed sheets you place the boxes by hand.',
+  needKey: 'Claude needs an API key (Settings).',
+  edit: '✏️ Edit template',
+  reanalyze: '🤖 Analyze again',
+  step3: '3. Save the filled sheet',
+  fillSave: '💾 Fill and save PDF',
+  saved: 'Saved: {{path}}',
+  missing: '{{count}} form fields were not found in the PDF.',
+  analyzing: 'Claude is looking at the sheet… (usually 1–4 minutes)',
+  elapsed: '{{s}} s',
+  cancel: 'Cancel',
+  claudeResult: 'Claude placed {{count}} values.',
+  claudeError: 'Claude failed: {{error}}',
+  errors: {
+    'no-key': 'no API key (Settings)',
+    auth: 'the API key is not valid',
+    'rate-limit': 'too many requests, try again in a minute',
+    refusal: 'the request was declined',
+    'max-tokens': 'the answer was too long',
+    'bad-json': 'the answer could not be read',
+    cancelled: 'cancelled',
+  },
+  templates: 'Saved templates',
+  noTemplates: 'None yet.',
+  deleteTemplate: 'Delete template “{{name}}”?',
+  // Import
+  importIntro: 'Read a filled character sheet (PDF, scan or photos) into a file the web app can import.',
+  pickFilled: 'Choose a filled sheet (PDF or pictures; several pictures = several pages)',
+  readLocal: 'Read {{count}} filled form fields locally.',
+  readNone: 'No filled form fields: the sheet has to be read by Claude.',
+  readClaude: '🤖 Read with Claude',
+  reading: 'Claude is reading the sheet…',
+  result: 'What was read',
+  name: 'Name',
+  edition: 'Edition',
+  editionUnknown: 'choose in the web app',
+  classes: 'Classes',
+  species: 'Species',
+  background: 'Background',
+  abilities: 'Abilities',
+  counts: '{{skills}} skills · {{spells}} spells · {{items}} items · {{languages}} languages',
+  saveImport: '💾 Save import file',
+  importHint: 'In the web app: Characters → Import → this file. You will see what matched before the character is created.',
+  json: 'Show the file',
+  // Settings
+  keyTitle: 'Claude API key',
+  keyHint: 'The analysis uses your own key from the Anthropic Console (console.anthropic.com → API keys). It is kept only on this computer{{enc}}.',
+  keyEncrypted: ', encrypted by the system keychain',
+  keyPlain: ' (this system has no keychain: stored unencrypted in the app’s data folder)',
+  keySaved: 'A key is saved.',
+  keyEnv: 'Using the key from ANTHROPIC_API_KEY.',
+  keyNone: 'No key yet.',
+  keySave: 'Save key',
+  keyClear: 'Remove key',
+  model: 'Model: Claude Opus 5.5. One sheet analysis costs roughly $0.10–0.50 of API credit.',
+  privacy: 'Only the pages of the sheet and the character’s values are sent to Anthropic, only when you press an Analyze / Read button.',
+}
+
+const cs: typeof en = {
+  title: 'LuSo Sheet Tool',
+  subtitle: 'Character sheety pro LuSo’s Char Tracker',
+  tabExport: 'Postava → sheet',
+  tabImport: 'Sheet → postava',
+  tabSettings: 'Nastavení',
+  language: 'Jazyk',
+  exportIntro: 'Vyplň libovolný character sheet (PDF nebo obrázek) postavou vyexportovanou z webové aplikace.',
+  step1: '1. Postava',
+  step1Hint: 'Ve webové aplikaci: postava → PDF → „Soubor postavy pro desktopovou aplikaci“.',
+  pickCharacter: 'Vyber soubor postavy (.luso-character.json)',
+  badCharacter: 'Tohle není soubor postavy z webové aplikace.',
+  step2: '2. Character sheet',
+  step2Hint: 'PDF (vyplnitelné i obyčejné) nebo obrázek / sken prázdného sheetu.',
+  pickSheet: 'Vyber sheet (PDF, PNG, JPG)',
+  templateFound: 'Známý sheet: šablona „{{name}}“.',
+  templateNew: 'Nový sheet: potřebuje šablonu (kam co patří).',
+  analyzeClaude: '🤖 Analyzovat Claudem',
+  analyzeLocal: '🔍 Jen místní analýza',
+  analyzeLocalHint: 'Funguje bez internetu u vyplnitelných PDF (formulářová pole); u tištěných sheetů rozmístíš políčka ručně.',
+  needKey: 'Claude potřebuje API klíč (Nastavení).',
+  edit: '✏️ Upravit šablonu',
+  reanalyze: '🤖 Analyzovat znovu',
+  step3: '3. Uložit vyplněný sheet',
+  fillSave: '💾 Vyplnit a uložit PDF',
+  saved: 'Uloženo: {{path}}',
+  missing: '{{count}} formulářových polí se v PDF nenašlo.',
+  analyzing: 'Claude prohlíží sheet… (obvykle 1–4 minuty)',
+  elapsed: '{{s}} s',
+  cancel: 'Zrušit',
+  claudeResult: 'Claude umístil {{count}} hodnot.',
+  claudeError: 'Claude selhal: {{error}}',
+  errors: {
+    'no-key': 'chybí API klíč (Nastavení)',
+    auth: 'API klíč není platný',
+    'rate-limit': 'příliš mnoho požadavků, zkus to za minutu',
+    refusal: 'požadavek byl odmítnut',
+    'max-tokens': 'odpověď byla moc dlouhá',
+    'bad-json': 'odpověď nešla přečíst',
+    cancelled: 'zrušeno',
+  },
+  templates: 'Uložené šablony',
+  noTemplates: 'Zatím žádné.',
+  deleteTemplate: 'Smazat šablonu „{{name}}“?',
+  importIntro: 'Přečti vyplněný character sheet (PDF, sken nebo fotky) do souboru, který naimportuješ do webové aplikace.',
+  pickFilled: 'Vyber vyplněný sheet (PDF nebo obrázky; víc obrázků = víc stran)',
+  readLocal: 'Místně přečteno {{count}} vyplněných polí formuláře.',
+  readNone: 'Žádná vyplněná formulářová pole: sheet musí přečíst Claude.',
+  readClaude: '🤖 Přečíst Claudem',
+  reading: 'Claude čte sheet…',
+  result: 'Co se přečetlo',
+  name: 'Jméno',
+  edition: 'Edice',
+  editionUnknown: 'vybereš ve webové aplikaci',
+  classes: 'Povolání',
+  species: 'Druh',
+  background: 'Zázemí',
+  abilities: 'Vlastnosti',
+  counts: '{{skills}} dovedností · {{spells}} kouzel · {{items}} předmětů · {{languages}} jazyků',
+  saveImport: '💾 Uložit soubor pro import',
+  importHint: 'Ve webové aplikaci: Postavy → Import → tento soubor. Před vytvořením postavy uvidíš, co se spárovalo.',
+  json: 'Zobrazit soubor',
+  keyTitle: 'API klíč pro Clauda',
+  keyHint: 'Analýza používá tvůj vlastní klíč z Anthropic Console (console.anthropic.com → API keys). Zůstává jen v tomto počítači{{enc}}.',
+  keyEncrypted: ', zašifrovaný systémovou klíčenkou',
+  keyPlain: ' (systém nemá klíčenku: uložen nešifrovaně v datové složce aplikace)',
+  keySaved: 'Klíč je uložený.',
+  keyEnv: 'Používá se klíč z ANTHROPIC_API_KEY.',
+  keyNone: 'Zatím žádný klíč.',
+  keySave: 'Uložit klíč',
+  keyClear: 'Odebrat klíč',
+  model: 'Model: Claude Opus 5.5. Jedna analýza sheetu stojí zhruba 0,10–0,50 $ API kreditu.',
+  privacy: 'Anthropicu se posílají jen stránky sheetu a hodnoty postavy, a jen když zmáčkneš tlačítko Analyzovat / Přečíst.',
+}
+
+const stored = (() => {
+  try {
+    const v = localStorage.getItem('language')
+    if (v === 'en' || v === 'cs') return v
+  } catch {
+    // no storage
+  }
+  return navigator.language.startsWith('cs') ? 'cs' : 'en'
+})()
+
+void i18n.use(initReactI18next).init({
+  resources: { en: { translation: { ...webEn, desk: en } }, cs: { translation: { ...webCs, desk: cs } } },
+  lng: stored,
+  fallbackLng: 'en',
+  interpolation: { escapeValue: false },
+})
+
+export function setLanguage(lng: 'en' | 'cs') {
+  void i18n.changeLanguage(lng)
+  try {
+    localStorage.setItem('language', lng)
+  } catch {
+    // no storage
+  }
+}

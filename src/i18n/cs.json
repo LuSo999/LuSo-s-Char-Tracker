@@ -193,6 +193,7 @@
     "replaceAllConfirm": "Nahradit všechen sdílený obsah? Knihy, které tu nejsou vybrané, se smažou."
   },
   "undo": "Zpět",
+  "save": "Uložit",
   "cancel": "Zrušit",
   "adjust": {
     "clickToSet": "Klikni a napiš novou hodnotu",
@@ -1230,7 +1231,7 @@
     "legendFree": "volné formulářové pole",
     "looksLike": "Vypadá to jako sheet „{{name}}“, pro který už šablona je. Použít ji?",
     "desktopTitle": "Pro desktopovou appku",
-    "desktopHint": "Soubor s touto postavou a všemi jejími hodnotami. Desktopová appka (libovolné PDF nebo obrázek sheetu, analýza přes AI) ho vyplní do sheetu, který tam otevřeš.",
+    "desktopHint": "Soubor s touto postavou a všemi jejími hodnotami. Desktopová appka (libovolné PDF nebo obrázek sheetu, analýza přes AI) ho vyplní do sheetu, který tam otevřeš. Stažení: github.com/LuSo999/LuSo-s-Char-Tracker/releases",
     "desktopDownload": "Soubor postavy pro desktopovou appku"
   },
   "sheetImport": {

@@ -55,6 +55,10 @@ Obsah z placených knih mimo SRD se do repa nedává. Leží jen u správce ve s
 
 Správci jsou určení svými UID v `firestore.rules` a v `src/config.ts`. Po změně `firestore.rules` je potřeba pravidla znovu publikovat (krok 3.4).
 
+## Desktopová appka
+
+Ve složce `desktop/` je program pro Windows, macOS a Linux (Electron). Vyplní postavou libovolný character sheet a umí to i obráceně: přečte vyplněný sheet do souboru pro import. Analýzu dělá Claude (vlastní API klíč) a bez klíče funguje místní záloha. Instalátory jsou v [Releases](https://github.com/LuSo999/LuSo-s-Char-Tracker/releases), podrobnosti v [docs/desktop-app.md](docs/desktop-app.md).
+
 ## Lokální vývoj
 
 Potřebuješ Node.js 24. Na Fedoře ho nainstaluješ příkazem `sudo dnf install nodejs24 nodejs24-npm`.

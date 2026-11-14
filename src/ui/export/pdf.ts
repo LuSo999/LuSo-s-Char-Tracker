@@ -66,7 +66,7 @@ export function renderPage(doc: pdfjs.PDFDocumentProxy, index: number, canvas: H
 }
 
 let font: Promise<Uint8Array> | undefined
-const loadFont = () => (font ??= fetch(fontUrl).then(async (r) => new Uint8Array(await r.arrayBuffer())))
+export const loadFont = () => (font ??= fetch(fontUrl).then(async (r) => new Uint8Array(await r.arrayBuffer())))
 
 /** Fill the sheet and hand it to the browser as a download. */
 export async function downloadFilled(pdf: Uint8Array, template: SheetTemplate, values: Record<string, string | boolean>, fileName: string) {

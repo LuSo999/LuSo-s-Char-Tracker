@@ -1,0 +1,68 @@
+{
+  "name": "luso-sheet-tool",
+  "productName": "LuSo Sheet Tool",
+  "version": "0.1.0",
+  "description": "Fill any character sheet PDF from a LuSo's Char Tracker character, and read filled sheets back.",
+  "author": "LuSo999",
+  "license": "MIT",
+  "private": true,
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "node ../node_modules/vite/bin/vite.js --config vite.config.mts",
+    "start": "electron .",
+    "start:dev": "LUSO_DEV=1 electron .",
+    "build": "node ../node_modules/vite/bin/vite.js build --config vite.config.mts",
+    "dist": "npm run build && electron-builder --publish never"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0"
+  },
+  "devDependencies": {
+    "electron": "^45.3.2",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "io.github.luso999.sheettool",
+    "productName": "LuSo Sheet Tool",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**",
+      "dist/**",
+      "package.json"
+    ],
+    "artifactName": "LuSo-Sheet-Tool-${version}-${os}-${arch}.${ext}",
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.utilities",
+      "identity": "-"
+    }
+  },
+  "allowScripts": {
+    "electron": true
+  }
+}
