@@ -10,15 +10,15 @@ import { exportCatalogue } from '../../src/engine/export/values'
 import { CharacterExport } from '../../src/engine/exchange'
 import { loadFont, readSheet, type SheetPdf } from '../../src/ui/export/pdf'
 import { TemplateEditor } from '../../src/ui/export/TemplateEditor'
-import { luso, type ClaudeRequest } from './bridge'
-import { Busy, FilePick, Section } from './ui'
-import { useClaude } from './useClaude'
+import { luso, type AiContent } from './bridge'
+import { AiButton, Busy, FilePick, Section } from './ui'
+import { useAi, type KeyStatus } from './useAi'
 import { allTemplates, findTemplate, loadSheet, pageImages, type LoadedSheet } from './sheets'
 
 const catalogue = exportCatalogue()
 const catalogueKeys = new Set(catalogue.map((f) => f.key))
 
-export function ExportFlow({ hasKey }: { hasKey: boolean }) {
+export function ExportFlow({ keys }: { keys: KeyStatus | undefined }) {
   const { t } = useTranslation()
   const [character, setCharacter] = useState<CharacterExport>()
   const [charError, setCharError] = useState(false)
@@ -27,7 +27,7 @@ export function ExportFlow({ hasKey }: { hasKey: boolean }) {
   const [template, setTemplate] = useState<SheetTemplate>()
   const [editing, setEditing] = useState<SheetTemplate>()
   const [message, setMessage] = useState('')
-  const claude = useClaude()
+  const ai = useAi(keys)
 
   const reload = () => void allTemplates().then(setTemplates)
   useEffect(reload, [])
@@ -65,19 +65,19 @@ export function ExportFlow({ hasKey }: { hasKey: boolean }) {
     setEditing(newTemplate(proposalsToFields(analyzeFields(sheet.pdf.widgets, sheet.pdf.words))))
   }
 
-  async function analyzeClaude() {
+  async function analyzeAi() {
     if (!sheet) return
     const { pdf } = sheet
     const images = await pageImages(pdf.doc)
     const pages = images.map((img, i) => ({ width: pdf.pages[i][0], height: pdf.pages[i][1], image: { width: img.width, height: img.height } }))
-    const content: ClaudeRequest['content'] = []
+    const content: AiContent[] = []
     images.forEach((img, i) => {
       content.push({ type: 'text', text: `Page ${i}:` })
-      content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: img.base64 } })
+      content.push({ type: 'image', mime: 'image/jpeg', data: img.base64 })
     })
     const widgets = pdf.widgets.filter((w) => w.page < images.length)
     content.push({ type: 'text', text: mappingPrompt({ pages, widgets, words: pdf.words.filter((w) => w.page < images.length), catalogue }) })
-    const r = await claude.run<AiMapping>({ system: mappingSystem, content, schema: mappingSchema })
+    const r = await ai.run<AiMapping>({ system: mappingSystem, content, schema: mappingSchema })
     if (!r) return
     const fields = mappingToFields(r, pages, catalogueKeys, new Set(widgets.map((w) => w.name)))
     // Form fields Claude left out: the local analysis may still know them.
@@ -86,7 +86,7 @@ export function ExportFlow({ hasKey }: { hasKey: boolean }) {
     for (const f of proposalsToFields(analyzeFields(pdf.widgets, pdf.words))) {
       if (f.kind === 'form' && !named.has(f.name) && !used.has(f.key)) fields.push(f)
     }
-    setMessage([t('desk.claudeResult', { count: fields.length }), r.comment].filter(Boolean).join(' '))
+    setMessage([t('desk.aiResult', { name: ai.label, count: fields.length }), r.comment].filter(Boolean).join(' '))
     setEditing(newTemplate(fields))
   }
 
@@ -139,18 +139,15 @@ export function ExportFlow({ hasKey }: { hasKey: boolean }) {
                   {t('desk.edit')}
                 </button>
               )}
-              <button className="rounded bg-accent px-3 py-1.5 font-semibold text-accent-text disabled:opacity-40" disabled={!hasKey || claude.busy} onClick={() => void analyzeClaude()}>
-                {template ? t('desk.reanalyze') : t('desk.analyzeClaude')}
-              </button>
+              <AiButton ai={ai} label={template ? t('desk.reanalyze') : t('desk.analyze')} onClick={() => void analyzeAi()} />
               {!template && (
-                <button className="rounded border border-border px-3 py-1.5 hover:bg-bg disabled:opacity-40" disabled={claude.busy} onClick={analyzeLocal}>
+                <button className="rounded border border-border px-3 py-1.5 hover:bg-bg disabled:opacity-40" disabled={ai.busy} onClick={analyzeLocal}>
                   {t('desk.analyzeLocal')}
                 </button>
               )}
             </div>
-            {!hasKey && <p className="text-xs text-muted">{t('desk.needKey')}</p>}
             {!template && <p className="text-xs text-muted">{t('desk.analyzeLocalHint')}</p>}
-            <Busy claude={claude} label={t('desk.analyzing')} />
+            <Busy ai={ai} label={t('desk.analyzing', { ai: ai.label })} />
           </div>
         )}
       </Section>

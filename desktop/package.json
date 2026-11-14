@@ -1,7 +1,7 @@
 {
   "name": "luso-sheet-tool",
   "productName": "LuSo Sheet Tool",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fill any character sheet PDF from a LuSo's Char Tracker character, and read filled sheets back.",
   "author": "LuSo999",
   "license": "MIT",
@@ -15,7 +15,9 @@
     "dist": "npm run build && electron-builder --publish never"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^1.8.0"
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@google/genai": "^3.3.0",
+    "openai": "^7.57.0"
   },
   "devDependencies": {
     "electron": "^45.3.2",

@@ -19,7 +19,7 @@ Instalátory jsou na stránce **Releases** repozitáře: https://github.com/LuSo
 2. V appce vyber soubor postavy a sheet (PDF nebo obrázky; obrázek se převede na stránku PDF).
 3. **Šablona** (kam co patří):
    - Už známý sheet (stejný soubor, nebo vestavěný oficiální 2024 sheet) se najde sám.
-   - **🤖 Analyzovat Claudem:** stránky (jako obrázky), formulářová pole s polohou, vytištěné popisky a katalog klíčů jdou Claudovi (model Claude Opus 5.5). Vrátí přiřazení polí, rámečky pro text a tečky pro proficience. Výsledek se otevře v editoru.
+   - **🤖 Analyzovat** (vedle tlačítka je výběr AI): stránky (jako obrázky), formulářová pole s polohou, vytištěné popisky a katalog klíčů jdou vybrané AI. Vrátí přiřazení polí, rámečky pro text a tečky pro proficience. Výsledek se otevře v editoru.
    - **🔍 Jen místní analýza:** bez internetu, stejná jako na webu (`analyze.ts`). Pozná jen vyplňovací PDF, u grafických sheetů rozmístíš políčka ručně.
 4. **Editor šablony** je stejný jako na webu (`src/ui/export/TemplateEditor.tsx`). Uložená šablona zůstane v počítači a příště se použije sama.
 5. **💾 Vyplnit a uložit PDF.**
@@ -28,36 +28,46 @@ Instalátory jsou na stránce **Releases** repozitáře: https://github.com/LuSo
 
 1. Vyber vyplněný sheet (PDF, nebo jeden či víc obrázků: víc obrázků = víc stran).
 2. **Místně** se přečtou vyplněná formulářová pole a text v rámečcích známé šablony. PDF vyplněné touto appkou nebo webem se tak přečte celé i bez Clauda (`src/engine/export/readBack.ts`).
-3. **🤖 Přečíst Claudem:** přepíše, co je na sheetu (i ručně psané). Výsledek se sloučí s místně přečtenými hodnotami.
+3. **🤖 Přečíst** (výběr AI vedle tlačítka): přepíše, co je na sheetu (i ručně psané). Výsledek se sloučí s místně přečtenými hodnotami.
 4. Zkontroluj jméno a edici a **💾 Ulož soubor pro import** (`<jméno>.luso-import.json`, formát `luso-sheet-import`).
 5. Ve webové aplikaci: **Postavy → Import → soubor**. Dialog ukáže, co se spárovalo s obsahem (povolání, druh, kouzla, předměty…) a co ne. Nespárované věci skončí v poznámkách postavy.
 
-## Claude API klíč
+## AI a API klíče
 
-- Analýza používá **vlastní API klíč** z Anthropic Console (console.anthropic.com → API keys), který se zadá v *Nastavení*. Kredit na účtu platí uživatel: jedna analýza stojí zhruba 0,10–0,50 $.
-- Klíč zůstává jen v počítači. Je zašifrovaný systémovou klíčenkou (Electron `safeStorage`), a pokud systém klíčenku nemá, uloží se nešifrovaně v datové složce appky. Funguje i proměnná prostředí `ANTHROPIC_API_KEY`.
-- Anthropicu se posílá jen obsah sheetu (a u exportu hodnoty postavy), a jen po stisknutí tlačítka. Volání běží v hlavním procesu (`desktop/electron/main.cjs`), stránka klíč nikdy nevidí.
-- Požadavky mají zapnutý server-side fallback (`fallbacks: "default"`): když bezpečnostní filtr odmítne, odpoví doporučený záložní model.
+Appka umí tři AI. Stačí klíč k jedné z nich, zadává se v *Nastavení*:
+
+| AI | Klíč | Nejpřesnější model | Levnější a rychlejší |
+|---|---|---|---|
+| Claude (Anthropic) | console.anthropic.com → API keys | Claude Opus 5.5 | Claude Sonnet 5.5 |
+| ChatGPT (OpenAI) | platform.openai.com → API keys | GPT-6 Astra | GPT-6.1 Terra |
+| Gemini (Google) | aistudio.google.com → Get API key | Gemini 4 Carbon | Gemini 4 Hydrogen |
+
+- **Výchozí AI** se vybírá kolečkem v Nastavení, u každé AI i model (nejpřesnější / levnější). U tlačítek Analyzovat / Přečíst jde pro jednu analýzu zvolit jinou AI.
+- Platí se z API kreditu účtu u poskytovatele podle jeho ceníku. Nejpřesnější modely stojí řádově desítky centů za sheet, levnější zlomek.
+- Klíče zůstávají jen v počítači. Jsou zašifrované systémovou klíčenkou (Electron `safeStorage`), a pokud systém klíčenku nemá, uloží se nešifrovaně v datové složce appky. Fungují i proměnné prostředí `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` a `GEMINI_API_KEY` (nebo `GOOGLE_API_KEY`).
+- Posílá se jen obsah sheetu (a u exportu hodnoty postavy), jen vybrané AI a jen po stisknutí tlačítka. Volání běží v hlavním procesu (`desktop/electron/ai.cjs`), stránka klíče nikdy nevidí. U OpenAI a Gemini se požadavek nenechává uložený u poskytovatele (`store: false`).
+- Všechny tři dostávají stejný prompt a stejné JSON schéma (structured outputs). U Clauda je zapnutý server-side fallback (`fallbacks: "default"`): když bezpečnostní filtr odmítne, odpoví doporučený záložní model.
+- ID modelů jsou v `desktop/renderer/providers.ts`. Až poskytovatelé vydají nové modely, stačí je změnit tam.
 
 ## Vývoj
 
 ```bash
 npm ci                    # v kořeni repa (sdílený kód, Vite, React)
-cd desktop && npm ci      # Electron, electron-builder, Claude SDK
+cd desktop && npm ci      # Electron, electron-builder, SDK pro Claude, OpenAI a Gemini
 npm run build && npm start        # sestavit stránku a spustit appku
 npm run dev & npm run start:dev   # vývoj s hot reloadem (Vite na portu 5299)
 npm run dist              # instalátor pro tento systém do desktop/release/
 ```
 
 - Stránka appky (`desktop/renderer`) importuje sdílený kód z `../src`: export engine, šablony, editor, texty. Testy sdíleného kódu běží s webem (`npm test` v kořeni).
-- Prompty, JSON schémata a převody odpovědí jsou v `src/engine/export/ai.ts`.
+- Prompty, JSON schémata a převody odpovědí jsou v `src/engine/export/ai.ts`, volání jednotlivých AI v `desktop/electron/ai.cjs`.
 
 ## Vydání nové verze
 
 Zvyš `version` v `desktop/package.json`, commitni a pushni tag:
 
 ```bash
-git tag desktop-v0.1.0 && git push origin desktop-v0.1.0
+git tag desktop-v0.2.0 && git push origin desktop-v0.2.0
 ```
 
 Workflow `.github/workflows/desktop.yml` sestaví instalátory na Windows, macOS a Linuxu a přiloží je k GitHub release. Ručně se dá spustit i z karty Actions, pak jsou instalátory jen v artefaktech běhu.

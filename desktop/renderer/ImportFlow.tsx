@@ -6,10 +6,10 @@ import { extractSchema, extractSystem, extractToImport, type AiExtract } from '.
 import { importFromValues } from '../../src/engine/export/readBack'
 import { SheetImport } from '../../src/engine/exchange'
 import { readSheet, type SheetPdf } from '../../src/ui/export/pdf'
-import { luso, type ClaudeRequest } from './bridge'
+import { luso, type AiContent } from './bridge'
 import { allTemplates, findTemplate, formKeys, formValues, loadSheet, pageImages, textInBoxes, type LoadedSheet } from './sheets'
-import { Busy, FilePick, Section } from './ui'
-import { useClaude } from './useClaude'
+import { AiButton, Busy, FilePick, Section } from './ui'
+import { useAi, type KeyStatus } from './useAi'
 
 /** Local first, Claude fills what the form didn't have (lists merged, single values kept). */
 function merge(local: SheetImport | undefined, ai: SheetImport): SheetImport {
@@ -30,14 +30,14 @@ function merge(local: SheetImport | undefined, ai: SheetImport): SheetImport {
   } as SheetImport
 }
 
-export function ImportFlow({ hasKey }: { hasKey: boolean }) {
+export function ImportFlow({ keys }: { keys: KeyStatus | undefined }) {
   const { t } = useTranslation()
   const [sheet, setSheet] = useState<{ file: LoadedSheet; pdf: SheetPdf; filled: Record<string, string | boolean> }>()
   const [local, setLocal] = useState<SheetImport>()
   const [result, setResult] = useState<SheetImport>()
   const [showJson, setShowJson] = useState(false)
   const [message, setMessage] = useState('')
-  const claude = useClaude()
+  const ai = useAi(keys)
 
   async function pick(files: File[]) {
     setResult(undefined)
@@ -60,12 +60,12 @@ export function ImportFlow({ hasKey }: { hasKey: boolean }) {
     }
   }
 
-  async function readClaude() {
+  async function readAi() {
     if (!sheet) return
     const images = await pageImages(sheet.pdf.doc)
-    const content: ClaudeRequest['content'] = images.flatMap((img, i) => [
-      { type: 'text' as const, text: `Page ${i + 1}:` },
-      { type: 'image' as const, source: { type: 'base64' as const, media_type: 'image/jpeg' as const, data: img.base64 } },
+    const content: AiContent[] = images.flatMap((img, i): AiContent[] => [
+      { type: 'text', text: `Page ${i + 1}:` },
+      { type: 'image', mime: 'image/jpeg', data: img.base64 },
     ])
     const filled = Object.entries(sheet.filled)
     content.push({
@@ -74,7 +74,7 @@ export function ImportFlow({ hasKey }: { hasKey: boolean }) {
         ? `The PDF's filled form fields (raw field names, they may be meaningless) as a reading aid:\n${filled.map(([k, v]) => `${k} = ${v === true ? '[checked]' : String(v).replace(/\n/g, ' / ')}`).join('\n')}\n\nTranscribe the sheet.`
         : 'Transcribe the sheet.',
     })
-    const r = await claude.run<AiExtract>({ system: extractSystem, content, schema: extractSchema, maxTokens: 32000, effort: 'high' })
+    const r = await ai.run<AiExtract>({ system: extractSystem, content, schema: extractSchema, maxTokens: 32000, effort: 'high' })
     if (r) setResult(merge(local, SheetImport.parse(extractToImport(r))))
   }
 
@@ -96,11 +96,10 @@ export function ImportFlow({ hasKey }: { hasKey: boolean }) {
           <div className="mt-2 space-y-2 text-sm">
             <p>📄 <b>{sheet.file.name}</b> · {sheet.pdf.pages.length} p.</p>
             <p>{Object.keys(sheet.filled).length ? t('desk.readLocal', { count: Object.keys(sheet.filled).length }) : t('desk.readNone')}</p>
-            <button className="rounded bg-accent px-3 py-1.5 font-semibold text-accent-text disabled:opacity-40" disabled={!hasKey || claude.busy} onClick={() => void readClaude()}>
-              {t('desk.readClaude')}
-            </button>
-            {!hasKey && <p className="text-xs text-muted">{t('desk.needKey')}</p>}
-            <Busy claude={claude} label={t('desk.reading')} />
+            <div>
+              <AiButton ai={ai} label={t('desk.read')} onClick={() => void readAi()} />
+            </div>
+            <Busy ai={ai} label={t('desk.reading', { ai: ai.label })} />
           </div>
         )}
       </Section>

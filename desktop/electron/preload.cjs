@@ -3,13 +3,13 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('luso', {
   keyStatus: () => ipcRenderer.invoke('key:status'),
-  setKey: (key) => ipcRenderer.invoke('key:set', key),
-  clearKey: () => ipcRenderer.invoke('key:clear'),
+  setKey: (provider, key) => ipcRenderer.invoke('key:set', provider, key),
+  clearKey: (provider) => ipcRenderer.invoke('key:clear', provider),
   listTemplates: () => ipcRenderer.invoke('templates:list'),
   saveTemplate: (template, pdf) => ipcRenderer.invoke('templates:save', template, pdf),
   deleteTemplate: (id) => ipcRenderer.invoke('templates:delete', id),
   templatePdf: (id) => ipcRenderer.invoke('templates:pdf', id),
   saveFile: (name, data, filters) => ipcRenderer.invoke('file:save', name, data, filters),
-  claude: (req) => ipcRenderer.invoke('claude:run', req),
-  cancelClaude: () => ipcRenderer.invoke('claude:cancel'),
+  ai: (req) => ipcRenderer.invoke('ai:run', req),
+  cancelAi: () => ipcRenderer.invoke('ai:cancel'),
 })

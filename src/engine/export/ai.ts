@@ -1,6 +1,7 @@
-// What the desktop app asks Claude (and how the answers become a template / a sheet import).
-// Pure: prompts, JSON schemas for structured outputs and the conversions. The API call itself
-// lives in the desktop app (desktop/electron/main.cjs).
+// What the desktop app asks the AI (Claude, ChatGPT or Gemini) and how the answers become a
+// template / a sheet import. Pure: prompts, JSON schemas for structured outputs (kept to the
+// subset all three accept: every property required, no additionalProperties) and the
+// conversions. The API calls live in the desktop app (desktop/electron/ai.cjs).
 import { abilities } from '../../content/schema'
 import type { SheetImport } from '../exchange'
 import { phrases, type Widget, type Word } from './analyze'

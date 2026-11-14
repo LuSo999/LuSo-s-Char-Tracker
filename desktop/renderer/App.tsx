@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { luso } from './bridge'
 import { ExportFlow } from './ExportFlow'
 import { ImportFlow } from './ImportFlow'
-import { Settings, type KeyStatus } from './Settings'
+import { Settings } from './Settings'
+import type { KeyStatus } from './useAi'
 
 type Tab = 'export' | 'import' | 'settings'
 
@@ -14,7 +15,6 @@ export function App() {
   const [status, setStatus] = useState<KeyStatus>()
   const refresh = () => void luso().keyStatus().then(setStatus)
   useEffect(refresh, [])
-  const hasKey = !!status?.has
   const tabButton = (id: Tab, label: string) => (
     <button className={`rounded px-3 py-1.5 text-sm ${tab === id ? 'bg-accent font-semibold text-accent-text' : 'hover:bg-bg'}`} onClick={() => setTab(id)}>
       {label}
@@ -35,10 +35,10 @@ export function App() {
       </header>
       {/* Both flows stay mounted so switching tabs keeps their state. */}
       <div hidden={tab !== 'export'}>
-        <ExportFlow hasKey={hasKey} />
+        <ExportFlow keys={status} />
       </div>
       <div hidden={tab !== 'import'}>
-        <ImportFlow hasKey={hasKey} />
+        <ImportFlow keys={status} />
       </div>
       {tab === 'settings' && <Settings status={status} onChange={refresh} />}
     </div>

@@ -1,18 +1,19 @@
 // LuSo Sheet Tool: the Electron main process. Opens the window, serves the built renderer on
-// app://, keeps the Claude API key (encrypted with the OS keychain when available) and the
-// saved templates in the user data folder, saves files and calls the Claude API.
+// app://, keeps the AI API keys (Claude, ChatGPT, Gemini; encrypted with the OS keychain when
+// available) and the saved templates in the user data folder, saves files and calls the AI.
 const { app, BrowserWindow, dialog, ipcMain, net, protocol, safeStorage, shell } = require('electron')
 const fs = require('node:fs/promises')
 const path = require('node:path')
 const { pathToFileURL } = require('node:url')
-const Anthropic = require('@anthropic-ai/sdk').default
+const { runners } = require('./ai.cjs')
 
-const MODEL = 'claude-opus-5-5'
+const PROVIDERS = ['claude', 'openai', 'gemini']
+const ENV = { claude: ['ANTHROPIC_API_KEY'], openai: ['OPENAI_API_KEY'], gemini: ['GEMINI_API_KEY', 'GOOGLE_API_KEY'] }
 const DEV = process.env.LUSO_DEV === '1'
 const dist = path.join(__dirname, '..', 'dist')
 const dataDir = () => app.getPath('userData')
 const templatesDir = () => path.join(dataDir(), 'templates')
-const keyFile = () => path.join(dataDir(), 'api-key.bin')
+const keyFile = (provider) => path.join(dataDir(), provider === 'claude' ? 'api-key.bin' : `api-key-${provider}.bin`)
 
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }])
 
@@ -44,30 +45,36 @@ app.whenReady().then(() => {
 })
 app.on('window-all-closed', () => process.platform !== 'darwin' && app.quit())
 
-// --- API key -------------------------------------------------------------------------------
+// --- API keys (one per provider) ----------------------------------------------------------
 
-async function readKey() {
+const providerOf = (p) => (PROVIDERS.includes(p) ? p : 'claude')
+const envKey = (provider) => ENV[provider].map((n) => process.env[n]).find(Boolean) || ''
+async function readKey(provider) {
   try {
-    const buf = await fs.readFile(keyFile())
+    const buf = await fs.readFile(keyFile(provider))
     if (buf[0] === 0x45 /* E */) return safeStorage.decryptString(buf.subarray(1))
     return buf.subarray(1).toString('utf8')
   } catch {
-    return process.env.ANTHROPIC_API_KEY || ''
+    return envKey(provider)
   }
 }
 ipcMain.handle('key:status', async () => {
-  const saved = await fs.stat(keyFile()).then(() => true, () => false)
-  return { has: !!(await readKey()), source: saved ? 'saved' : process.env.ANTHROPIC_API_KEY ? 'env' : null, encrypted: safeStorage.isEncryptionAvailable() }
+  const out = { encrypted: safeStorage.isEncryptionAvailable() }
+  for (const p of PROVIDERS) {
+    const saved = await fs.stat(keyFile(p)).then(() => true, () => false)
+    out[p] = { has: !!(await readKey(p)), source: saved ? 'saved' : envKey(p) ? 'env' : null }
+  }
+  return out
 })
-ipcMain.handle('key:set', async (_e, key) => {
+ipcMain.handle('key:set', async (_e, provider, key) => {
   await fs.mkdir(dataDir(), { recursive: true })
   const k = String(key).trim()
   const data = safeStorage.isEncryptionAvailable() ? Buffer.concat([Buffer.from('E'), safeStorage.encryptString(k)]) : Buffer.concat([Buffer.from('P'), Buffer.from(k, 'utf8')])
-  await fs.writeFile(keyFile(), data, { mode: 0o600 })
+  await fs.writeFile(keyFile(providerOf(provider)), data, { mode: 0o600 })
   return true
 })
-ipcMain.handle('key:clear', async () => {
-  await fs.rm(keyFile(), { force: true })
+ipcMain.handle('key:clear', async (_e, provider) => {
+  await fs.rm(keyFile(providerOf(provider)), { force: true })
   return true
 })
 
@@ -120,49 +127,30 @@ ipcMain.handle('file:save', async (e, defaultName, data, filters) => {
   return r.filePath
 })
 
-// --- Claude --------------------------------------------------------------------------------
+// --- AI ----------------------------------------------------------------------------------
+// One structured-output request: the renderer gives the provider, the model, the system prompt,
+// the user content (text and base64 images) and the JSON schema; the answer comes back parsed.
+// Errors come back as short codes the page translates (no-key, auth, rate-limit, refusal…).
 
-let running // the stream in progress (one at a time)
-ipcMain.handle('claude:cancel', () => {
+let running // AbortController of the request in progress (one at a time)
+ipcMain.handle('ai:cancel', () => {
   running?.abort()
   return true
 })
-/**
- * One structured-output request: the renderer gives the system prompt, the user content (text
- * and base64 images) and the JSON schema; the answer comes back parsed.
- */
-ipcMain.handle('claude:run', async (_e, { system, content, schema, maxTokens = 64000, effort = 'high' }) => {
-  const apiKey = await readKey()
+
+
+ipcMain.handle('ai:run', async (_e, req) => {
+  const provider = providerOf(req.provider)
+  const apiKey = await readKey(provider)
   if (!apiKey) return { ok: false, error: 'no-key' }
-  const client = new Anthropic({ apiKey })
+  const controller = new AbortController()
+  running = controller
   try {
-    running = client.beta.messages.stream({
-      model: MODEL,
-      max_tokens: maxTokens,
-      // If a safety classifier declines, Anthropic's recommended fallback model answers instead.
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      system,
-      messages: [{ role: 'user', content }],
-      output_config: { effort, format: { type: 'json_schema', schema } },
-    })
-    const msg = await running.finalMessage()
-    const usage = { input: msg.usage.input_tokens, output: msg.usage.output_tokens }
-    if (msg.stop_reason === 'refusal') return { ok: false, error: 'refusal', usage }
-    if (msg.stop_reason === 'max_tokens') return { ok: false, error: 'max-tokens', usage }
-    const text = msg.content.filter((b) => b.type === 'text').map((b) => b.text).join('')
-    try {
-      return { ok: true, data: JSON.parse(text), usage }
-    } catch {
-      return { ok: false, error: 'bad-json', usage }
-    }
+    // baseURL is for tests only: the page can't redirect a key elsewhere.
+    return await runners[provider](apiKey, { maxTokens: 64000, effort: 'high', ...req, baseURL: undefined }, controller.signal)
   } catch (err) {
-    if (err instanceof Anthropic.APIUserAbortError) return { ok: false, error: 'cancelled' }
-    if (err instanceof Anthropic.AuthenticationError) return { ok: false, error: 'auth' }
-    if (err instanceof Anthropic.RateLimitError) return { ok: false, error: 'rate-limit' }
-    if (err instanceof Anthropic.APIError) return { ok: false, error: `api ${err.status ?? ''}: ${err.message}` }
     return { ok: false, error: String(err?.message ?? err) }
   } finally {
-    running = undefined
+    if (running === controller) running = undefined
   }
 })
