@@ -2,7 +2,8 @@ import { RuleRef } from '../rules/RuleRef'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { crLabel, grantCreatures, type CompanionSource } from '../../engine/creatures'
-import { addCompanion, adjustCompanionHp, endShape, removeCompanion, setCompanionHp, setCompanionTempHp, setShapeHp } from '../../engine/shape'
+import { addCompanion, adjustCompanionHp, endShape, removeCompanion, setCompanionHp, setCompanionTempHp, setShapeHp, spendCompanionAction } from '../../engine/shape'
+import { Dots } from '../sheet/common'
 import { adjustHp } from '../../engine/actions'
 import { Panel } from '../sheet/common'
 import { useRun, useSheet } from '../sheet/context'
@@ -86,6 +87,24 @@ function CompanionCard({ c }: { c: Companion }) {
       <div className="mt-1 h-1 overflow-hidden rounded bg-border">
         <div className={`h-full ${c.entry.hp <= c.hpMax / 2 ? 'bg-danger' : 'bg-emerald-600'}`} style={{ width: `${pct}%` }} />
       </div>
+      {/* Limited actions: remaining uses, click to spend or give back. */}
+      {c.actions.some((a) => a.uses) && (
+        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+          {c.actions
+            .filter((a) => a.uses)
+            .map((a) => (
+              <span key={a.name} className="flex items-center gap-1">
+                {a.name.replace(/\s*\(.*\)$/, '')}
+                <Dots
+                  remaining={a.uses!.max - (c.entry.used[a.name] ?? 0)}
+                  max={a.uses!.max}
+                  label={a.name}
+                  onSet={(n) => void run(spendCompanionAction(character, c.entry.uid, a.name, a.uses!.max, a.uses!.max - (c.entry.used[a.name] ?? 0) - n))}
+                />
+              </span>
+            ))}
+        </div>
+      )}
       {c.source?.grant.note && <p className="mt-1 text-xs text-muted">{c.source.grant.note}</p>}
       {open && (
         <div className="mt-2">
@@ -106,12 +125,17 @@ function AddCompanion({ onClose }: { onClose: () => void }) {
   const spellLevel = source.entity.type === 'spell' ? source.entity.level : 1
   const [slot, setSlot] = useState(Math.max(1, spellLevel))
   const [choice, setChoice] = useState<string>()
+  // Per creature when its options differ (Beast of the Sea: bludgeoning or piercing).
+  const [rowChoice, setRowChoice] = useState<Record<string, string>>({})
+  const optionsFor = (creatureId: string) => source.grant.choose?.byCreature?.[creatureId] ?? source.grant.choose?.options ?? []
   const [query, setQuery] = useState('')
   const creatures = useMemo(() => grantCreatures(source.grant, content), [source, content])
   const list = creatures.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()))
 
   async function add(creatureId: string) {
-    const pick = source.grant.choose ? (choice ?? source.grant.choose.options[0]) : undefined
+    const opts = optionsFor(creatureId)
+    const wanted = source.grant.choose?.byCreature ? rowChoice[creatureId] : choice
+    const pick = source.grant.choose ? (wanted && opts.includes(wanted) ? wanted : opts[0]) : undefined
     const r = addCompanion(character, sheet, content, source, creatureId, source.grant.slot && !source.grant.fixed?.slot ? slot : undefined, pick)
     if (await run(r)) onClose()
   }
@@ -128,7 +152,7 @@ function AddCompanion({ onClose }: { onClose: () => void }) {
           ))}
         </select>
       </label>
-      {source.grant.choose && (
+      {source.grant.choose && !source.grant.choose.byCreature && (
         <label className="mt-2 block text-sm">
           <span className="font-semibold">{source.grant.choose.label}</span>
           <select className="ml-2 rounded border border-border bg-card px-2 py-1" value={choice ?? source.grant.choose.options[0]} onChange={(e) => setChoice(e.target.value)}>
@@ -161,6 +185,20 @@ function AddCompanion({ onClose }: { onClose: () => void }) {
             <span className="min-w-0 flex-1">
               <span className="font-semibold">{c.name}</span> <span className="text-xs text-muted">{c.description || `CR ${crLabel(c.cr)}`}</span>
             </span>
+            {source.grant.choose?.byCreature && optionsFor(c.id).length > 1 && (
+              <select
+                className="rounded border border-border bg-card px-1 py-0.5 text-xs"
+                aria-label={source.grant.choose.label}
+                value={rowChoice[c.id] ?? optionsFor(c.id)[0]}
+                onChange={(e) => setRowChoice({ ...rowChoice, [c.id]: e.target.value })}
+              >
+                {optionsFor(c.id).map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            )}
             <button className="shrink-0 rounded bg-accent px-2.5 py-1 text-sm font-semibold text-accent-text" onClick={() => void add(c.id)}>
               + {t('companions.add')}
             </button>

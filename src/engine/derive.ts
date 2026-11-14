@@ -1071,6 +1071,8 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const source = companionSources.find((s) => s.entity.id === entry.sourceId && s.grant.id === entry.grantId)
     return [{ ...viewCreature(creature, companionVars(source, entry.slot), source?.grant.adjust, entry.choice), entry, source }]
   })
+  // Draconic Spirit's Shared Resistances: the companion's pick is the owner's resistance too.
+  for (const c of companions) if (c.source?.grant.choose?.shareResistance && c.entry.choice) resistances.add(c.entry.choice)
   const shape = shapeCreature
     ? (() => {
         const view = viewCreature(shapeCreature, companionVars(undefined, undefined))

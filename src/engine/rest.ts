@@ -39,6 +39,24 @@ function regained(r: ResourceState, on: RechargeOn, sheet: Sheet, rolls: Record<
   return best
 }
 
+/** Companions' limited actions (3/Day, 1/Long Rest) come back on rests. */
+function rechargeCompanions(char: Character, sheet: Sheet, on: 'shortRest' | 'longRest', changes: RestChange[]): Character {
+  if (!char.companions.some((c) => Object.keys(c.used).length)) return char
+  const companions = char.companions.map((entry) => {
+    const view = sheet.companions.find((c) => c.entry.uid === entry.uid)
+    if (!view) return entry
+    const used = { ...entry.used }
+    for (const a of view.actions) {
+      if (!a.uses || !used[a.name]) continue
+      if (a.uses.recharge === 'longRest' && on !== 'longRest') continue
+      changes.push({ kind: 'resource', key: `companion:${entry.uid}:${a.name}`, name: `${entry.name ?? view.creature.name}: ${a.name}`, before: a.uses.max - used[a.name], after: a.uses.max, max: a.uses.max })
+      delete used[a.name]
+    }
+    return { ...entry, used }
+  })
+  return { ...char, companions }
+}
+
 function rechargeResources(char: Character, sheet: Sheet, on: RechargeOn, changes: RestChange[], rolls?: Record<string, number>): Character {
   const resourcesUsed = { ...char.resourcesUsed }
   const inventory = char.inventory.map((e) => ({ ...e }))
@@ -91,6 +109,7 @@ export function shortRest(char: Character, content: ContentIndex, hitDiceRolls: 
     changes.push({ kind: 'deathSaves' })
   }
   next = rechargeResources(next, sheet, 'shortRest', changes)
+  next = rechargeCompanions(next, sheet, 'shortRest', changes)
   next = endStates(next, sheet, changes)
   return { character: next, changes }
 }
@@ -153,6 +172,7 @@ export function longRest(char: Character, content: ContentIndex, opts: { dawn?: 
     deathSaves: { successes: 0, failures: 0 },
   }
   next = rechargeResources(next, sheet, 'longRest', changes)
+  next = rechargeCompanions(next, sheet, 'longRest', changes)
   // A Long Rest renews "one spell per Long Rest" replacements (2024 Paladin, Ranger; Wizard cantrips).
   next = { ...next, spellSwaps: Object.fromEntries(Object.entries(next.spellSwaps).filter(([k]) => !k.endsWith(':longRest'))) }
   next = endStates(next, sheet, changes)

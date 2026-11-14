@@ -12,6 +12,7 @@ export type CreatureActionView = {
   /** "1d8+3 piercing + 1d4 poison" */
   damage: string
   save?: { ability: Ability; dc: number }
+  uses?: { max: number; recharge: 'shortRest' | 'longRest' | 'roll' }
 }
 
 export type CreatureView = {
@@ -83,8 +84,19 @@ export function viewCreature(creature: Creature, vars: FormulaVars, adjust?: Com
         })
         .join(' + '),
       save: a.save ? { ability: a.save.ability, dc: n(a.save.dc) } : undefined,
+      uses: a.uses ? { max: Math.max(1, n(a.uses.max)), recharge: a.uses.recharge } : usesFromName(a.name),
     })),
   }
+}
+
+/** Limited uses written only in the action's name: "(3/Day)", "(Recharge 5–6)", "(1/Long Rest)", "1/Short Rest". */
+export function usesFromName(name: string): CreatureActionView['uses'] {
+  const perDay = /\((\d+)\/Day\b/i.exec(name)
+  if (perDay) return { max: Number(perDay[1]), recharge: 'longRest' }
+  if (/\bRecharge\s+\d/i.test(name)) return { max: 1, recharge: 'roll' }
+  const perRest = /\b(\d+)\s*\/\s*(Long|Short) Rest\b/i.exec(name)
+  if (perRest) return { max: Number(perRest[1]), recharge: perRest[2].toLowerCase() === 'short' ? 'shortRest' : 'longRest' }
+  return undefined
 }
 
 export const crLabel = (cr: number) => (cr === 0.125 ? '1/8' : cr === 0.25 ? '1/4' : cr === 0.5 ? '1/2' : String(cr))

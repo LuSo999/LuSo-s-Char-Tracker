@@ -322,7 +322,18 @@ export const CompanionGrant = z.object({
   /** Fixed numbers instead of the owner's (Cube of Summoning: +9 to hit, DC 17, level 5). */
   fixed: z.object({ spellAttack: z.number().optional(), spellDc: z.number().optional(), slot: z.number().int().optional() }).optional(),
   /** A pick made when the companion arrives (damage type, essence…); "@choice" in its stat block stands for it. */
-  choose: z.object({ label: z.string(), options: z.array(z.string()).min(1) }).optional(),
+  choose: z
+    .object({
+      label: z.string(),
+      options: z.array(z.string()).min(1),
+      /** Options per creature when they differ (Beast of the Sea: bludgeoning or piercing only). */
+      byCreature: z.record(z.string(), z.array(z.string()).min(1)).optional(),
+      /** The pick also gives the owner a resistance while the companion is there (Draconic Spirit: Shared Resistances). */
+      shareResistance: z.boolean().optional(),
+    })
+    .optional(),
+  /** How many of this grant's companions can be there at once (summons; Eldritch Cannon 1, 2 from level 15). */
+  max: Scaled.optional(),
   /**
    * Changes to the stat block (2014 Ranger's Companion: + pb to AC, attacks and damage; HP at least 4 × level).
    * Formulas see the owner's numbers.
@@ -748,6 +759,8 @@ export const CreatureAction = z.object({
    */
   damage: z.array(z.object({ dice: z.union([z.string(), z.object({ count: Scaled, die: Scaled })]).default(''), bonus: Scaled.default(0), type: z.string() })).default([]),
   save: z.object({ ability: Ability, dc: Scaled }).optional(),
+  /** Limited uses (3/Day, 1/Long Rest) or a recharge ("roll": Recharge 5–6, the player marks it back). */
+  uses: z.object({ max: Scaled, recharge: z.enum(['shortRest', 'longRest', 'roll']) }).optional(),
 })
 export type CreatureAction = z.infer<typeof CreatureAction>
 

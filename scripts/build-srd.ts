@@ -74,6 +74,13 @@ function creature(m: Raw, edition: Edition, source: Raw): Raw {
       ...(a.attack_bonus !== undefined ? { attack: { bonus: a.attack_bonus, ...(range ? { range } : {}) } } : {}),
       damage,
       ...(a.dc ? { save: { ability: a.dc.dc_type.index, dc: a.dc.dc_value } } : {}),
+      ...(a.usage?.type === 'recharge on roll'
+        ? { uses: { max: 1, recharge: 'roll' } }
+        : a.usage?.type === 'per day'
+          ? { uses: { max: a.usage.times, recharge: 'longRest' } }
+          : a.usage?.type === 'recharge after rest'
+            ? { uses: { max: 1, recharge: (a.usage.rest_types ?? []).includes('short') ? 'shortRest' : 'longRest' } }
+            : {}),
     }
   }
   return {

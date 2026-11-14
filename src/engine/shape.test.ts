@@ -177,3 +177,45 @@ describe('Shapechange groups', () => {
     expect(computeSheet(c, c24).ac.value).toBe(12)
   })
 })
+
+describe('Companion limits, shared resistance, limited actions', () => {
+  it('Summon Dragon: the pick is your resistance too while the spirit is there', () => {
+    const c = hero('2024', 'sorcerer', 9, { spells: { sorcerer: { known: ['summon-dragon'], prepared: ['summon-dragon'] } } })
+    const s = computeSheet(c, c24)
+    const src = s.companionSources.find((x) => x.grant.id === 'dragon')!
+    expect(src).toBeTruthy()
+    const withSpirit = okR(addCompanion(c, s, c24, src, 'creature-draconic-spirit', 5, 'cold'))
+    expect(computeSheet(withSpirit, c24).resistances).toContain('cold')
+  })
+
+  it('a grant limit refuses one more summon', () => {
+    const c = hero('2014', 'wizard', 5)
+    const s = computeSheet(c, c14)
+    const owl = c14.getTyped('creature-owl', 'creature')!
+    const source = { entity: owl, grant: { id: 'x', kind: 'summon' as const, creatures: ['creature-owl'], slot: false, max: 1 }, classLevel: 5, spellAttack: 0, spellDc: 0 }
+    const one = okR(addCompanion(c, s, c14, source, 'creature-owl'))
+    expect(addCompanion(one, computeSheet(one, c14), c14, source, 'creature-owl')).toMatchObject({ ok: false, error: 'tooManyCompanions' })
+  })
+
+  it('limited actions: spend, then a Long Rest restores (Otherworldly Steed Fell Glare 1/Long Rest)', async () => {
+    const { spendCompanionAction } = await import('./shape')
+    const c = hero('2024', 'paladin', 5)
+    const s = computeSheet(c, c24)
+    const src = s.companionSources.find((x) => x.grant.id === 'steed')!
+    const withSteed = okR(addCompanion(c, s, c24, src, 'creature-otherworldly-steed', 2))
+    const steed = computeSheet(withSteed, c24).companions[0]
+    const glare = steed.actions.find((a) => a.name.startsWith('Fell Glare'))!
+    expect(glare.uses).toEqual({ max: 1, recharge: 'longRest' })
+    const used = okR(spendCompanionAction(withSteed, steed.entry.uid, glare.name, 1))
+    expect(spendCompanionAction(used, steed.entry.uid, glare.name, 1).ok).toBe(false)
+    expect(longRest(used, c24).character.companions[0].used).toEqual({})
+  })
+
+  it('limited uses written in the name are understood', async () => {
+    const { usesFromName } = await import('./creatures')
+    expect(usesFromName('Repair (3/Day)')).toEqual({ max: 3, recharge: 'longRest' })
+    expect(usesFromName('Fire Breath (Recharge 5–6)')).toEqual({ max: 1, recharge: 'roll' })
+    expect(usesFromName('Ghostly Stride (1/Long Rest)')).toEqual({ max: 1, recharge: 'longRest' })
+    expect(usesFromName('Bite')).toBeUndefined()
+  })
+})

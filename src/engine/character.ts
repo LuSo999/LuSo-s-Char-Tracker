@@ -181,6 +181,8 @@ export const Character = z.object({
         slot: z.number().int().optional(),
         /** The grant's `choose` pick (damage type…). */
         choice: z.string().optional(),
+        /** Spent uses of limited actions, by action name. */
+        used: z.record(z.string(), z.number().int().min(0)).default({}),
         /** Temporary (concentration summons) or lasting (familiar, companion). */
         notes: z.string().optional(),
       }),

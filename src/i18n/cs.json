@@ -280,7 +280,8 @@
     "spellbookLevel": "Pro kouzlo {{level}}. úrovně není volné místo zdarma; jen zkopírováním.",
     "schoolLimit": "Jen kouzla škol {{schools}}, kromě {{max}} z libovolné školy.",
     "slotTooHigh": "Spell slot úrovně {{level}} tady nejde.",
-    "notEnoughXp": "Zkušenosti nemůžou klesnout pod 0."
+    "notEnoughXp": "Zkušenosti nemůžou klesnout pod 0.",
+    "tooManyCompanions": "{{name}}: najednou nejvýš {{max}}."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -449,7 +450,8 @@
       "slotMax": "Spell sloty úrovně {{level}}",
       "pactSlots": "Pact Magic sloty",
       "cantripDice": "{{name}}: zranění",
-      "contentChanged": "Změněný homebrew: {{name}}"
+      "contentChanged": "Změněný homebrew: {{name}}",
+      "companionUse": "{{name}}: použití"
     },
     "attackAction": "Attack action",
     "undoPastConfirm": "Vrátit „{{what}}“? Změny provedené potom zůstanou (HP, použití a kostky se přepočítají).",

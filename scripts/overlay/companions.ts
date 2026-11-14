@@ -47,9 +47,9 @@ const creatures2024 = [
     traits: [{ name: 'Life Bond', description: 'When you regain Hit Points from a level 1+ spell, the steed regains the same number if you’re within 5 feet of it.' }],
     actions: [
       steedSlam('radiant', 'Celestial'), steedSlam('psychic', 'Fey'), steedSlam('necrotic', 'Fiend'),
-      { name: 'Fell Glare (Fiend; 1/Long Rest)', actionType: 'bonusAction', description: 'One creature you can see within 60 ft.: Wisdom save or Frightened until the end of your next turn.', save: { ability: 'wis', dc: 'spellDc' } },
-      { name: 'Fey Step (Fey; 1/Long Rest)', actionType: 'bonusAction', description: 'The steed teleports, with its rider, up to 60 ft. to an unoccupied space it can see.' },
-      { name: 'Healing Touch (Celestial; 1/Long Rest)', actionType: 'bonusAction', description: 'One creature within 5 ft. regains 2d8 + spell level Hit Points.', damage: [{ dice: '2d8', bonus: 'slot', type: 'healing' }] },
+      { name: 'Fell Glare (Fiend; 1/Long Rest)', uses: { max: 1, recharge: 'longRest' }, actionType: 'bonusAction', description: 'One creature you can see within 60 ft.: Wisdom save or Frightened until the end of your next turn.', save: { ability: 'wis', dc: 'spellDc' } },
+      { name: 'Fey Step (Fey; 1/Long Rest)', uses: { max: 1, recharge: 'longRest' }, actionType: 'bonusAction', description: 'The steed teleports, with its rider, up to 60 ft. to an unoccupied space it can see.' },
+      { name: 'Healing Touch (Celestial; 1/Long Rest)', uses: { max: 1, recharge: 'longRest' }, actionType: 'bonusAction', description: 'One creature within 5 ft. regains 2d8 + spell level Hit Points.', damage: [{ dice: '2d8', bonus: 'slot', type: 'healing' }] },
     ],
   }),
   insect('centipede', [{ name: 'Venomous Spew', actionType: 'bonusAction', description: 'One creature within 10 ft.: Constitution save or Poisoned until the start of the insect’s next turn.', save: { ability: 'con', dc: 'spellDc' } }], false),
@@ -82,7 +82,7 @@ export const companions: ClassOverlay = {
     'find-familiar': { companions: [{ id: 'familiar', kind: 'familiar', filter: { creatureType: 'beast', maxCr: 0 }, note: 'Celestial, Fey or Fiend in the chosen form. It can’t attack.' }] },
     'find-steed': { companions: [{ id: 'steed', kind: 'steed', creatures: ['creature-otherworldly-steed'], slot: true, note: 'Shares your Initiative; a controlled mount while you ride it.' }] },
     'giant-insect': { companions: [{ id: 'insect', kind: 'summon', creatures: ['centipede', 'spider', 'wasp'].map((f) => `creature-giant-insect-${f}`), slot: true }] },
-    'summon-dragon': { companions: [{ id: 'dragon', kind: 'summon', creatures: ['creature-draconic-spirit'], slot: true, choose: { label: 'Shared resistance (breath damage type)', options: ['acid', 'cold', 'fire', 'lightning', 'poison'] } }] },
+    'summon-dragon': { companions: [{ id: 'dragon', kind: 'summon', creatures: ['creature-draconic-spirit'], slot: true, choose: { label: 'Shared resistance (breath damage type)', options: ['acid', 'cold', 'fire', 'lightning', 'poison'], shareResistance: true } }] },
     'animate-dead': { companions: [{ id: 'undead', kind: 'summon', creatures: ['creature-skeleton', 'creature-zombie'], note: 'Command them with a Bonus Action; control lasts 24 hours.' }] },
   },
 }

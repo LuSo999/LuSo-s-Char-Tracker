@@ -2,6 +2,7 @@
 import type { Character } from './character'
 import type { CompanionSource } from './creatures'
 import { companionVars, viewCreature } from './creatures'
+import { resolveScaled } from './formula'
 import type { ContentIndex } from '../content'
 import type { Sheet } from './derive'
 import type { ActionResult } from './actions'
@@ -49,13 +50,19 @@ const uid = () => `c${Date.now().toString(36)}${(seq++).toString(36)}`
 export function addCompanion(char: Character, sheet: Sheet, content: ContentIndex, source: CompanionSource, creatureId: string, slot?: number, choice?: string): ActionResult {
   const creature = content.getTyped(creatureId, 'creature')
   if (!creature) return { ok: false, error: 'noChange' }
-  const temp: Character = { ...char, companions: [...char.companions, { uid: uid(), creatureId, sourceId: source.entity.id, grantId: source.grant.id, hp: 0, tempHp: 0, slot, choice }] }
+  const temp: Character = { ...char, companions: [...char.companions, { uid: uid(), creatureId, sourceId: source.entity.id, grantId: source.grant.id, hp: 0, tempHp: 0, slot, choice, used: {} }] }
   // Resolve its HP with the owner's numbers (scaled stat blocks).
   const view = viewCreature(creature, companionVars(sheet, source, slot), source.grant.adjust, choice)
   const last = temp.companions[temp.companions.length - 1]
   last.hp = view.hpMax
   last.tempHp = view.tempHp
   const single = source.grant.kind === 'familiar' || source.grant.kind === 'steed' || source.grant.kind === 'companion'
+  // Summons with a limit (Eldritch Cannon: 1, 2 from level 15): no more than that at once.
+  if (!single && source.grant.max !== undefined) {
+    const limit = Math.floor(resolveScaled(source.grant.max, companionVars(sheet, source, slot)))
+    const already = char.companions.filter((c) => c.sourceId === source.entity.id && c.grantId === source.grant.id).length
+    if (already >= limit) return { ok: false, error: 'tooManyCompanions', params: { max: limit, name: source.entity.name } }
+  }
   const companions = single ? temp.companions.filter((c) => c === last || !(c.sourceId === source.entity.id && c.grantId === source.grant.id)) : temp.companions
   return done({ ...char, companions }, 'companion', [{ type: 'companionAdd', params: { name: creature.name } }])
 }
@@ -90,4 +97,16 @@ export function setCompanionTempHp(char: Character, uidOf: string, value: number
   const tempHp = Math.max(0, Math.round(value))
   if (!c || tempHp === c.tempHp) return { ok: false, error: 'noChange' }
   return done({ ...char, companions: char.companions.map((x) => (x.uid === uidOf ? { ...x, tempHp } : x)) }, 'companion', [{ type: 'companionTempHp', params: { name }, before: c.tempHp, after: tempHp }])
+}
+
+/** Spend (or give back, with a negative amount) one use of a companion's limited action. */
+export function spendCompanionAction(char: Character, uidOf: string, action: string, max: number, delta = 1): ActionResult {
+  const c = char.companions.find((x) => x.uid === uidOf)
+  if (!c) return { ok: false, error: 'noChange' }
+  const before = c.used[action] ?? 0
+  const after = Math.max(0, Math.min(max, before + delta))
+  if (after === before) return delta > 0 ? { ok: false, error: 'notEnough', params: { name: action } } : { ok: false, error: 'noChange' }
+  const used = { ...c.used, [action]: after }
+  if (!after) delete used[action]
+  return done({ ...char, companions: char.companions.map((x) => (x.uid === uidOf ? { ...x, used } : x)) }, 'companion', [{ type: 'companionUse', params: { name: action }, before: max - before, after: max - after }])
 }

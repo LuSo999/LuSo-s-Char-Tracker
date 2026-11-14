@@ -8,7 +8,7 @@ import { pickUpThrown, recoverAmmo, reload, selectAmmo } from '../../engine/inve
 import { offhandEligible } from '../../engine/items'
 import type { ActivityRow, AttackRow } from '../../engine/derive'
 import type { CreatureActionView } from '../../engine/creatures'
-import { startShape } from '../../engine/shape'
+import { startShape, spendCompanionAction } from '../../engine/shape'
 import { ShapePicker } from '../creatures/ShapePicker'
 import { actionSummary } from '../creatures/format'
 import { spellBrief, spellDice, upcastNote, type SpellRow } from '../../engine/spells'
@@ -48,7 +48,7 @@ type Row = {
   activity?: ActivityRow
   spellRow?: SpellRow
   /** A beast-form or companion action from a stat block (no engine cost; the turn tracker counts beast-form actions). */
-  creature?: { action: CreatureActionView; shape: boolean }
+  creature?: { action: CreatureActionView; shape: boolean; companion?: string }
 }
 
 const sectionOrder = { attack: 0, activity: 1, spell: 2, item: 3 }
@@ -538,7 +538,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
   const [prompt, setPrompt] = useState<string>()
   const [blocked, setBlocked] = useState<{ key: string; problem: Problem; at?: { x: number; y: number } }>()
   const [denied, setDenied] = useState<{ key: string; at: number }>()
-  const creatureRow = (a: CreatureActionView, i: number, owner: string, shape: boolean, entity: Entity): Row => ({
+  const creatureRow = (a: CreatureActionView, i: number, owner: string, shape: boolean, entity: Entity, companion?: { uid: string; used: Record<string, number> }): Row => ({
     key: `${shape ? 'shape' : owner}:${i}`,
     name: shape ? a.name : `${owner}: ${a.name}`,
     entity,
@@ -546,9 +546,10 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     category: shape ? (a.attack ? 'weapon' : 'other') : 'companion',
     details: [<strong key="s">{actionSummary(a, t('statBlock.toHit'))}</strong>],
     brief: a.description,
-    available: true,
+    uses: a.uses && companion ? { remaining: a.uses.max - (companion.used[a.name] ?? 0), max: a.uses.max } : undefined,
+    available: !a.uses || !companion || (companion.used[a.name] ?? 0) < a.uses.max,
     order: shape ? -1 : 50,
-    creature: { action: a, shape },
+    creature: { action: a, shape, companion: companion?.uid },
   })
   const rows = [
     // Wild Shape: the beast's actions take the place of weapon attacks.
@@ -559,7 +560,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     ...sheet.spellcasting.rows
       .filter((r) => !sheet.shape && !r.ritualOnly && character.favoriteSpells.includes(r.spell.id))
       .map((r) => spellRow(r, sheet.characterLevel, sheet.mods[r.ability])),
-    ...sheet.companions.flatMap((c) => c.actions.map((a, i) => ({ ...creatureRow(a, i, c.entry.name ?? c.creature.name, false, c.creature), key: `${c.entry.uid}:${i}` }))),
+    ...sheet.companions.flatMap((c) => c.actions.map((a, i) => ({ ...creatureRow(a, i, c.entry.name ?? c.creature.name, false, c.creature, c.entry), key: `${c.entry.uid}:${i}` }))),
   ].sort((a, b) => a.order - b.order)
   const [shaping, setShaping] = useState<Row>()
   /** The form limits of a shapechange row: Wild Shape's, or its own group's (Boon of Fluid Forms). */
@@ -625,6 +626,8 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
         if (attackLike(r)) turn.attack(r.name, perAction, true)
         else for (const s of slotsOf(r)) turn.use(s)
       }
+      // A companion's limited action (Repair 3/Day, Fell Glare 1/Long Rest) spends a use.
+      if (r.creature.companion && r.creature.action.uses) await run(spendCompanionAction(character, r.creature.companion, r.creature.action.name, r.creature.action.uses.max))
       return fx(r.creature.action.attack ? 'physical' : 'power', at)
     }
     let result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll, { spendOnly, ...slots })

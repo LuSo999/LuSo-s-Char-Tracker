@@ -280,7 +280,8 @@
     "spellbookLevel": "No free place for a level {{level}} spell; only by copying.",
     "schoolLimit": "Only {{schools}} spells, except {{max}} from any school.",
     "slotTooHigh": "A level {{level}} spell slot isn’t allowed here.",
-    "notEnoughXp": "Experience points can’t go below 0."
+    "notEnoughXp": "Experience points can’t go below 0.",
+    "tooManyCompanions": "{{name}}: at most {{max}} at once."
   },
   "rest": {
     "shortTitle": "Short rest",
@@ -449,7 +450,8 @@
       "slotMax": "Level {{level}} spell slots",
       "pactSlots": "Pact Magic slots",
       "cantripDice": "{{name}}: damage",
-      "contentChanged": "Homebrew changed: {{name}}"
+      "contentChanged": "Homebrew changed: {{name}}",
+      "companionUse": "{{name}}: uses"
     },
     "attackAction": "Attack action",
     "undoPastConfirm": "Undo “{{what}}”? Changes made after it stay (HP, uses and dice are recounted).",
