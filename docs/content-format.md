@@ -175,7 +175,7 @@ Kouzla z předmětů jdou vždy jen zdarma z nábojů předmětu.
   - munice (gear): `ammoKind`, `bundle`, `recoverable` (jde po boji sebrat)
   - armor: `category`, `ac: { base, dex, maxDex }`, `strMin`, `stealthDisadvantage`
   - tag `unarmed` přenese bonusy předmětu na útok beze zbraně
-- **creature (stat block):** `size`, `creatureType`, `cr`, `ac`, `hp`, `hitDice`, `speed: { walk, fly, swim, climb, burrow }`, `scores`, `saves`, `skills`, `senses`, `passivePerception`, `languages`, `resistances`, `immunities`, `conditionImmunities`, `traits: [{ name, description }]`, `actions: [{ name, actionType, description, attack: { bonus, range }, damage: [{ dice, bonus, type }], save: { ability, dc } }]`.
+- **creature (stat block):** `size`, `creatureType`, `cr`, `ac`, `hp`, `hitDice`, `speed: { walk, fly, swim, climb, burrow }`, `scores`, `saves`, `skills`, `senses`, `passivePerception`, `languages`, `resistances`, `immunities`, `conditionImmunities`, `traits: [{ name, description }]`, `actions: [{ name, actionType, description, attack: { bonus, range }, damage: [{ dice, bonus, type }], save: { ability, dc }, uses: { max, recharge: "shortRest"|"longRest"|"roll" } }]` (omezená použití; „(3/Day)“, „(Recharge 5–6)“ nebo „(1/Long Rest)“ v názvu akce se rozpoznají i bez `uses`).
   - Čísla můžou být vzorce: `slot` (úroveň kouzla), `spellAttack`, `spellDc`, `pb`, `level` (úroveň classy zdroje), `wis` a další modifikátory majitele. Např. `"ac": "10 + slot"`, `"hp": "5 + 10 * slot"`.
 - **spell:** `level`, `school`, `castingTime`, `actionType`, `range`, `components`, `material`, `duration`, `concentration`, `ritual`, `classes`, `attack`, `save`, `damage: { type, by: "slot"|"character", dice: { "1": "3d6" } }`, `heal`, `higherLevels`, `brief`.
 
