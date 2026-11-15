@@ -8,13 +8,16 @@ import { useContent } from '../../state/content'
 import { savePack, useHomebrew } from '../../state/homebrew'
 import { Card } from '../Card'
 import { useHomebrewBase } from './base'
-import { Area, Check, Field, Multi, Num, Rows, Scaled, Select, Text } from './fields'
+import { Area, Check, Field, Multi, Num, Rows, Select, Text } from './fields'
+import { Help, HelpButton } from './help/Help'
+import { HelpContent } from './help/context'
+import type { HelpId } from './help/text.en'
+import { ACTION_TYPES, grid } from './ui'
+import { Mechanics } from './Mechanics'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = Record<string, any>
 
-const grid = 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4'
-const ACTION_TYPES = ['action', 'bonusAction', 'reaction', 'other'] as const
 const SCHOOLS = ['abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation']
 const DAMAGE = ['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder']
 const PROPERTIES = ['ammunition', 'finesse', 'heavy', 'light', 'loading', 'reach', 'thrown', 'two-handed', 'versatile']
@@ -22,16 +25,6 @@ const MASTERY = ['cleave', 'graze', 'nick', 'push', 'sap', 'slow', 'topple', 've
 const ITEM_KINDS = ['weapon', 'armor', 'wondrous', 'ring', 'rod', 'staff', 'wand', 'potion', 'scroll', 'gear', 'ammunition', 'tool']
 const RARITY = ['common', 'uncommon', 'rare', 'very rare', 'legendary', 'artifact']
 const CLASSES_FOR_SPELLS = ['artificer', 'bard', 'cleric', 'druid', 'paladin', 'ranger', 'sorcerer', 'warlock', 'wizard']
-/** Effect targets offered in the list (any target from docs/content-format.md can be typed). */
-const TARGETS = [
-  'ac', 'speed', 'initiative', 'hpMax', 'hpPerLevel', 'attack', 'damage', 'spellDc', 'spellAttack', 'save:all', 'check:all', 'critRange', 'attacksPerAction', 'reach',
-  ...abilities.map((a) => `score:${a}`), ...abilities.map((a) => `save:${a}`), ...abilities.map((a) => `proficiency:save:${a}`),
-  ...Object.keys(skills).map((s) => `proficiency:skill:${s}`),
-  ...DAMAGE.map((d) => `resistance:${d}`), ...DAMAGE.map((d) => `immunity:${d}`),
-  'sense:darkvision', 'sense:blindsight', 'sense:tremorsense', 'sense:truesight', 'speed:fly', 'speed:swim', 'speed:climb', 'speed:burrow',
-  'unarmedDamage', 'note', 'advantage:save:condition',
-]
-const WHEN = ['wearingArmor', 'noArmor', 'wieldingShield', 'meleeWeapon', 'rangedWeapon', 'weaponAttack', 'heavyWeapon', 'thrownWeapon', 'emptyHands', 'bloodied', 'notHeavyArmor', 'noMediumOrHeavyArmor', 'magicWeapon']
 const opts = (xs: readonly string[]) => xs.map((x) => ({ value: x, label: x }))
 
 /** Edit one entity of a homebrew pack: form for the common parts, JSON for everything. */
@@ -80,7 +73,12 @@ function Editor({ uid, pack, entity }: { uid: string; pack: Pack; entity: Entity
 
   const ownFeatures = pack.entities.filter((e) => e.type === 'feature' || e.type === 'trait').map((e) => ({ value: e.id, label: e.name }))
 
+  const packCreatures = pack.entities.filter((e) => e.type === 'creature').map((e) => ({ value: e.id, label: e.name }))
+  const typeHelp = `type.${draft.type === 'feature' && draft.optionOf !== undefined ? 'option' : draft.type === 'trait' ? 'feature' : draft.type}` as HelpId
+  const typeLabel = t(`homebrew.types.${draft.type}`, { defaultValue: draft.type })
+
   return (
+    <HelpContent.Provider value={content}>
     <div className="mx-auto max-w-5xl space-y-3 px-4 py-6">
       <Link to={`${base}/${pack.id}`} className="text-sm text-accent underline">
         ‹ {pack.name}
@@ -88,7 +86,12 @@ function Editor({ uid, pack, entity }: { uid: string; pack: Pack; entity: Entity
       <Card>
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="font-heading text-xl font-semibold">{draft.name || '—'}</h1>
-          <span className="rounded-full border border-border px-2 text-xs text-muted">{t(`homebrew.types.${draft.type}`, { defaultValue: draft.type })}</span>
+          <span className="inline-flex items-center rounded-full border border-border px-2 text-xs text-muted">
+            <Help id={typeHelp} title={typeLabel}>
+              {typeLabel}
+            </Help>
+            <HelpButton id={typeHelp} title={typeLabel} />
+          </span>
           <span className="ml-auto flex gap-1">
             {(['form', 'json'] as const).map((x) => (
               <button
@@ -132,16 +135,16 @@ function Editor({ uid, pack, entity }: { uid: string; pack: Pack; entity: Entity
               <Field label={t('homebrew.f.name')}>
                 <Text value={draft.name} onChange={(v) => set({ name: v })} />
               </Field>
-              <Field label={t('homebrew.f.description')} hint={t('homebrew.f.descriptionHint')}>
+              <Field label={t('homebrew.f.description')} hint={t('homebrew.f.descriptionHint')} help="common.description">
                 <Area value={draft.description} onChange={(v) => set({ description: v })} />
               </Field>
-              <Field label={t('homebrew.f.url')}>
+              <Field label={t('homebrew.f.url')} help="common.url">
                 <Text value={draft.source?.url} onChange={(v) => set({ source: { ...draft.source, url: v || undefined } })} placeholder="https://…" />
               </Field>
             </div>
           </Card>
           {content && <TypeFields draft={draft} set={set} content={content} ownFeatures={ownFeatures} addLinked={addLinked} />}
-          <Mechanics draft={draft} set={set} content={content} />
+          <Mechanics draft={draft} set={set} content={content} packCreatures={packCreatures} />
         </>
       )}
 
@@ -161,6 +164,7 @@ function Editor({ uid, pack, entity }: { uid: string; pack: Pack; entity: Entity
         )}
       </div>
     </div>
+    </HelpContent.Provider>
   )
 }
 
@@ -183,6 +187,16 @@ function TypeFields({
   const all = (type: 'class' | 'species' | 'feat' | 'feature' | 'trait') => content.all(type).map((e) => ({ value: e.id, label: e.name })).sort((a, b) => a.label.localeCompare(b.label))
   const features = [...ownFeatures, ...all('feature').filter((f) => !ownFeatures.some((o) => o.value === f.value))]
   const traits = [...ownFeatures, ...all('trait')]
+  // Options can join a choice that lists its entities by id (invocations, maneuvers, fighting styles…).
+  const optionOwners = useMemo(
+    () =>
+      (['class', 'subclass', 'feature', 'feat'] as const)
+        .flatMap((type) => content.all(type))
+        .flatMap((e) => e.choices.filter((c) => c.kind === 'entity' && c.from?.ids).map((c) => ({ value: e.id, label: `${c.label} (${e.name})` })))
+        .filter((o, i, all) => all.findIndex((x) => x.value === o.value) === i)
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [content],
+  )
   const skillOpts = Object.keys(skills).map((s) => ({ value: s, label: content.get(`skill-${s}`)?.name ?? s }))
   const abilityOpts = abilities.map((a) => ({ value: a, label: a.toUpperCase() }))
   const newLinked = (type: 'feature' | 'trait', link: (id: string) => Raw) => (
@@ -200,9 +214,27 @@ function TypeFields({
       return (
         <Card>
           <div className={grid}>
-            <Field label={t('homebrew.f.actionType')} hint={t('homebrew.f.actionTypeHint')}>
+            <Field label={t('homebrew.f.actionType')} hint={t('homebrew.f.actionTypeHint')} help="actionType.feature">
               <Select value={draft.actionType} onChange={(v) => set({ actionType: v })} options={ACTION_TYPES.map((a) => ({ value: a, label: t(`homebrew.action.${a}`) }))} empty="—" />
             </Field>
+            {draft.type === 'feature' && (
+              <div className="sm:col-span-2">
+                <Field label={t('homebrew.f.optionOf')} help="option.optionOf">
+                  <Select value={draft.optionOf} onChange={(v) => set({ optionOf: v })} options={optionOwners} empty={t('homebrew.f.optionOfNone')} />
+                </Field>
+              </div>
+            )}
+            {draft.optionOf && (
+              <>
+                <Field label={t('homebrew.f.minLevel')} help="feat.prerequisite">
+                  <Num value={draft.prerequisite?.level} onChange={(v) => set({ prerequisite: { ...draft.prerequisite, level: v } })} />
+                </Field>
+                <Field label={t('homebrew.f.prereqText')} help="feat.prerequisite">
+                  <Text value={draft.prerequisite?.text} onChange={(v) => set({ prerequisite: { ...draft.prerequisite, text: v || undefined } })} />
+                </Field>
+                <Check value={draft.repeatable} onChange={(v) => set({ repeatable: v || undefined })} label={t('homebrew.f.repeatable')} help="feat.repeatable" />
+              </>
+            )}
           </div>
         </Card>
       )
@@ -235,7 +267,7 @@ function TypeFields({
         <Card>
           <div className={grid}>
             {content.edition === '2024' && (
-              <Field label={t('homebrew.f.category')}>
+              <Field label={t('homebrew.f.category')} help="feat.category">
                 <Select
                   value={draft.category}
                   onChange={(v) => set({ category: v, tags: [...(draft.tags ?? []).filter((x: string) => !['origin', 'general', 'fighting-style', 'epic-boon'].includes(x)), ...(v ? [v] : [])] })}
@@ -243,14 +275,27 @@ function TypeFields({
                 />
               </Field>
             )}
-            <Field label={t('homebrew.f.minLevel')}>
+            <Field label={t('homebrew.f.minLevel')} help="feat.prerequisite">
               <Num value={draft.prerequisite?.level} onChange={(v) => set({ prerequisite: { ...draft.prerequisite, level: v } })} />
             </Field>
-            <Field label={t('homebrew.f.prereqText')}>
+            <Field label={t('homebrew.f.prereqText')} help="feat.prerequisite">
               <Text value={draft.prerequisite?.text} onChange={(v) => set({ prerequisite: { ...draft.prerequisite, text: v || undefined } })} />
             </Field>
-            <Check value={draft.repeatable} onChange={(v) => set({ repeatable: v })} label={t('homebrew.f.repeatable')} />
+            <Check value={draft.repeatable} onChange={(v) => set({ repeatable: v })} label={t('homebrew.f.repeatable')} help="feat.repeatable" />
           </div>
+          <Rows
+            title={t('homebrew.f.prereqAbilities')}
+            help="feat.prerequisite"
+            rows={draft.prerequisite?.abilities as Raw[]}
+            onChange={(v) => set({ prerequisite: { ...draft.prerequisite, abilities: v.length ? v : undefined } })}
+            make={() => ({ ability: 'str', min: 13 })}
+            render={(row, setRow) => (
+              <div className={grid}>
+                <Select value={row.ability} onChange={(v) => setRow({ ...row, ability: v ?? 'str' })} options={abilityOpts} />
+                <Num value={row.min} onChange={(v) => setRow({ ...row, min: v ?? 13 })} />
+              </div>
+            )}
+          />
         </Card>
       )
     case 'species':
@@ -476,210 +521,6 @@ function ItemFields({ draft, set }: { draft: Raw; set: (p: Raw) => void }) {
             <Text value={draft.charges.recharge?.[0]?.dice} onChange={(v) => set({ charges: { ...draft.charges, recharge: [{ on: 'dawn', amount: 'all', ...(v ? { dice: v } : {}) }] } })} />
           </Field>
         )}
-      </div>
-    </Card>
-  )
-}
-
-/** Resources, activities, effects, granted spells and attacks: shared by every type. */
-function Mechanics({ draft, set, content }: { draft: Raw; set: (p: Raw) => void; content?: ContentIndex }) {
-  const { t } = useTranslation()
-  const spells = useMemo(() => (content?.all('spell') ?? []).map((s) => ({ value: s.id, label: s.name })).sort((a, b) => a.label.localeCompare(b.label)), [content])
-  const resourceIds = (draft.resources as Raw[] | undefined)?.map((r) => r.id) ?? []
-  const pools = [...resourceIds, ...(draft.charges ? ['charges'] : []), 'channel-divinity', 'bardic-inspiration', 'rage', 'wild-shape', 'focus', 'ki', 'sorcery-points', 'superiority-dice', '@quantity', '@hitDie']
-  const recharge = (r: Raw) => (r.recharge?.length === 2 ? 'short' : r.recharge?.[0]?.on === 'longRest' ? 'long' : r.recharge?.[0]?.on === 'dawn' ? 'dawn' : 'none')
-  const setRecharge = (v: string | undefined) =>
-    v === 'short' ? [{ on: 'shortRest', amount: 'all' }, { on: 'longRest', amount: 'all' }] : v === 'long' ? [{ on: 'longRest', amount: 'all' }] : v === 'dawn' ? [{ on: 'dawn', amount: 'all' }] : []
-  return (
-    <Card>
-      <h2 className="mb-2 font-heading text-lg font-semibold">{t('homebrew.mechanics')}</h2>
-      <datalist id="hb-targets">
-        {TARGETS.map((x) => (
-          <option key={x} value={x} />
-        ))}
-      </datalist>
-      <datalist id="hb-pools">
-        {pools.map((x) => (
-          <option key={x} value={x} />
-        ))}
-      </datalist>
-      <datalist id="hb-spells">
-        {spells.map((s) => (
-          <option key={s.value} value={s.value}>
-            {s.label}
-          </option>
-        ))}
-      </datalist>
-      <div className="space-y-3">
-        <Rows
-          title={t('homebrew.m.resources')}
-          hint={t('homebrew.m.resourcesHint')}
-          rows={draft.resources as Raw[]}
-          onChange={(v) => set({ resources: v })}
-          make={() => ({ id: `res-${resourceIds.length + 1}`, name: '', max: 1, recharge: [{ on: 'longRest', amount: 'all' }] })}
-          render={(r, setR) => (
-            <div className={grid}>
-              <Field label={t('homebrew.f.name')}>
-                <Text value={r.name} onChange={(v) => setR({ ...r, name: v, id: r.id.startsWith('res-') || r.id === slug(r.name) ? slug(v) || r.id : r.id })} />
-              </Field>
-              <Field label={t('homebrew.m.max')} hint="3, pb, cha, level">
-                <Scaled value={r.max} onChange={(v) => setR({ ...r, max: v ?? 1 })} />
-              </Field>
-              <Field label={t('homebrew.m.die')} hint="6 = d6">
-                <Scaled value={r.die} onChange={(v) => setR({ ...r, die: v })} />
-              </Field>
-              <Field label={t('homebrew.m.recharge')}>
-                <Select value={recharge(r)} onChange={(v) => setR({ ...r, recharge: setRecharge(v) })} options={['short', 'long', 'dawn', 'none'].map((x) => ({ value: x, label: t(`homebrew.recharge.${x}`) }))} />
-              </Field>
-              <Field label="id" hint={t('homebrew.m.idHint')}>
-                <Text value={r.id} onChange={(v) => setR({ ...r, id: slug(v) })} />
-              </Field>
-            </div>
-          )}
-        />
-        <Rows
-          title={t('homebrew.m.activities')}
-          hint={t('homebrew.m.activitiesHint')}
-          rows={draft.activities as Raw[]}
-          onChange={(v) => set({ activities: v })}
-          make={() => ({ id: `use-${(draft.activities?.length ?? 0) + 1}`, name: draft.name, actionType: 'action', cost: [] })}
-          render={(a, setA) => (
-            <div className="space-y-2">
-              <div className={grid}>
-                <Field label={t('homebrew.f.name')}>
-                  <Text value={a.name} onChange={(v) => setA({ ...a, name: v })} />
-                </Field>
-                <Field label={t('homebrew.f.actionType')}>
-                  <Select value={a.actionType} onChange={(v) => setA({ ...a, actionType: v ?? 'action' })} options={ACTION_TYPES.map((x) => ({ value: x, label: t(`homebrew.action.${x}`) }))} />
-                </Field>
-                <Field label={t('homebrew.m.cost')} hint={t('homebrew.m.costHint')}>
-                  <Text value={a.cost?.[0]?.resource} list="hb-pools" onChange={(v) => setA({ ...a, cost: v ? [{ resource: v, amount: a.cost?.[0]?.amount ?? 1 }] : [] })} />
-                </Field>
-                <Field label={t('homebrew.m.costAmount')}>
-                  <Num value={a.cost?.[0]?.amount} onChange={(v) => setA({ ...a, cost: a.cost?.[0] ? [{ ...a.cost[0], amount: v ?? 1 }] : [] })} />
-                </Field>
-                <Field label={t('homebrew.m.rollKind')}>
-                  <Select value={a.roll?.kind} onChange={(v) => setA({ ...a, roll: v ? { ...a.roll, kind: v } : undefined })} options={['damage', 'heal', 'temp', 'other'].map((x) => ({ value: x, label: t(`homebrew.roll.${x}`) }))} empty="—" />
-                </Field>
-                {a.roll && (
-                  <>
-                    <Field label={t('homebrew.m.dice')} hint="2d6">
-                      <Text value={typeof a.roll.dice === 'string' ? a.roll.dice : a.roll.dice ? JSON.stringify(a.roll.dice) : ''} onChange={(v) => setA({ ...a, roll: { ...a.roll, dice: v || undefined } })} />
-                    </Field>
-                    <Field label={t('homebrew.m.bonus')} hint="pb, wis, level">
-                      <Scaled value={a.roll.bonus} onChange={(v) => setA({ ...a, roll: { ...a.roll, bonus: v } })} />
-                    </Field>
-                  </>
-                )}
-                <Field label={t('homebrew.m.saveDc')} hint="8 + pb + wis">
-                  <Scaled value={a.saveDc} onChange={(v) => setA({ ...a, saveDc: v })} />
-                </Field>
-                <Field label={t('homebrew.m.saveAbility')}>
-                  <Select value={a.saveAbility} onChange={(v) => setA({ ...a, saveAbility: v })} options={abilities.map((x) => ({ value: x, label: x.toUpperCase() }))} empty="—" />
-                </Field>
-                <Check value={a.spendInput} onChange={(v) => setA({ ...a, spendInput: v })} label={t('homebrew.m.spendInput')} />
-                <Check value={a.attack} onChange={(v) => setA({ ...a, attack: v })} label={t('homebrew.m.onHit')} />
-              </div>
-              <Field label={t('homebrew.m.summary')}>
-                <Text value={a.summary} onChange={(v) => setA({ ...a, summary: v || undefined })} />
-              </Field>
-            </div>
-          )}
-        />
-        <Rows
-          title={t('homebrew.m.effects')}
-          hint={t('homebrew.m.effectsHint')}
-          rows={draft.effects as Raw[]}
-          onChange={(v) => set({ effects: v })}
-          make={() => ({ target: 'ac', op: 'add', value: 1 })}
-          render={(e, setE) => (
-            <div className={grid}>
-              <Field label={t('homebrew.m.target')}>
-                <Text value={e.target} list="hb-targets" onChange={(v) => setE({ ...e, target: v })} />
-              </Field>
-              <Field label={t('homebrew.m.op')}>
-                <Select value={e.op} onChange={(v) => setE({ ...e, op: v ?? 'add' })} options={opts(['add', 'set', 'max', 'min'])} />
-              </Field>
-              <Field label={t('homebrew.m.value')} hint="1, pb, cha, walk">
-                <Scaled value={e.value} onChange={(v) => setE({ ...e, value: v ?? 0 })} />
-              </Field>
-              <Field label={t('homebrew.m.when')}>
-                <Select
-                  value={typeof e.when === 'string' ? e.when : e.when?.toggle ? '@toggle' : undefined}
-                  onChange={(v) => setE({ ...e, when: v === '@toggle' ? { toggle: e.when?.toggle ?? draft.name } : v })}
-                  options={[...opts(WHEN), { value: '@toggle', label: t('homebrew.m.whenToggle') }]}
-                  empty={t('homebrew.m.always')}
-                />
-              </Field>
-              {e.when?.toggle !== undefined && (
-                <Field label={t('homebrew.m.toggleName')}>
-                  <Text value={e.when.toggle} onChange={(v) => setE({ ...e, when: { toggle: v } })} />
-                </Field>
-              )}
-              <div className="sm:col-span-2 lg:col-span-3">
-                <Field label={t('homebrew.m.note')}>
-                  <Text value={e.note} onChange={(v) => setE({ ...e, note: v || undefined })} />
-                </Field>
-              </div>
-            </div>
-          )}
-        />
-        <Rows
-          title={t('homebrew.m.spells')}
-          hint={t('homebrew.m.spellsHint')}
-          rows={draft.spells as Raw[]}
-          onChange={(v) => set({ spells: v })}
-          make={() => ({ id: '' })}
-          render={(g, setG) => (
-            <div className={grid}>
-              <Field label={t('homebrew.m.spell')}>
-                <Text value={g.id} list="hb-spells" onChange={(v) => setG({ ...g, id: v })} />
-              </Field>
-              <Field label={t('homebrew.m.freeCast')}>
-                <Text value={g.freeCast} list="hb-pools" onChange={(v) => setG({ ...g, freeCast: v || undefined })} />
-              </Field>
-              <Field label={t('homebrew.m.minLevel')}>
-                <Num value={g.minLevel} onChange={(v) => setG({ ...g, minLevel: v })} />
-              </Field>
-              <Field label={t('homebrew.m.ability')}>
-                <Select value={g.ability} onChange={(v) => setG({ ...g, ability: v })} options={abilities.map((x) => ({ value: x, label: x.toUpperCase() }))} empty="—" />
-              </Field>
-              <Check value={g.atWill} onChange={(v) => setG({ ...g, atWill: v || undefined })} label={t('homebrew.m.atWill')} />
-            </div>
-          )}
-        />
-        <Rows
-          title={t('homebrew.m.attacks')}
-          hint={t('homebrew.m.attacksHint')}
-          rows={draft.attacks as Raw[]}
-          onChange={(v) => set({ attacks: v })}
-          make={() => ({ id: `attack-${(draft.attacks?.length ?? 0) + 1}`, name: '', range: 'melee', damage: { dice: '1d6', type: 'slashing' }, properties: [] })}
-          render={(a, setA) => (
-            <div className={grid}>
-              <Field label={t('homebrew.f.name')}>
-                <Text value={a.name} onChange={(v) => setA({ ...a, name: v })} />
-              </Field>
-              <Field label={t('homebrew.m.dice')}>
-                <Text value={a.damage?.dice} onChange={(v) => setA({ ...a, damage: { ...a.damage, dice: v } })} />
-              </Field>
-              <Field label={t('homebrew.f.damageType')}>
-                <Select value={a.damage?.type} onChange={(v) => setA({ ...a, damage: { ...a.damage, type: v } })} options={opts(DAMAGE)} />
-              </Field>
-              <Field label={t('homebrew.m.ability')}>
-                <Select value={a.ability} onChange={(v) => setA({ ...a, ability: v })} options={abilities.map((x) => ({ value: x, label: x.toUpperCase() }))} empty={t('homebrew.m.strDex')} />
-              </Field>
-              <Field label={t('homebrew.m.while')}>
-                <Text value={a.while} onChange={(v) => setA({ ...a, while: v || undefined })} />
-              </Field>
-              <div className="sm:col-span-3">
-                <Field label={t('homebrew.f.properties')}>
-                  <Multi value={a.properties} onChange={(v) => setA({ ...a, properties: v })} options={opts(PROPERTIES)} />
-                </Field>
-              </div>
-            </div>
-          )}
-        />
-        <p className="text-xs text-muted">{t('homebrew.m.moreInJson')}</p>
       </div>
     </Card>
   )

@@ -10,6 +10,8 @@ const speedText = (speeds: Record<string, number>) =>
     .map(([k, v]) => (k === 'walk' ? `${v} ft` : `${k} ${v} ft`))
     .join(', ')
 
+const partsText = (parts: { label: string; value: number }[]) => (parts.length > 1 ? parts.map((p, i) => `${p.label}: ${i === 0 ? p.value : signed(p.value)}`).join('\n') : undefined)
+
 /** A creature's stat block with the numbers it has in play (scaled by slot level, beast form). */
 export function StatBlock({ view, hp }: { view: CreatureView; hp?: string }) {
   const { t } = useTranslation()
@@ -32,8 +34,8 @@ export function StatBlock({ view, hp }: { view: CreatureView; hp?: string }) {
         {c.cr > 0 || c.tags.includes('beast') ? ` · ${t('statBlock.cr')} ${crLabel(c.cr)}` : ''}
       </p>
       <div className="flex flex-wrap gap-x-4">
-        {line(t('statBlock.ac'), String(view.ac))}
-        {line(t('statBlock.hp'), hp ?? `${view.hpMax}${c.hitDice && !/slot/.test(c.hitDice) ? ` (${c.hitDice})` : ''}`)}
+        <span title={partsText(view.parts.ac)}>{line(t('statBlock.ac'), String(view.ac))}</span>
+        <span title={partsText(view.parts.hp)}>{line(t('statBlock.hp'), hp ?? `${view.hpMax}${c.hitDice && !/slot/.test(c.hitDice) ? ` (${c.hitDice})` : ''}`)}</span>
         {line(t('statBlock.speed'), speedText(view.speeds))}
       </div>
       {c.scores && (
@@ -52,13 +54,28 @@ export function StatBlock({ view, hp }: { view: CreatureView; hp?: string }) {
         {line(t('statBlock.skills'), Object.entries(view.skills).map(([s, v]) => `${s.replace(/-/g, ' ')} ${signed(v)}`).join(', '))}
         {line(t('statBlock.resistances'), view.resistances.join(', '))}
         {line(t('statBlock.immunities'), view.immunities.join(', '))}
-        {line(t('statBlock.conditionImmunities'), c.conditionImmunities.join(', '))}
+        {line(t('statBlock.conditionImmunities'), view.conditionImmunities.join(', '))}
         {line(
           t('statBlock.senses'),
           [...Object.entries(view.senses).map(([k, v]) => `${k} ${v} ft`), view.passivePerception ? `${t('statBlock.passive')} ${view.passivePerception}` : ''].filter(Boolean).join(', '),
         )}
         {line(t('statBlock.languages'), c.languages && c.languages !== 'None' ? c.languages : '')}
       </div>
+      {view.notes.length > 0 && (
+        <ul className="space-y-0.5 text-xs">
+          {view.notes.map((n, i) => (
+            <li key={i}>
+              <span aria-hidden>❗ </span>
+              {n.note} <span className="text-muted">({n.source})</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {(view.parts.attack.length > 0 || view.parts.damage.length > 0) && (
+        <p className="text-xs text-muted">
+          {[...view.parts.attack.map((p) => `${t('statBlock.toHit')} ${signed(p.value)} (${p.label})`), ...view.parts.damage.map((p) => `${t('statBlock.damage')} ${signed(p.value)} (${p.label})`)].join(' · ')}
+        </p>
+      )}
       {c.traits.length > 0 && (
         <div className="space-y-1">
           {c.traits.map((tr) => (

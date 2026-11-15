@@ -15,6 +15,7 @@ import { Editable } from './Editable'
 import { useEditMode } from './editMode'
 import { Term } from '../rules/Term'
 import { SpellSlots } from '../spells/SpellSlots'
+import { describeEffect } from '../homebrew/describe'
 
 const rechargeLabel: Record<RechargeOn, string> = {
   shortRest: 'Short',
@@ -326,6 +327,27 @@ function FeatureName({ entity, content, editable = true }: { entity: Entity; con
 /** Effects that are rules reminders rather than numbers (advantages, damage reduction). */
 
 /** Rules to keep in mind, shown right under the vitals so they are always in sight. Edit mode adds own ones. */
+/** Auras and other effects on allies, with the values computed from this character's numbers. */
+export function AllyEffects() {
+  const { t } = useTranslation()
+  const { sheet, content } = useSheet()
+  if (!sheet.allyEffects.length) return null
+  return (
+    <section aria-label={t('sheet.allies')} className="rounded-card border border-sky-500/60 bg-sky-500/10 px-3 py-1.5 shadow-sm">
+      <ul className="flex flex-wrap items-center gap-x-5 gap-y-0.5 text-sm">
+        <li className="text-xs font-semibold uppercase text-muted">🤝 {t('sheet.allies')}</li>
+        {sheet.allyEffects.map((a, i) => (
+          <li key={i}>
+            <RuleRef entity={a.entity} content={content}>
+              {describeEffect({ ...a.effect, value: a.value ?? a.effect.value }, { t, content })}
+            </RuleRef>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 export function Reminders() {
   const { t } = useTranslation()
   const { character, sheet, content } = useSheet()

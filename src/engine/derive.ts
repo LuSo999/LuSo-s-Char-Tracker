@@ -1,7 +1,7 @@
 // Computes everything shown on the sheet from stored character state and
 // content. Order for every value: base from the rules → modifiers from active
 // features and equipped items → manual override from edit mode.
-import { viewCreature, type CompanionSource, type CreatureView, type ShapeRules } from './creatures'
+import { viewCreature, type CompanionSource, type CreatureMods, type CreatureView, type ShapeRules } from './creatures'
 import type { ContentIndex } from '../content'
 import {
   abilities,
@@ -139,6 +139,8 @@ export type Sheet = {
   attunement: Value
   /** Effect notes that apply right now (shown in the reminders strip). */
   reminders: { note: string; entity: Entity }[]
+  /** Effects on allies ("ally:<target>": auras), with the value computed from the owner's numbers. */
+  allyEffects: { effect: Effect; entity: Entity; value?: number }[]
   active: ActiveEntity[]
   armorProficiencies: string[]
   weaponProficiencies: string[]
@@ -277,6 +279,12 @@ export function collectActive(char: Character, content: ContentIndex): ActiveEnt
     if (usable) push(item, `item:${entry.uid}`, characterLevel, undefined, entry)
   }
 
+  // Conditions the character has: their effects and reminders apply while they last (homebrew conditions).
+  for (const id of char.conditions) {
+    const condition = content.getTyped(id, 'condition')
+    if (condition && (condition.effects.length || condition.activities.length || condition.resources.length)) push(condition, `condition:${id}`, characterLevel)
+  }
+
   // Features replaced by another active entity (Favored Foe for Favored Enemy) drop out.
   const replaced = new Set(out.flatMap((ae) => ae.entity.replaces ?? []))
   if (replaced.size) return out.filter((ae) => !replaced.has(ae.entity.id))
@@ -412,10 +420,12 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   // (Boon of Energy Resistance: "resistance:@types" → resistance:fire, resistance:cold).
   const allEffects = active.flatMap((ae) =>
     ae.entity.effects.flatMap((effect) => {
-      const m = /@([\w-]+)/.exec(effect.target)
-      // "shape@<group>:…" names a shapechange group, not a choice.
-      if (!m || effect.target.startsWith('spell') || effect.target.startsWith('shape@')) return [{ effect, ae }]
-      return selections(char, ae, m[1]).map((v) => ({ effect: { ...effect, target: effect.target.replace(m[0], v) }, ae }))
+      // "shape@<group>:…" names a shapechange group and "companion@<filter>:…" which creatures, not a choice.
+      const group = /^(shape|companion)@[^:]+:/.exec(effect.target)?.[0] ?? ''
+      const rest = effect.target.slice(group.length)
+      const m = /@([\w-]+)/.exec(rest)
+      if (!m || effect.target.startsWith('spell')) return [{ effect, ae }]
+      return selections(char, ae, m[1]).map((v) => ({ effect: { ...effect, target: group + rest.replace(m[0], v) }, ae }))
     }),
   )
 
@@ -968,9 +978,23 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   // Reminders: effect notes whose conditions hold (a Rage note only while Raging).
   // Save advantages are listed with the saving throws, not in the reminders strip.
   const isSaveNote = (target: string) => /^(advantage|disadvantage):save:/.test(target)
+  // Notes on the character's creatures and for allies are shown with them, not here.
+  const elsewhere = (target: string) => /^(companion|ally)[@:]/.test(target)
   const reminders = allEffects
-    .filter(({ effect, ae }) => effect.note && !isSaveNote(effect.target) && !ae.hidden && effectApplies(effect, ae, { ...baseCtx, anyAttack: true, bloodied: char.hp.current <= hpMax.value / 2 }, toggleSet))
+    .filter(({ effect, ae }) => effect.note && !isSaveNote(effect.target) && !elsewhere(effect.target) && !ae.hidden && effectApplies(effect, ae, { ...baseCtx, anyAttack: true, bloodied: char.hp.current <= hpMax.value / 2 }, toggleSet))
     .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
+  // Auras and other effects on allies ("ally:<target>"): computed with the owner's numbers, listed for the table.
+  const allyEffects = allEffects
+    .filter(({ effect, ae }) => effect.target.startsWith('ally:') && !ae.hidden && effectApplies(effect, ae, { ...baseCtx, bloodied: char.hp.current <= hpMax.value / 2 }, toggleSet))
+    .map(({ effect, ae }) => {
+      let value: number | undefined
+      try {
+        value = resolveScaled(effect.value, vars(ae))
+      } catch {
+        value = undefined
+      }
+      return { effect, entity: ae.entity, value }
+    })
   const saveNotes = allEffects
     .filter(({ effect, ae }) => effect.note && isSaveNote(effect.target) && effectApplies(effect, ae, baseCtx, toggleSet))
     .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
@@ -1065,11 +1089,35 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     spellAttack: source?.grant.fixed?.spellAttack ?? source?.spellAttack ?? 0,
     spellDc: source?.grant.fixed?.spellDc ?? source?.spellDc ?? 0,
   })
+  // The owner's effects on their creatures: "companion:<stat>", or "companion@<filter>:<stat>" where the filter
+  // is a kind (familiar, steed, companion, summon), a grant id, the granting entity's id or a creature id.
+  const companionEffects = allEffects.flatMap(({ effect, ae }) => {
+    const m = /^companion(?:@([^:]+))?:(.+)$/.exec(effect.target)
+    return m ? [{ effect, ae, group: m[1], stat: m[2] }] : []
+  })
   const companions = char.companions.flatMap((entry) => {
     const creature = content.getTyped(entry.creatureId, 'creature')
     if (!creature) return []
     const source = companionSources.find((s) => s.entity.id === entry.sourceId && s.grant.id === entry.grantId)
-    return [{ ...viewCreature(creature, companionVars(source, entry.slot), source?.grant.adjust, entry.choice), entry, source }]
+    const cvars = companionVars(source, entry.slot)
+    const mods: CreatureMods = { stats: {}, notes: [] }
+    for (const { effect, ae, group, stat } of companionEffects) {
+      if (group && ![source?.grant.kind, source?.grant.id, source?.entity.id, entry.creatureId].includes(group)) continue
+      if (!effectApplies(effect, ae, baseCtx, toggleSet)) continue
+      if (stat === 'note') {
+        if (effect.note) mods.notes.push({ note: effect.note, source: ae.entity.name })
+        continue
+      }
+      let value = 0
+      try {
+        // The effect's own entity decides "level"; the creature's slot and spell numbers come along ("walk" = its Speed).
+        value = resolveScaled(effect.value, { ...vars(ae), slot: cvars.slot, spellAttack: cvars.spellAttack, spellDc: cvars.spellDc, walk: resolveScaled(creature.speed.walk ?? 0, cvars) })
+      } catch {
+        value = 0
+      }
+      ;(mods.stats[stat] ??= []).push({ op: effect.op, value, label: ae.entity.name })
+    }
+    return [{ ...viewCreature(creature, cvars, source?.grant.adjust, entry.choice, { mods, adjustLabel: source?.entity.name }), entry, source }]
   })
   // Draconic Spirit's Shared Resistances: the companion's pick is the owner's resistance too.
   for (const c of companions) if (c.source?.grant.choose?.shareResistance && c.entry.choice) resistances.add(c.entry.choice)
@@ -1108,6 +1156,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     resources,
     toggles,
     reminders,
+    allyEffects,
     attunementSlots: attunement.value,
     attunement,
     active,

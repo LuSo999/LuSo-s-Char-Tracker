@@ -20,6 +20,12 @@ export function srdBoth(edition: Edition): ContentIndex {
   return new ContentIndex(edition, [pack(edition), pack(edition === '2014' ? '2024' : '2014')])
 }
 
+/** SRD content plus a homebrew pack with these entities (raw JSON, defaults filled in by the schema). */
+export function srdWith(edition: Edition, entities: unknown[]): ContentIndex {
+  const extra = Pack.parse({ id: 'hb-test', name: 'Test homebrew', edition, version: '1', book: 'homebrew:hb-test', entities })
+  return new ContentIndex(edition, [pack(edition), extra])
+}
+
 export function srd(edition: Edition): ContentIndex {
   if (!packs.has(edition)) {
     const raw = JSON.parse(readFileSync(new URL(`../data/srd/${edition}.json`, import.meta.url), 'utf8'))

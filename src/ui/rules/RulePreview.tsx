@@ -2,35 +2,15 @@ import { useTranslation } from 'react-i18next'
 import { linkSiteLabels, ruleLink } from '../../content/links'
 import type { Entity } from '../../content/schema'
 import { useSettings } from '../../state/settings'
-import { usePreview, type PreviewTarget } from './preview'
+import { isHelp, usePreview, type PreviewTarget } from './preview'
+import { RuleText } from './RuleText'
+import { HelpBody } from '../homebrew/help/HelpBody'
 import { BackClose } from '../useBackClose'
 import { viewCreature } from '../../engine/creatures'
 import { StatBlock } from '../creatures/StatBlock'
 
 const WIDTH = 420
 const MAX_HEIGHT = 420
-
-/** Renders SRD text: paragraphs, **bold** and simple markdown tables. */
-export function RuleText({ text }: { text: string }) {
-  const blocks = text.split(/\n{2,}|\n(?=\*\*)|\n(?=\|)/)
-  return (
-    <div className="space-y-2 text-sm leading-relaxed">
-      {blocks.map((b, i) =>
-        b.trim().startsWith('|') ? (
-          <pre key={i} className="overflow-x-auto text-xs">
-            {b.trim()}
-          </pre>
-        ) : (
-          <p key={i}>
-            {b.split(/(\*\*[^*]+\*\*)/).map((part, j) =>
-              part.startsWith('**') ? <strong key={j}>{part.slice(2, -2)}</strong> : <span key={j}>{part}</span>,
-            )}
-          </p>
-        ),
-      )}
-    </div>
-  )
-}
 
 function typeLabel(e: Entity) {
   if (e.type === 'item') return e.magic ? `magic ${e.kind}` : e.kind
@@ -81,11 +61,11 @@ export function RulePreview() {
   const top = below ? hover.y + 16 : Math.max(8, hover.y - 16 - MAX_HEIGHT)
   return (
     <div
-      className="pointer-events-none fixed z-50 overflow-hidden rounded-card border border-border bg-card p-4 shadow-xl"
+      className="pointer-events-none fixed z-[60] overflow-hidden rounded-card border border-border bg-card p-4 shadow-xl"
       style={{ left, top, width: WIDTH, maxHeight: MAX_HEIGHT }}
       role="tooltip"
     >
-      <PreviewBody target={hover} />
+      {isHelp(hover) ? <HelpBody target={hover} /> : <PreviewBody target={hover} />}
     </div>
   )
 }
@@ -104,16 +84,13 @@ export function PinnedPreview() {
         className="max-h-[85vh] w-full overflow-y-auto rounded-t-card border border-border bg-card p-5 sm:max-w-lg sm:rounded-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <PreviewBody target={pinned} />
+        {isHelp(pinned) ? <HelpBody target={pinned} pinned /> : <PreviewBody target={pinned} />}
         <div className="mt-4 flex gap-2">
-          <a
-            className="rounded bg-accent px-4 py-2 font-medium text-accent-text"
-            href={ruleLink(pinned.entity, pinned.content, site[pinned.entity.edition])}
-            target="_blank"
-            rel="noopener"
-          >
-            {t('rules.open')}
-          </a>
+          {!isHelp(pinned) && (
+            <a className="rounded bg-accent px-4 py-2 font-medium text-accent-text" href={ruleLink(pinned.entity, pinned.content, site[pinned.entity.edition])} target="_blank" rel="noopener">
+              {t('rules.open')}
+            </a>
+          )}
           <button className="rounded border border-border px-4 py-2" onClick={close}>
             {t('close')}
           </button>

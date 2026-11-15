@@ -29,7 +29,7 @@ import { useThemeOverride, useThemeTarget } from '../theme'
 import { EquippedPanel } from './EquippedPanel'
 import { Dialog, RestDialog } from './RestDialog'
 import { BooksPicker } from './BooksPicker'
-import { ConditionsPanel, FeaturesPanel, Reminders, ResourcesPanel } from './SidePanels'
+import { AllyEffects, ConditionsPanel, FeaturesPanel, Reminders, ResourcesPanel } from './SidePanels'
 import { CompanionsPanel, ShapeBanner } from '../creatures/CompanionsPanel'
 import { SheetShortcuts } from './shortcuts'
 import { useTurn } from './turn'
@@ -466,6 +466,7 @@ function SheetLayout() {
       <Vitals />
       <ShapeBanner />
       <Reminders />
+      <AllyEffects />
       <ActionList onOpenSpells={() => setSpells(true)} />
     </>
   )

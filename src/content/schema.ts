@@ -138,6 +138,14 @@ export type EffectWhen = z.infer<typeof EffectWhen>
  *   shape:type:<creature type> (forms of that type count too, within the CR limit),
  *   shape@<group>:… (the same for another shapechange, used by an activity with that shapeGroup: Boon of Fluid Forms),
  *   resistance:<damage type>, immunity:<damage type>, conditionImmunity:<condition>,
+ *   pb, check:all, offhandAbilityMod, carrySize, attunementSlots, spellDc, spellAttack,
+ *   spellDamage:<spell|@choice>, spellNote:<spell|@choice>,
+ *   companion:<stat> / companion@<kind|grant id|entity id|creature id>:<stat> (the character's own familiars,
+ *     steeds, companions and summons; stats: ac, attack, damage, hp, hpPerDie, tempHp, speed, speed:<mode>,
+ *     save:<ability|all>, skill:<skill>, sense:<sense>, resistance:<type>, immunity:<type>,
+ *     conditionImmunity:<condition>, note),
+ *   ally:<target> (an aura or other effect on allies: computed with the owner's numbers and listed
+ *     for the table, e.g. "ally:save:all" value "max(1, cha)", range 10),
  *   note (a reminder line in the notes; text in `note`).
  */
 export const Effect = z.object({
@@ -149,6 +157,8 @@ export const Effect = z.object({
   when: EffectWhen.optional(),
   /** Human-readable note shown where the effect matters. */
   note: z.string().optional(),
+  /** For "ally:" effects: how far the aura reaches, in feet. */
+  range: z.number().optional(),
 })
 export type Effect = z.infer<typeof Effect>
 

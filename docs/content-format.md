@@ -93,6 +93,8 @@ Cíle (`target`):
 - **Smysly a odolnosti:** `sense:darkvision` (op `max`, nebo `add` pro rozšíření), `resistance:<typ>`, `immunity:<typ>`, `conditionImmunity:<stav>`.
 - **Kouzla:** `spellDc`, `spellAttack`, `spellDc:<classa>`, `spellDamage:<kouzlo>`, `spellNote:<kouzlo>`.
 - **Připomínky:** `note` (text v `note`), `advantage:save:condition` (poznámka u záchran).
+- **Vlastní tvorové:** `companion:<hodnota>` mění familiary, oře, společníky a summony postavy; `companion@<filtr>:<hodnota>` jen některé (filtr = druh `familiar|steed|companion|summon`, id grantu, id entity, která je dává, nebo id tvora). Hodnoty: `ac`, `attack`, `damage`, `hp`, `hpPerDie`, `tempHp`, `speed`, `speed:<druh>`, `save:<vlastnost|all>`, `skill:<skill>`, `sense:<smysl>`, `resistance:<typ>`, `immunity:<typ>`, `conditionImmunity:<stav>`, `note`. Vzorce vidí čísla majitele (`pb`, `level`, `wis`…) i `slot`, `spellAttack`, `spellDc` tvora. Ukáže se ve stat bloku s rozpadem.
+- **Spojenci (aury):** `ally:<cíl>` (např. `ally:save:all`, hodnota `"max(1, cha)"`, `range: 10`). Hodnota se spočítá z čísel postavy a vypíše v pruhu „Pro spojence“; sheety ostatních hráčů se nemění.
 - **Wild Shape:** `shape:maxCr` (nejvyšší CR formy, op `max`), `shape:fly` / `shape:swim` (1 = formy s létáním / plaváním povolené), `shape:forms` (2024: počet známých forem), `shape:ac` (AC ve formě, op `max`, např. Circle of the Moon `"13 + wis"`), `shape:creature:<id>` (tento tvor je navíc dostupná forma, např. elementálové), `shape:type:<typ tvora>` (formy i tohoto typu, v limitu CR). Jiná proměna než Wild Shape (Boon of Fluid Forms, Elemental Wild Shape) má vlastní limity: aktivita s `toggle: "Wild Shape"` a `shapeGroup: "<skupina>"`, efekty `shape@<skupina>:maxCr` atd. U objektů (Eldritch Cannon) může `scores` chybět.
 
 `op`: `add` (výchozí), `set`, `max`, `min`. Do cíle jde vložit `@<id volby>`, které se nahradí každou vybranou hodnotou, např. `resistance:@types`.
@@ -177,6 +179,7 @@ Kouzla z předmětů jdou vždy jen zdarma z nábojů předmětu.
   - tag `unarmed` přenese bonusy předmětu na útok beze zbraně
 - **creature (stat block):** `size`, `creatureType`, `cr`, `ac`, `hp`, `hitDice`, `speed: { walk, fly, swim, climb, burrow }`, `scores`, `saves`, `skills`, `senses`, `passivePerception`, `languages`, `resistances`, `immunities`, `conditionImmunities`, `traits: [{ name, description }]`, `actions: [{ name, actionType, description, attack: { bonus, range }, damage: [{ dice, bonus, type }], save: { ability, dc }, uses: { max, recharge: "shortRest"|"longRest"|"roll" } }]` (omezená použití; „(3/Day)“, „(Recharge 5–6)“ nebo „(1/Long Rest)“ v názvu akce se rozpoznají i bez `uses`).
   - Čísla můžou být vzorce: `slot` (úroveň kouzla), `spellAttack`, `spellDc`, `pb`, `level` (úroveň classy zdroje), `wis` a další modifikátory majitele. Např. `"ac": "10 + slot"`, `"hp": "5 + 10 * slot"`.
+- **condition:** vlastní stav. Nabídne se v panelu Stavy; dokud ho postava má, platí jeho `effects`, `activities` a `resources` (např. `save:all` −2 a `note`).
 - **spell:** `level`, `school`, `castingTime`, `actionType`, `range`, `components`, `material`, `duration`, `concentration`, `ritual`, `classes`, `attack`, `save`, `damage: { type, by: "slot"|"character", dice: { "1": "3d6" } }`, `heal`, `higherLevels`, `brief`.
 
 ## Kontrola

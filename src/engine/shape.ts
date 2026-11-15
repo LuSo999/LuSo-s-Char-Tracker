@@ -4,7 +4,7 @@ import type { CompanionSource } from './creatures'
 import { companionVars, viewCreature } from './creatures'
 import { resolveScaled } from './formula'
 import type { ContentIndex } from '../content'
-import type { Sheet } from './derive'
+import { computeSheet, type Sheet } from './derive'
 import type { ActionResult } from './actions'
 
 const done = (character: Character, groupType: string, items: Extract<ActionResult, { ok: true }>['items']): ActionResult => ({ ok: true, character, items, groupType, kind: 'game' })
@@ -51,9 +51,15 @@ export function addCompanion(char: Character, sheet: Sheet, content: ContentInde
   const creature = content.getTyped(creatureId, 'creature')
   if (!creature) return { ok: false, error: 'noChange' }
   const temp: Character = { ...char, companions: [...char.companions, { uid: uid(), creatureId, sourceId: source.entity.id, grantId: source.grant.id, hp: 0, tempHp: 0, slot, choice, used: {} }] }
-  // Resolve its HP with the owner's numbers (scaled stat blocks).
-  const view = viewCreature(creature, companionVars(sheet, source, slot), source.grant.adjust, choice)
+  // Resolve its HP with the owner's numbers (scaled stat blocks) and the owner's effects on it ("companion:hp").
   const last = temp.companions[temp.companions.length - 1]
+  const view = (() => {
+    try {
+      return computeSheet(temp, content).companions.find((c) => c.entry.uid === last.uid)
+    } catch {
+      return undefined
+    }
+  })() ?? viewCreature(creature, companionVars(sheet, source, slot), source.grant.adjust, choice)
   last.hp = view.hpMax
   last.tempHp = view.tempHp
   const single = source.grant.kind === 'familiar' || source.grant.kind === 'steed' || source.grant.kind === 'companion'

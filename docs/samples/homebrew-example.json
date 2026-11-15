@@ -133,7 +133,8 @@
       "source": { "book": "homebrew:hb-example" },
       "effects": [
         { "target": "sense:darkvision", "op": "max", "value": 60 },
-        { "target": "advantage:save:condition", "note": "Advantage on saves against Blinded" }
+        { "target": "advantage:save:condition", "note": "Advantage on saves against Blinded" },
+        { "target": "companion:sense:darkvision", "op": "max", "value": 60 }
       ]
     },
     {
@@ -161,7 +162,10 @@
       "activities": [
         { "id": "use", "name": "Beacon", "actionType": "bonusAction", "cost": [{ "resource": "beacon" }], "toggle": "Beacon", "fx": "magic", "summary": "1 minute: bright light 30 ft, weapon hits +1d6 Radiant." }
       ],
-      "effects": [{ "target": "note", "note": "Beacon: weapon hits deal +1d6 Radiant", "when": { "toggle": "Beacon" } }]
+      "effects": [
+        { "target": "note", "note": "Beacon: weapon hits deal +1d6 Radiant", "when": { "toggle": "Beacon" } },
+        { "target": "ally:save:all", "op": "add", "value": "max(1, wis)", "range": 10, "when": { "toggle": "Beacon" } }
+      ]
     },
     {
       "id": "hb-example-lantern-shield",
