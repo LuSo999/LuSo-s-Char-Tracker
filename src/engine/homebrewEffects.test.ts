@@ -97,3 +97,16 @@ describe('conditions with effects', () => {
     expect(after.reminders.map((r) => r.note)).toContain('Cursed: −2 to saves')
   })
 })
+
+describe('Paladin auras (SRD)', () => {
+  const paladin = (level: number) =>
+    makeCharacter({ edition: '2024', classes: [{ classId: 'paladin', level }], speciesId: 'human', backgroundId: 'soldier', baseScores: { str: 16, dex: 10, con: 14, int: 8, wis: 10, cha: 16 }, hp: { current: 50 } })
+  it('give allies the same bonus, 10 ft and 30 ft from level 18', () => {
+    const s6 = computeSheet(paladin(6), content)
+    expect(s6.allyEffects.map((a) => [a.effect.target, a.value, a.range])).toEqual([['ally:save:all', 3, 10]])
+    const s18 = computeSheet(paladin(18), content)
+    expect(s18.allyEffects.map((a) => a.effect.target).sort()).toEqual(['ally:conditionImmunity:frightened', 'ally:save:all'])
+    expect(s18.allyEffects.every((a) => a.range === 30)).toBe(true)
+    expect(s18.conditionImmunities).toContain('frightened')
+  })
+})

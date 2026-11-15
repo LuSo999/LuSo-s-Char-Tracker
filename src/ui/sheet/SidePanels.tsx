@@ -339,7 +339,7 @@ export function AllyEffects() {
         {sheet.allyEffects.map((a, i) => (
           <li key={i}>
             <RuleRef entity={a.entity} content={content}>
-              {describeEffect({ ...a.effect, value: a.value ?? a.effect.value }, { t, content })}
+              {describeEffect({ ...a.effect, value: a.value ?? a.effect.value, range: a.range ?? a.effect.range }, { t, content })}
             </RuleRef>
           </li>
         ))}

@@ -25,6 +25,15 @@ export const longOnly = [{ on: 'longRest', amount: all }]
 /** A reminder line in the reminders strip, optionally only while a toggle is on. */
 export const note = (text: string, toggle?: string) => ({ target: 'note', note: text, ...(toggle ? { when: { toggle } } : {}) })
 
+/** Reach of a Paladin's aura: 10 ft, 30 ft from Paladin level 18. */
+export const paladinAuraRange = { byLevel: { '1': 10, '18': 30 } }
+
+/**
+ * An aura that also covers you: each effect for yourself plus the same for allies in range
+ * ("ally:<target>", listed in the sheet's "For allies" strip).
+ */
+export const aura = (effects: Raw[], range: Raw = paladinAuraRange): Raw[] => effects.flatMap((e) => [e, { ...e, target: `ally:${e.target}`, range }])
+
 /** 2014 Fighting Style options shared by Fighter, Paladin and Ranger (SRD 5.1). */
 export const fightingStyleEffects2014: Record<string, Patch> = {
   archery: { effects: [{ target: 'attack', value: 2, when: 'rangedWeapon' }] },

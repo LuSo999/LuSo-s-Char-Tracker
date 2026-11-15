@@ -157,8 +157,8 @@ export const Effect = z.object({
   when: EffectWhen.optional(),
   /** Human-readable note shown where the effect matters. */
   note: z.string().optional(),
-  /** For "ally:" effects: how far the aura reaches, in feet. */
-  range: z.number().optional(),
+  /** For "ally:" effects: how far the aura reaches, in feet (may scale: Aura of Protection 10, 30 from level 18). */
+  range: Scaled.optional(),
 })
 export type Effect = z.infer<typeof Effect>
 

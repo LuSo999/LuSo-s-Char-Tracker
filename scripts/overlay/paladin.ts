@@ -1,5 +1,5 @@
 // Paladin and Oath of Devotion. Checked against SRD 5.1 (2014) and SRD 5.2.1 (2024).
-import { fightingStyleEffects2014, longOnly, shortAndLong, type ClassOverlay } from './common.ts'
+import { aura, fightingStyleEffects2014, longOnly, shortAndLong, type ClassOverlay } from './common.ts'
 
 const devotionSpells = (edition: '2014' | '2024') => [
   { id: 'protection-from-evil-and-good', minLevel: 3 },
@@ -56,9 +56,9 @@ export const paladin: ClassOverlay = {
       resources: [{ id: 'channel-divinity', name: 'Channel Divinity', max: 1, recharge: shortAndLong() }],
     },
     'paladin-extra-attack': { effects: [{ target: 'attacksPerAction', op: 'max', value: 2 }] },
-    'aura-of-protection': {
-      effects: [{ target: 'save:all', value: 'max(1, cha)' }],
-    },
+    'aura-of-protection': { effects: aura([{ target: 'save:all', value: 'max(1, cha)' }]) },
+    'aura-of-courage': { effects: aura([{ target: 'conditionImmunity:frightened' }]) },
+    'aura-of-devotion': { effects: aura([{ target: 'conditionImmunity:charmed' }]) },
     'improved-divine-smite': {
       activities: [{ id: 'use', name: 'Improved Divine Smite', actionType: 'other', attack: true, roll: { dice: '1d8', kind: 'damage' }, summary: 'Every melee weapon hit: +1d8 radiant.' }],
     },
@@ -110,9 +110,9 @@ export const paladin: ClassOverlay = {
       resources: [{ id: 'faithful-steed', name: 'Faithful Steed (free cast)', max: 1, recharge: longOnly }],
       spells: [{ id: 'find-steed', freeCast: 'faithful-steed' }],
     },
-    'paladin-aura-of-protection': {
-      effects: [{ target: 'save:all', value: 'max(1, cha)' }],
-    },
+    'paladin-aura-of-protection': { effects: aura([{ target: 'save:all', value: 'max(1, cha)' }]) },
+    'paladin-aura-of-courage': { effects: aura([{ target: 'conditionImmunity:frightened' }]) },
+    'devotion-aura-of-devotion': { effects: aura([{ target: 'conditionImmunity:charmed' }]) },
     'paladin-abjure-foes': {
       activities: [
         { id: 'use', name: 'Abjure Foes', actionType: 'action', cost: [{ resource: 'channel-divinity' }], saveDc: '8 + cha + pb', saveAbility: 'wis', fx: 'magic', summary: 'Magic action: up to Cha-mod creatures within 60 ft are Frightened for 1 minute or until damaged; they can only move, act or Bonus Action.' },

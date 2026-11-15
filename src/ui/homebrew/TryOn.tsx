@@ -137,7 +137,7 @@ function DiffList({ lines, content }: { lines: DiffLine[]; content: ContentIndex
             {lines
               .filter((l) => l.place === p)
               .map((l, i) => {
-                const label = l.key === 'ally' ? describeEffect({ target: l.name ?? '', op: 'add', value: Number(l.after ?? l.before) }, { t, content }) : t(`homebrew.diff.${l.key}`, { name: name(l) })
+                const label = l.key === 'ally' ? describeEffect({ target: l.name ?? '', op: 'add', value: Number(l.after ?? l.before), range: l.range }, { t, content }) : t(`homebrew.diff.${l.key}`, { name: name(l) })
                 const value = (v: string | undefined) => (v && v !== '✓' && l.key !== 'ally' ? `: ${v}` : '')
                 return (
                   <li key={i} className={l.after === undefined ? 'text-danger' : ''}>

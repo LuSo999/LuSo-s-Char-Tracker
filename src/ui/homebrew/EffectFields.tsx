@@ -257,7 +257,7 @@ export function EffectFields({ e, setE, content, choiceIds, entityName }: { e: R
         )}
         {parsed.family?.id === 'ally' && (
           <Field label={t('homebrew.m.range')} help="effect.range">
-            <Num value={e.range} onChange={(v) => setE({ ...e, range: v })} placeholder="10" />
+            <ScaledInput value={e.range} onChange={(v) => setE({ ...e, range: v })} placeholder="10" preview={false} />
           </Field>
         )}
       </div>

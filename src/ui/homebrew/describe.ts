@@ -113,6 +113,15 @@ function valuePart(f: Family | undefined, label: string, e: Raw, ctx: Ctx): stri
   }
 }
 
+/** An aura's reach: "10", or "10 → 30" when it grows with level. */
+function rangeText(r: Scaled): string {
+  if (typeof r !== 'object' || r === null) return String(r)
+  return Object.entries(r.byLevel)
+    .sort((a, b) => Number(a[0]) - Number(b[0]))
+    .map(([, v]) => v)
+    .join(' → ')
+}
+
 export function describeEffect(e: Raw, ctx: Ctx): string {
   const { t } = ctx
   const p = parseTarget(String(e.target ?? ''))
@@ -126,7 +135,7 @@ export function describeEffect(e: Raw, ctx: Ctx): string {
   } else if (p.family?.id === 'ally') {
     const inner = parseTarget(p.args[0] ?? '')
     const what = inner.family?.id === 'note' ? e.note || t('homebrew.target.note') : valuePart(inner.family, targetLabel(inner, ctx), e, ctx)
-    text = e.range ? t('homebrew.d.allyRange', { what, range: e.range }) : t('homebrew.d.ally', { what })
+    text = e.range !== undefined ? t('homebrew.d.allyRange', { what, range: rangeText(e.range) }) : t('homebrew.d.ally', { what })
   } else text = valuePart(p.family, targetLabel(p, ctx), e, ctx)
   if (e.max !== undefined && p.family?.id === 'score') text += ` ${t('homebrew.d.cap', { max: e.max })}`
   const w = whenText(e.when, ctx)

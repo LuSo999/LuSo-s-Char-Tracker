@@ -8,7 +8,7 @@ import { choiceKey, type Sheet } from './derive'
  * One changed thing. `place` is where it shows on the sheet (same ids as the editor's 📍 badges),
  * `key` what it is (translated in the UI), `name` which one (an ability, a skill, an action's name…).
  */
-export type DiffLine = { place: string; key: string; name?: string; before?: string; after?: string }
+export type DiffLine = { place: string; key: string; name?: string; before?: string; after?: string; /** Allies: the aura's reach in feet. */ range?: number }
 
 const signed = (n: number) => (n >= 0 ? `+${n}` : `${n}`)
 
@@ -66,7 +66,9 @@ export function diffSheets(a: Sheet, b: Sheet): DiffLine[] {
   sets('reminders', 'reminder', reminder(a), reminder(b))
   // Keyed by target (the UI turns it back into a sentence with the value).
   const allies = (s: Sheet) => new Map(s.allyEffects.map((x) => [x.effect.target, x.value === undefined ? '✓' : String(x.value)]))
+  const before = out.length
   sets('allies', 'ally', allies(a), allies(b))
+  for (const line of out.slice(before)) line.range = (line.after === undefined ? a : b).allyEffects.find((x) => x.effect.target === line.name)?.range
   const toggles = (s: Sheet) => new Map(s.toggles.map((x) => [x.label, x.on ? 'on' : 'off']))
   sets('situational', 'toggle', toggles(a), toggles(b))
   const companions = (s: Sheet) => new Map(s.companions.map((c) => [c.entry.uid, `${c.creature.name}: AC ${c.ac}, HP ${c.hpMax}${c.actions.find((x) => x.attack) ? `, ${signed(c.actions.find((x) => x.attack)!.attack!.bonus)}` : ''}${c.resistances.length ? `, res. ${c.resistances.join(', ')}` : ''}`]))

@@ -13,6 +13,7 @@ import {
   type Dice,
   type Edition,
   type Effect,
+  type Scaled,
   type Entity,
   type Resource,
   type Skill,
@@ -140,7 +141,7 @@ export type Sheet = {
   /** Effect notes that apply right now (shown in the reminders strip). */
   reminders: { note: string; entity: Entity }[]
   /** Effects on allies ("ally:<target>": auras), with the value computed from the owner's numbers. */
-  allyEffects: { effect: Effect; entity: Entity; value?: number }[]
+  allyEffects: { effect: Effect; entity: Entity; value?: number; range?: number }[]
   active: ActiveEntity[]
   armorProficiencies: string[]
   weaponProficiencies: string[]
@@ -987,13 +988,14 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const allyEffects = allEffects
     .filter(({ effect, ae }) => effect.target.startsWith('ally:') && !ae.hidden && effectApplies(effect, ae, { ...baseCtx, bloodied: char.hp.current <= hpMax.value / 2 }, toggleSet))
     .map(({ effect, ae }) => {
-      let value: number | undefined
-      try {
-        value = resolveScaled(effect.value, vars(ae))
-      } catch {
-        value = undefined
+      const resolve = (v: Scaled | undefined) => {
+        try {
+          return v === undefined ? undefined : resolveScaled(v, vars(ae))
+        } catch {
+          return undefined
+        }
       }
-      return { effect, entity: ae.entity, value }
+      return { effect, entity: ae.entity, value: resolve(effect.value), range: resolve(effect.range) }
     })
   const saveNotes = allEffects
     .filter(({ effect, ae }) => effect.note && isSaveNote(effect.target) && effectApplies(effect, ae, baseCtx, toggleSet))
