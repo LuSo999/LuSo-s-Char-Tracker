@@ -65,7 +65,8 @@ export function TableRollDialog({ activity, onApply, onClose }: { activity: Acti
         </tbody>
       </table>
       {valid && !row && <p className="mt-2 text-sm text-muted">{t('tableRoll.nothing')}</p>}
-      {row?.creature && table.noOwnAbilities && <p className="mt-2 text-xs text-muted">{t('tableRoll.noOwn')}</p>}
+      {row?.creature && <p className="mt-2 text-xs text-muted">{t('tableRoll.shapeEnds')}{table.noOwnAbilities ? ` ${t('tableRoll.noOwn')}` : ''}</p>}
+      {row && (row.effects.length > 0 || row.state) && <p className="mt-2 text-xs text-muted">{t('tableRoll.effectsEnd')}</p>}
       <div className="mt-4 flex gap-2">
         <button type="button" disabled={!valid} className="rounded bg-accent px-4 py-2 font-medium text-accent-text disabled:opacity-40" onClick={() => onApply(total)}>
           {t('tableRoll.apply')}

@@ -2028,6 +2028,8 @@
     "enter": "Tvůj hod",
     "nothing": "Pro tento hod není žádný výsledek.",
     "noOwn": "Během proměny nejsou dostupné tvoje vlastní akce, útoky ani kouzla.",
-    "apply": "Uplatnit"
+    "apply": "Uplatnit",
+    "shapeEnds": "Proměna trvá, dokud ji neukončíš (⚡ Wild Shape v připomínkách) nebo si nedáš short či long rest.",
+    "effectsEnd": "Efekty trvají, dokud je neukončíš (⚡ v připomínkách, nebo Stavy → Situační efekty) nebo si nedáš short či long rest."
   }
 }

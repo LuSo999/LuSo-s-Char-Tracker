@@ -4,7 +4,8 @@ import type { ActionResult } from './actions'
 import { performActivity } from './actions'
 import { computeSheet } from './derive'
 import { makeCharacter, srdWith } from './fixtures'
-import { longRest } from './rest'
+import { longRest, shortRest } from './rest'
+import { toggleEffect } from './actions'
 import { diceRange, rollDice, rollTable, tableOutcome, tableProblems } from './shape'
 
 const okR = (r: ActionResult) => {
@@ -74,6 +75,14 @@ describe('random tables', () => {
     expect(s.ac.value).toBe(before + 2)
     expect(s.toggles.find((t) => t.label === 'Wild Blood: Iron skin')).toMatchObject({ on: true, state: true })
     expect(computeSheet(longRest(c, content).character, content).ac.value).toBe(before)
+    expect(computeSheet(shortRest(c, content).character, content).ac.value).toBe(before)
+    // Ended by hand, like Wild Shape (the ⚡ chip in the reminders).
+    const tg = s.toggles.find((t) => t.label === 'Wild Blood: Iron skin')!
+    expect(computeSheet(okR(toggleEffect(c, tg.key, tg.label, s)), content).ac.value).toBe(before)
+  })
+
+  it('a creature form ends on a short rest too', () => {
+    expect(shortRest(use(4), content).character.shape).toBeUndefined()
   })
 
   it('a text outcome goes to the reminders; a total outside the table changes nothing else', () => {
