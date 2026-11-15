@@ -16,7 +16,11 @@ const invocations2014: Record<string, Patch> = {
   'eldritch-invocation-armor-of-shadows': atWill('mage-armor'),
   'eldritch-invocation-beast-speech': atWill('speak-with-animals'),
   'eldritch-invocation-beguiling-influence': { effects: [{ target: 'proficiency:skill:deception', value: 1 }, { target: 'proficiency:skill:persuasion', value: 1 }] },
-  'eldritch-invocation-book-of-ancient-secrets': {},
+  // Two level 1 Ritual spells in the Book of Shadows, cast only as rituals (more can be copied in later: add them in edit mode).
+  'eldritch-invocation-book-of-ancient-secrets': {
+    choices: [{ id: 'rituals', label: 'Book of Shadows rituals', kind: 'spell', spellLevel: 1, ritualOnly: true, count: 2 }],
+    spells: [{ fromChoice: 'rituals', ritualOnly: true }],
+  },
   'eldritch-invocation-devils-sight': {},
   'eldritch-invocation-eldritch-sight': atWill('detect-magic'),
   'eldritch-invocation-eldritch-spear': { effects: [{ target: 'spellNote:eldritch-blast', note: 'Eldritch Spear: range 300 ft' }] },
@@ -99,7 +103,7 @@ const invocations2024: Inv[] = [
   ['pact-of-the-tome', 'Pact of the Tome', 'Book of Shadows: three cantrips and two level 1 Ritual spells from any class, prepared while you carry it; it’s your Spellcasting Focus.', {
     choices: [
       { id: 'cantrips', label: 'Book of Shadows cantrips', kind: 'spell', spellLevel: 0, count: 3 },
-      { id: 'rituals', label: 'Book of Shadows rituals', kind: 'spell', spellLevel: 1, count: 2 },
+      { id: 'rituals', label: 'Book of Shadows rituals', kind: 'spell', spellLevel: 1, ritualOnly: true, count: 2 },
     ],
     spells: [{ fromChoice: 'cantrips' }, { fromChoice: 'rituals' }],
   }],

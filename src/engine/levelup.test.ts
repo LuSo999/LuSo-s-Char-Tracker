@@ -142,6 +142,24 @@ describe('Pending choices', () => {
     expect(opts2['invocation-pact-of-the-blade']).toBeUndefined() // selected here
   })
 
+  it('Pact of the Tome rituals and Book of Ancient Secrets offer only level 1 Ritual spells', () => {
+    for (const [edition, content, invocation] of [
+      ['2024', c24, 'invocation-pact-of-the-tome'],
+      ['2014', c14, 'eldritch-invocation-book-of-ancient-secrets'],
+    ] as const) {
+      const c = hero(edition, 'warlock', 5)
+      const inv = allChoices(c, computeSheet(c, content)).find((x) => x.choice.id === 'invocations')!
+      const withTome = { ...c, choices: { ...c.choices, [choiceKey(inv.ae.grantKey, 'invocations')]: [invocation] } }
+      const s = computeSheet(withTome, content)
+      const rituals = allChoices(withTome, s).find((x) => x.ae.entity.id === invocation && x.choice.id === 'rituals')!
+      const opts = choiceOptions(withTome, content, s, rituals.ae, rituals.choice)
+      expect(opts.length, edition).toBeGreaterThan(0)
+      expect(opts.every((o) => o.entity?.type === 'spell' && o.entity.ritual && o.entity.level === 1), edition).toBe(true)
+      expect(opts.some((o) => o.id === 'find-familiar')).toBe(true)
+      expect(opts.some((o) => o.id === 'magic-missile')).toBe(false)
+    }
+  })
+
   it('2014 invocations: level and Eldritch Blast', () => {
     const c = hero('2014', 'warlock', 5)
     const s = computeSheet(c, c14)
