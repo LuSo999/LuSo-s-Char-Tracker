@@ -1,14 +1,27 @@
-// An AI request from a page: which provider (the default from Settings unless picked at the
-// button), waiting state (elapsed seconds), error and cancel.
+// An AI request from a page (desktop app): which provider (the default from the AI settings
+// unless picked at the button), waiting state (elapsed seconds), error and cancel.
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { luso, type AiRequest } from './bridge'
+import { create } from 'zustand'
+import { desktop, luso, type AiRequest, type KeyStatus } from './bridge'
 import { modelOf, providerInfo, providers, useAiPrefs, type Provider } from './providers'
 
-export type KeyStatus = Awaited<ReturnType<Window['luso']['keyStatus']>>
+/** Which providers have a key (asked from the desktop app; refreshed after a change). */
+const useKeys = create<{ keys?: KeyStatus }>(() => ({}))
+export function refreshKeys() {
+  void desktop()?.keyStatus().then((keys) => useKeys.setState({ keys }))
+}
+export function useKeyStatus() {
+  const keys = useKeys((s) => s.keys)
+  useEffect(() => {
+    if (!useKeys.getState().keys) refreshKeys()
+  }, [])
+  return keys
+}
 
-export function useAi(keys: KeyStatus | undefined) {
+export function useAi() {
   const { t } = useTranslation()
+  const keys = useKeyStatus()
   const prefs = useAiPrefs()
   const [picked, setPicked] = useState<Provider>()
   const [started, setStarted] = useState<number>()

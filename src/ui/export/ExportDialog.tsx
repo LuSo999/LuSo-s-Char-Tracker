@@ -4,6 +4,9 @@ import { analyzeFields, proposalsToFields } from '../../engine/export/analyze'
 import { pdfFingerprint, type SheetTemplate } from '../../engine/export/template'
 import { exportValues } from '../../engine/export/values'
 import { makeCharacterExport } from '../../engine/exchange'
+import { isDesktop, saveAs } from '../../desktop/bridge'
+import { FillAnySheet } from '../../desktop/FillAnySheet'
+import { DesktopHint } from '../../desktop/DesktopHint'
 import { useAuth } from '../../state/auth'
 import { deleteTemplate, saveTemplate, storedPdf, storePdf, useSheetTemplates } from '../../state/sheetTemplates'
 import { builtInTemplates } from './builtIn'
@@ -32,6 +35,7 @@ export default function ExportDialog({ onClose }: { onClose: () => void }) {
   const setPdf = (bytes: Uint8Array) => selected && setLoaded({ id: selected.id, bytes })
   const [busy, setBusy] = useState('')
   const [editing, setEditing] = useState<{ template: SheetTemplate; pdf: Uint8Array }>()
+  const [anySheet, setAnySheet] = useState(false)
   const values = useMemo(() => exportValues(character, sheet, content), [character, sheet, content])
 
   useEffect(() => {
@@ -106,6 +110,14 @@ export default function ExportDialog({ onClose }: { onClose: () => void }) {
     }
   }
 
+  if (anySheet) {
+    return (
+      <Dialog title={`📄 ${t('desk.anySheetTitle')}`} onClose={() => setAnySheet(false)} wide>
+        <FillAnySheet character={{ name: character.name, values }} />
+      </Dialog>
+    )
+  }
+
   if (editing) {
     return (
       <TemplateEditor
@@ -178,22 +190,29 @@ export default function ExportDialog({ onClose }: { onClose: () => void }) {
       )}
 
       <div className="mt-4 border-t border-border pt-3 text-sm">
-        <p className="font-semibold">🖥️ {t('export.desktopTitle')}</p>
-        <p className="text-xs text-muted">{t('export.desktopHint')}</p>
-        <button
-          className="mt-1 rounded border border-border px-3 py-1.5 hover:bg-bg"
-          onClick={() => {
-            const data = makeCharacterExport(character, sheet, content)
-            const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
-            const a = document.createElement('a')
-            a.href = url
-            a.download = `${character.name.replace(/[^\p{L}\p{N}\- ]+/gu, '').trim() || 'character'}.luso-character.json`
-            a.click()
-            setTimeout(() => URL.revokeObjectURL(url), 5000)
-          }}
-        >
-          ⬇️ {t('export.desktopDownload')}
-        </button>
+        {isDesktop() ? (
+          <>
+            <p className="font-semibold">🤖 {t('desk.anySheetTitle')}</p>
+            <p className="text-xs text-muted">{t('desk.anySheetHint')}</p>
+            <button className="mt-1 rounded bg-accent px-3 py-1.5 font-semibold text-accent-text" onClick={() => setAnySheet(true)}>
+              📄 {t('desk.anySheetButton', { name: character.name })}
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="font-semibold">🖥️ {t('export.desktopTitle')}</p>
+            <DesktopHint text={t('desk.anySheetWeb')} />
+            <button
+              className="mt-1 rounded border border-border px-3 py-1.5 hover:bg-bg"
+              onClick={() => {
+                const data = makeCharacterExport(character, sheet, content)
+                void saveAs(`${character.name.replace(/[^\p{L}\p{N}\- ]+/gu, '').trim() || 'character'}.luso-character.json`, JSON.stringify(data, null, 2), 'application/json', 'json')
+              }}
+            >
+              ⬇️ {t('export.desktopDownload')}
+            </button>
+          </>
+        )}
       </div>
 
       <div className="mt-4 border-t border-border pt-3 text-sm">

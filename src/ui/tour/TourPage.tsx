@@ -10,7 +10,8 @@ import { useContent } from '../../state/content'
 import { useMemoryStore } from '../../state/history'
 import { SheetView } from '../sheet/SheetPage'
 import { Tour, type TourStep } from './Tour'
-import { DESKTOP_URL, markTourSeen } from './seen'
+import { DESKTOP_URL } from '../../desktop/bridge'
+import { markTourSeen } from './seen'
 
 export function TourPage() {
   const content = useContent('2024')

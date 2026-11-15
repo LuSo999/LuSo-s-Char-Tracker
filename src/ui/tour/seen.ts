@@ -1,5 +1,4 @@
-// Whether the guided tour was offered already (this browser), and the desktop app link it shows.
-export const DESKTOP_URL = 'https://github.com/LuSo999/LuSo-s-Char-Tracker/releases'
+// Whether the guided tour was offered already (this browser).
 const TOUR_SEEN = 'tourSeen'
 
 export function markTourSeen() {

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { computeSheet } from '../derive'
 import { resolveSheetImport, SheetImport } from '../exchange'
 import { makeCharacter, srd } from '../fixtures'
-import { importFromValues, parseClasses, parseItem } from './readBack'
+import { featNames, importFromValues, parseClasses, parseItem } from './readBack'
 import { exportValues } from './values'
 
 const c24 = srd('2024')
@@ -15,6 +15,9 @@ describe('Reading a filled sheet back', () => {
     expect(parseItem('2× Dagger (equipped)')).toEqual({ name: 'Dagger', quantity: 2, equipped: true })
     expect(parseItem('Arrows (20)')).toEqual({ name: 'Arrows', quantity: 20 })
     expect(parseItem('Rope x2')).toEqual({ name: 'Rope', quantity: 2 })
+    // A wrapped description isn't more feats.
+    expect(featNames('Magic Initiate: You learn two cantrips of your choice from the Cleric,\nDruid, or Wizard spell list.\nAlert: Initiative')).toEqual(['Magic Initiate', 'Alert'])
+    expect(featNames('Alert, Lucky')).toEqual(['Alert', 'Lucky'])
   })
 
   it('round-trips a character through its export values', () => {

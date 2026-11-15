@@ -1,12 +1,11 @@
-// Settings: API keys of the three AI providers (kept by the main process), the default AI,
-// the model of each (best / cheaper) and the language.
+// Desktop app: API keys of the three AI providers (kept on the computer by the desktop app),
+// the default AI and the model of each (most accurate / cheaper).
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { luso } from './bridge'
-import { setLanguage } from './i18n'
+import { luso, type KeyStatus } from './bridge'
 import { providerInfo, providers, setAiPrefs, useAiPrefs, type Provider, type Tier } from './providers'
 import { Section } from './ui'
-import type { KeyStatus } from './useAi'
+import { refreshKeys, useKeyStatus } from './useAi'
 
 function ProviderKey({ provider, status, onChange }: { provider: Provider; status: KeyStatus | undefined; onChange: () => void }) {
   const { t } = useTranslation()
@@ -64,25 +63,18 @@ function ProviderKey({ provider, status, onChange }: { provider: Provider; statu
   )
 }
 
-export function Settings({ status, onChange }: { status: KeyStatus | undefined; onChange: () => void }) {
-  const { t, i18n } = useTranslation()
+export function AiSettings() {
+  const { t } = useTranslation()
+  const status = useKeyStatus()
   return (
-    <div className="space-y-4">
-      <Section title={t('desk.keyTitle')} hint={t('desk.keyHint', { enc: status?.encrypted ? t('desk.keyEncrypted') : t('desk.keyPlain') })}>
-        <div className="space-y-3">
-          {providers.map((p) => (
-            <ProviderKey key={p} provider={p} status={status} onChange={onChange} />
-          ))}
-        </div>
-        <p className="mt-3 text-xs text-muted">{t('desk.costs')}</p>
-        <p className="text-xs text-muted">{t('desk.privacy')}</p>
-      </Section>
-      <Section title={t('desk.language')}>
-        <select className="rounded border border-border bg-card px-2 py-1 text-sm" value={i18n.language} onChange={(e) => setLanguage(e.target.value as 'en' | 'cs')}>
-          <option value="cs">Čeština</option>
-          <option value="en">English</option>
-        </select>
-      </Section>
-    </div>
+    <Section title={t('desk.keyTitle')} hint={t('desk.keyHint', { enc: status?.encrypted ? t('desk.keyEncrypted') : t('desk.keyPlain') })}>
+      <div className="space-y-3">
+        {providers.map((p) => (
+          <ProviderKey key={p} provider={p} status={status} onChange={refreshKeys} />
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-muted">{t('desk.costs')}</p>
+      <p className="text-xs text-muted">{t('desk.privacy')}</p>
+    </Section>
   )
 }

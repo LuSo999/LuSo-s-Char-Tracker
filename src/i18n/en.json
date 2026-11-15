@@ -1344,7 +1344,7 @@
       },
       "export": {
         "title": "PDF export and the desktop app",
-        "body": "📄 PDF fills the character into the official 2024 character sheet.\n\nFor any other sheet, even a graphic or scanned one, there is a desktop app for Windows, macOS and Linux. With AI it fills any sheet, and it also works the other way: a filled PDF or a photo of a paper sheet becomes a character to import."
+        "body": "📄 PDF fills the character into the official 2024 character sheet.\n\nThe desktop app for Windows, macOS and Linux is this whole app plus PDF tools: with AI it fills any other sheet, even a graphic or scanned one, and it reads filled PDFs, scans and photos of paper sheets into new characters."
       },
       "look": {
         "title": "Look, language and settings",
@@ -1352,7 +1352,132 @@
       },
       "finish": {
         "title": "That's it!",
-        "body": "Now create your own character: the guide takes you from the edition through class, species and background to the equipment. You can keep playing with the sample here too."
+        "body": "Now create your own character: the creation page has its own short guide (❓), and a character can also start from a sheet you already filled in. You can keep playing with the sample here too."
+      }
+    }
+  },
+  "desk": {
+    "getApp": "Get the desktop app",
+    "or": "or",
+    "cancel": "Cancel",
+    "elapsed": "{{s}} s",
+    "pdfTitle": "PDF tools",
+    "tabFill": "Fill a sheet",
+    "tabAi": "AI settings",
+    "pdfWebIntro": "The desktop app (Windows, macOS, Linux) shows this whole web app and adds PDF tools: it fills any character sheet — a fillable PDF, a graphic or scanned one, a photo — with your character using AI (Claude, ChatGPT or Gemini, your own API key), and reads filled sheets, scans and photos into new characters.",
+    "exportIntro": "Fill any character sheet (PDF or picture) with a character: the AI finds where each value goes, you check it in the editor and the template is saved to your account.",
+    "step1": "1. Character",
+    "pickYourCharacter": "one of your characters",
+    "pickCharacter": "Character file (.luso-character.json)",
+    "badCharacter": "This is not a character file from this app.",
+    "step2": "2. Character sheet",
+    "step2Hint": "A PDF (fillable or not) or a picture / scan of an empty sheet.",
+    "pickSheet": "Choose a sheet (PDF, PNG, JPG)",
+    "formFields": "{{count}} form fields",
+    "templateFound": "Known sheet: template “{{name}}”.",
+    "templateNew": "A new sheet: it needs a template (where each value goes).",
+    "analyze": "Analyze",
+    "reanalyze": "Analyze again",
+    "analyzeLocal": "🔍 Local analysis only",
+    "analyzeLocalHint": "Works without AI for fillable PDFs (form fields); on printed sheets you place the boxes by hand.",
+    "needKey": "The AI needs an API key (PDF → AI settings).",
+    "provider": "AI",
+    "edit": "✏️ Edit template",
+    "step3": "3. Save the filled sheet",
+    "fillSave": "💾 Fill and save PDF",
+    "needCharacter": "Choose a character first.",
+    "saved": "Saved: {{path}}",
+    "missing": "{{count}} form fields were not found in the PDF.",
+    "analyzing": "{{ai}} is looking at the sheet… (usually 1–4 minutes)",
+    "aiResult": "{{name}}: {{count}} values placed.",
+    "aiError": "{{name}} failed: {{error}}",
+    "errors": {
+      "no-key": "no API key (PDF → AI settings)",
+      "auth": "the API key is not valid",
+      "rate-limit": "too many requests, try again in a minute",
+      "refusal": "the request was declined",
+      "max-tokens": "the answer was too long",
+      "bad-json": "the answer could not be read",
+      "cancelled": "cancelled",
+      "model": "the model is not available for this key",
+      "failed": "the request failed"
+    },
+    "templates": "Your sheet templates",
+    "noTemplates": "None yet.",
+    "deleteTemplate": "Delete template “{{name}}”?",
+    "anySheetTitle": "Any other sheet (AI)",
+    "anySheetHint": "A graphic, scanned or unusual sheet, a photo: the AI finds where each value goes.",
+    "anySheetButton": "Fill another sheet with {{name}}",
+    "anySheetWeb": "Any other sheet (graphic, scanned, a photo) is filled by the desktop app with AI. Or download this character's file for it:",
+    "fromSheetTitle": "Create from a filled character sheet",
+    "fromSheetShort": "A PDF, scan or photo of a sheet you already have.",
+    "fromSheetHint": "Choose the sheet: a fillable PDF is read right here; you check what was found against the content before the character is created.",
+    "fromSheetDesktop": "Scans, photos, graphic and handwritten sheets are read by AI in the desktop app.",
+    "pickFilled": "Choose a filled sheet (PDF or pictures; several pictures = several pages)",
+    "readLocal": "{{count}} filled form fields read.",
+    "readNone": "no filled form fields found",
+    "useLocal": "Continue with what was read",
+    "read": "Read with AI",
+    "reading": "{{ai}} is reading the sheet…",
+    "keyTitle": "AI and API keys",
+    "keyHint": "The analysis uses your own API key of Claude (Anthropic), ChatGPT (OpenAI) or Gemini (Google); one is enough. Keys are kept only on this computer{{enc}}. The selected circle is the default AI; another one can be picked at each button.",
+    "keyEncrypted": ", encrypted by the system keychain",
+    "keyPlain": " (this system has no keychain: stored unencrypted in the app’s data folder)",
+    "keySaved": "A key is saved.",
+    "keyEnv": "Using the key from an environment variable.",
+    "keyNone": "No key yet.",
+    "keySave": "Save key",
+    "keyClear": "Remove key",
+    "default": "default",
+    "model": "Model",
+    "tierBest": "most accurate",
+    "tierFast": "cheaper, faster",
+    "getKey": "Get a key ↗",
+    "costs": "The analysis is paid from the API credit of the provider’s account, by its price list: the most accurate models cost tens of cents per sheet, the cheaper ones a fraction of that.",
+    "privacy": "Only the pages of the sheet (and for filling the character’s values) are sent, only to the selected AI and only when you press Analyze / Read.",
+    "signInBrowser": "Sign in in the browser window that opened, then come back here.",
+    "signInCancelled": "sign-in cancelled",
+    "loginTitle": "Sign in to the desktop app",
+    "loginIntro": "Google doesn't allow signing in inside apps, so it happens here in your browser. After signing in you go straight back to the app.",
+    "loginDone": "Signed in. You can close this window and go back to the app.",
+    "loginInvalid": "This link is not valid any more: start the sign-in again in the desktop app."
+  },
+  "createTour": {
+    "open": "Guide",
+    "start": "Show me",
+    "offer": "Creating your first character? A short guide shows each step.",
+    "steps": {
+      "welcome": {
+        "title": "Creating a character",
+        "body": "Step by step, and you only pick from what your character can really have: the app keeps the counts and does the rest itself.\n\nYou can go back to any step at any time; nothing is saved until the last step."
+      },
+      "fromSheet": {
+        "title": "Already have a sheet?",
+        "body": "A filled character sheet can become a character right away: a fillable PDF is read here, and before the character is created you see what was matched to the content.\n\nScans, photos, graphic and handwritten sheets are read by AI in the desktop app."
+      },
+      "edition": {
+        "title": "Edition",
+        "body": "5.5e (2024) or 5e (2014): the rules every number on the sheet follows. Each character has its own."
+      },
+      "level": {
+        "title": "Starting level",
+        "body": "A higher level first creates the character at level 1, then Level up takes you through each level with its choices."
+      },
+      "books": {
+        "title": "Books",
+        "body": "Which books the character may use (SRD is always on). Older 5e subclasses, species, backgrounds and feats can be allowed for a 5.5e character too, with your DM's OK."
+      },
+      "origins": {
+        "title": "Class, species and background",
+        "body": "The next three steps: each list is alphabetical, with a search bar and filters (hit die, spellcasting, size, darkvision, skills…). Point at a name to see its rule; Ctrl+click opens its wiki page."
+      },
+      "rest": {
+        "title": "Abilities, choices, equipment, name",
+        "body": "Ability scores: standard array, point buy or your own rolls. Then the skills, languages, feats and spells your choices let you pick, the starting equipment (or gold) and the name. Anything left open can be finished later from the ⚠️ button on the sheet."
+      },
+      "finish": {
+        "title": "Next",
+        "body": "Next takes you on; the step bar at the top lets you jump back. At the end, Create opens your new sheet."
       }
     }
   }

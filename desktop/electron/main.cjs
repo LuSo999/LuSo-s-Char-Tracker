@@ -1,49 +1,76 @@
-// LuSo Sheet Tool: the Electron main process. Opens the window, serves the built renderer on
-// app://, keeps the AI API keys (Claude, ChatGPT, Gemini; encrypted with the OS keychain when
-// available) and the saved templates in the user data folder, saves files and calls the AI.
-const { app, BrowserWindow, dialog, ipcMain, net, protocol, safeStorage, shell } = require('electron')
+// LuSo Sheet Tool: the desktop app. Its window shows the web app (LuSo's Char Tracker, always
+// the current version) and gives it what a browser can't: AI requests with the API keys kept on
+// this computer (encrypted with the OS keychain when available), saving files with a dialog,
+// and Google sign-in through the system browser (Google doesn't allow it inside apps).
+const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron')
+const crypto = require('node:crypto')
 const fs = require('node:fs/promises')
+const http = require('node:http')
 const path = require('node:path')
-const { pathToFileURL } = require('node:url')
 const { runners } = require('./ai.cjs')
 
+/** The web app; LUSO_WEB_URL points elsewhere for development (http://localhost:5173/LuSo-s-Char-Tracker/). */
+const WEB_URL = process.env.LUSO_WEB_URL || 'https://luso999.github.io/LuSo-s-Char-Tracker/'
+const WEB_ORIGIN = new URL(WEB_URL).origin
 const PROVIDERS = ['claude', 'openai', 'gemini']
 const ENV = { claude: ['ANTHROPIC_API_KEY'], openai: ['OPENAI_API_KEY'], gemini: ['GEMINI_API_KEY', 'GOOGLE_API_KEY'] }
-const DEV = process.env.LUSO_DEV === '1'
-const dist = path.join(__dirname, '..', 'dist')
 const dataDir = () => app.getPath('userData')
-const templatesDir = () => path.join(dataDir(), 'templates')
 const keyFile = (provider) => path.join(dataDir(), provider === 'claude' ? 'api-key.bin' : `api-key-${provider}.bin`)
 
-protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } }])
+/** Only the web app's own pages may use the desktop functions. */
+const trusted = (e) => {
+  try {
+    return new URL(e.senderFrame.url).origin === WEB_ORIGIN
+  } catch {
+    return false
+  }
+}
+const handle = (channel, fn) =>
+  ipcMain.handle(channel, (e, ...args) => {
+    if (!trusted(e)) throw new Error('Not allowed')
+    return fn(e, ...args)
+  })
+// The preload asks once, synchronously: which page gets the bridge, and the app's version.
+ipcMain.on('desktop:info', (e) => {
+  e.returnValue = { origin: WEB_ORIGIN, version: app.getVersion() }
+})
 
+let win
 function createWindow() {
-  const win = new BrowserWindow({
-    width: 1280,
-    height: 860,
-    title: 'LuSo Sheet Tool',
+  win = new BrowserWindow({
+    width: 1400,
+    height: 900,
+    title: "LuSo's Char Tracker",
     autoHideMenuBar: true,
+    icon: path.join(__dirname, '..', 'build', 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true },
   })
-  // Links (the web app, the Anthropic console) open in the browser, not in the app.
+  // Links elsewhere (rules wiki, API consoles, GitHub) open in the browser; the app stays on the web app.
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:/.test(url)) void shell.openExternal(url)
     return { action: 'deny' }
   })
-  void win.loadURL(DEV ? 'http://localhost:5299' : 'app://local/index.html')
+  win.webContents.on('will-navigate', (e, url) => {
+    if (url.startsWith('file:')) return
+    if (new URL(url).origin !== WEB_ORIGIN) {
+      e.preventDefault()
+      if (/^https?:/.test(url)) void shell.openExternal(url)
+    }
+  })
+  // No connection: a small page with a retry button.
+  win.webContents.on('did-fail-load', (_e, code, _desc, _url, isMainFrame) => {
+    if (!isMainFrame || code === -3 /* aborted */) return
+    void win.loadFile(path.join(__dirname, 'offline.html'))
+  })
+  void win.loadURL(WEB_URL)
 }
 
 app.whenReady().then(() => {
-  protocol.handle('app', (req) => {
-    const rel = decodeURIComponent(new URL(req.url).pathname).replace(/^\/+/, '') || 'index.html'
-    const file = path.normalize(path.join(dist, rel))
-    if (!file.startsWith(dist)) return new Response('Not found', { status: 404 })
-    return net.fetch(pathToFileURL(file).toString())
-  })
   createWindow()
   app.on('activate', () => BrowserWindow.getAllWindows().length === 0 && createWindow())
 })
 app.on('window-all-closed', () => process.platform !== 'darwin' && app.quit())
+ipcMain.on('offline:retry', () => void win?.loadURL(WEB_URL))
 
 // --- API keys (one per provider) ----------------------------------------------------------
 
@@ -58,7 +85,7 @@ async function readKey(provider) {
     return envKey(provider)
   }
 }
-ipcMain.handle('key:status', async () => {
+handle('key:status', async () => {
   const out = { encrypted: safeStorage.isEncryptionAvailable() }
   for (const p of PROVIDERS) {
     const saved = await fs.stat(keyFile(p)).then(() => true, () => false)
@@ -66,61 +93,22 @@ ipcMain.handle('key:status', async () => {
   }
   return out
 })
-ipcMain.handle('key:set', async (_e, provider, key) => {
+handle('key:set', async (_e, provider, key) => {
   await fs.mkdir(dataDir(), { recursive: true })
   const k = String(key).trim()
   const data = safeStorage.isEncryptionAvailable() ? Buffer.concat([Buffer.from('E'), safeStorage.encryptString(k)]) : Buffer.concat([Buffer.from('P'), Buffer.from(k, 'utf8')])
   await fs.writeFile(keyFile(providerOf(provider)), data, { mode: 0o600 })
   return true
 })
-ipcMain.handle('key:clear', async (_e, provider) => {
+handle('key:clear', async (_e, provider) => {
   await fs.rm(keyFile(providerOf(provider)), { force: true })
   return true
 })
 
-// --- Templates (one JSON + the sheet's PDF each) ------------------------------------------
-
-const safeId = (id) => String(id).replace(/[^a-zA-Z0-9_-]/g, '_')
-ipcMain.handle('templates:list', async () => {
-  try {
-    const names = (await fs.readdir(templatesDir())).filter((n) => n.endsWith('.json'))
-    const out = []
-    for (const n of names) {
-      try {
-        out.push(JSON.parse(await fs.readFile(path.join(templatesDir(), n), 'utf8')))
-      } catch {
-        // a broken file: skip it
-      }
-    }
-    return out
-  } catch {
-    return []
-  }
-})
-ipcMain.handle('templates:save', async (_e, template, pdf) => {
-  await fs.mkdir(templatesDir(), { recursive: true })
-  const id = safeId(template.id)
-  await fs.writeFile(path.join(templatesDir(), `${id}.json`), JSON.stringify(template, null, 1))
-  if (pdf) await fs.writeFile(path.join(templatesDir(), `${id}.pdf`), Buffer.from(pdf))
-  return true
-})
-ipcMain.handle('templates:delete', async (_e, id) => {
-  for (const ext of ['json', 'pdf']) await fs.rm(path.join(templatesDir(), `${safeId(id)}.${ext}`), { force: true })
-  return true
-})
-ipcMain.handle('templates:pdf', async (_e, id) => {
-  try {
-    return new Uint8Array(await fs.readFile(path.join(templatesDir(), `${safeId(id)}.pdf`)))
-  } catch {
-    return null
-  }
-})
-
 // --- Files ---------------------------------------------------------------------------------
 
-ipcMain.handle('file:save', async (e, defaultName, data, filters) => {
-  const win = BrowserWindow.fromWebContents(e.sender)
-  const r = await dialog.showSaveDialog(win, { defaultPath: path.join(app.getPath('documents'), defaultName), filters })
+handle('file:save', async (e, defaultName, data, filters) => {
+  const r = await dialog.showSaveDialog(BrowserWindow.fromWebContents(e.sender), { defaultPath: path.join(app.getPath('documents'), path.basename(String(defaultName))), filters })
   if (r.canceled || !r.filePath) return null
   await fs.writeFile(r.filePath, typeof data === 'string' ? data : Buffer.from(data))
   shell.showItemInFolder(r.filePath)
@@ -128,18 +116,16 @@ ipcMain.handle('file:save', async (e, defaultName, data, filters) => {
 })
 
 // --- AI ----------------------------------------------------------------------------------
-// One structured-output request: the renderer gives the provider, the model, the system prompt,
+// One structured-output request: the page gives the provider, the model, the system prompt,
 // the user content (text and base64 images) and the JSON schema; the answer comes back parsed.
 // Errors come back as short codes the page translates (no-key, auth, rate-limit, refusal…).
 
 let running // AbortController of the request in progress (one at a time)
-ipcMain.handle('ai:cancel', () => {
+handle('ai:cancel', () => {
   running?.abort()
   return true
 })
-
-
-ipcMain.handle('ai:run', async (_e, req) => {
+handle('ai:run', async (_e, req) => {
   const provider = providerOf(req.provider)
   const apiKey = await readKey(provider)
   if (!apiKey) return { ok: false, error: 'no-key' }
@@ -153,4 +139,56 @@ ipcMain.handle('ai:run', async (_e, req) => {
   } finally {
     if (running === controller) running = undefined
   }
+})
+
+// --- Google sign-in through the system browser ----------------------------------------------
+// A one-time local address (127.0.0.1, random port) waits for the browser: the web app's
+// #/desktop-login page signs in with Google there and comes back with the Google tokens and the
+// random state value; the window then signs in with them (Firebase signInWithCredential).
+
+let signIn // { server, finish } of the sign-in in progress
+const page = (text) =>
+  `<!doctype html><meta charset="utf-8"><title>LuSo's Char Tracker</title><body style="font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem"><h2>LuSo's Char Tracker</h2><p>${text}</p></body>`
+handle('auth:cancel', () => {
+  signIn?.finish({ ok: false, error: 'cancelled' })
+  return true
+})
+handle('auth:signIn', () => {
+  signIn?.finish({ ok: false, error: 'cancelled' })
+  return new Promise((resolve) => {
+    const state = crypto.randomBytes(24).toString('base64url')
+    const server = http.createServer((req, res) => {
+      const url = new URL(req.url, 'http://127.0.0.1')
+      if (url.pathname !== '/callback') {
+        res.writeHead(404).end()
+        return
+      }
+      const ok = url.searchParams.get('state') === state && !!url.searchParams.get('id_token')
+      res.writeHead(ok ? 200 : 400, { 'content-type': 'text/html; charset=utf-8' })
+      res.end(
+        page(
+          ok
+            ? 'Signed in — you can close this tab and go back to the app. / Přihlášeno — tuhle záložku můžeš zavřít a vrátit se do appky.'
+            : 'This sign-in link is not valid any more. / Tento odkaz pro přihlášení už neplatí.',
+        ),
+      )
+      if (ok) {
+        finish({ ok: true, idToken: url.searchParams.get('id_token'), accessToken: url.searchParams.get('access_token') || undefined })
+        if (win?.isMinimized()) win.restore()
+        win?.focus()
+      }
+    })
+    const timer = setTimeout(() => finish({ ok: false, error: 'timeout' }), 10 * 60 * 1000)
+    const finish = (result) => {
+      clearTimeout(timer)
+      server.close()
+      if (signIn?.server === server) signIn = undefined
+      resolve(result)
+    }
+    signIn = { server, finish }
+    server.listen(0, '127.0.0.1', () => {
+      const { port } = server.address()
+      void shell.openExternal(`${WEB_URL}#/desktop-login?port=${port}&state=${state}`)
+    })
+  })
 })

@@ -29,7 +29,9 @@ const accessDoc = () => doc(db!, 'content', 'access')
 export async function loadOfficial(force = false) {
   if (!db) return
   const current = useOfficial.getState()
-  if (!force && (current.status === 'loading' || current.status === 'ready')) return
+  // Once asked (whatever came back: ready, empty, no access, error), only a forced reload asks
+  // again (sign-in): otherwise every page opening would flash "Loading" while it retries.
+  if (!force && current.status !== 'idle') return
   useOfficial.setState({ status: 'loading', error: undefined })
   try {
     const metaSnap = await getDoc(officialDoc())

@@ -5,6 +5,7 @@ import { languages, setLanguage, type Language } from '../i18n'
 import { useAuth } from '../state/auth'
 import { saveSettings } from '../state/settings'
 import { ShortcutsButton } from './ShortcutsButton'
+import { isDesktop } from '../desktop/bridge'
 import { ThemeButton } from './ThemePicker'
 import { AdminBulb } from './feedback/AdminBulb'
 import { FeedbackButton } from './feedback/FeedbackButton'
@@ -55,6 +56,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </span>
           {user && (
             <>
+              {isDesktop() && (
+                <Link to="/pdf" className="text-sm text-muted hover:underline" title={t('desk.pdfTitle')}>
+                  📄<span className="hidden sm:inline"> PDF</span>
+                </Link>
+              )}
               <Link to="/tour" className="text-sm text-muted hover:underline" title={t('tour.open')} aria-label={t('tour.open')}>
                 ❓
               </Link>

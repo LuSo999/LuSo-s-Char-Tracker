@@ -1,18 +1,16 @@
 {
   "name": "luso-sheet-tool",
   "productName": "LuSo Sheet Tool",
-  "version": "0.2.1",
-  "description": "Fill any character sheet PDF from a LuSo's Char Tracker character, and read filled sheets back.",
+  "version": "0.3.0",
+  "description": "LuSo's Char Tracker on the desktop: the whole web app plus PDF tools (fill any character sheet with AI, read filled sheets into characters).",
   "author": "LuSo999",
   "license": "MIT",
   "private": true,
   "main": "electron/main.cjs",
   "scripts": {
-    "dev": "node ../node_modules/vite/bin/vite.js --config vite.config.mts",
     "start": "electron .",
-    "start:dev": "LUSO_DEV=1 electron .",
-    "build": "node ../node_modules/vite/bin/vite.js build --config vite.config.mts",
-    "dist": "npm run build && electron-builder --publish never"
+    "start:dev": "LUSO_WEB_URL=http://localhost:5173/LuSo-s-Char-Tracker/ electron .",
+    "dist": "electron-builder --publish never"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
@@ -31,7 +29,7 @@
     },
     "files": [
       "electron/**",
-      "dist/**",
+      "build/icon.png",
       "package.json"
     ],
     "artifactName": "LuSo-Sheet-Tool-${version}-${os}-${arch}.${ext}",

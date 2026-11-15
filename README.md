@@ -81,7 +81,7 @@ Správci jsou určení svými UID v `firestore.rules` a v `src/config.ts`. Po zm
 ## Desktopová appka
 
 Ve složce `desktop/` je program pro Windows, macOS a Linux (Electron).
-Vyplní postavou libovolný character sheet a umí to i obráceně: přečte vyplněný sheet do souboru pro import.
+Ukazuje celou webovou appku a přidává menu PDF: vyplní postavou libovolný character sheet a umí to i obráceně, z vyplněného sheetu založí postavu.
 Analýzu dělá Claude, ChatGPT nebo Gemini (vlastní API klíč) a bez klíče funguje místní záloha.
 Instalátory jsou v [Releases](https://github.com/LuSo999/LuSo-s-Char-Tracker/releases),
 podrobnosti v [docs/desktop-app.md](docs/desktop-app.md).

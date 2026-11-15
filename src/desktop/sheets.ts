@@ -1,12 +1,12 @@
-// Sheets in the desktop app: any file (PDF or pictures) becomes a PDF, pages become images for
-// Claude, filled form fields are read back, templates are found by fingerprint / page sizes.
+// Any character sheet as a file (PDF or pictures) becomes a PDF; its pages become images for the
+// AI, filled form fields are read back, its template is found by fingerprint / page sizes.
 import { PDFCheckBox, PDFDocument, PDFDropdown, PDFRadioGroup, PDFTextField } from 'pdf-lib'
 import * as pdfjs from 'pdfjs-dist'
-import { analyzeFields } from '../../src/engine/export/analyze'
-import { pdfFingerprint, SheetTemplate } from '../../src/engine/export/template'
-import { builtInTemplates } from '../../src/ui/export/builtIn'
-import type { SheetPdf } from '../../src/ui/export/pdf'
-import { luso } from './bridge'
+import { analyzeFields } from '../engine/export/analyze'
+import { pdfFingerprint, type SheetTemplate } from '../engine/export/template'
+import { builtInTemplates } from '../ui/export/builtIn'
+import type { SheetPdf } from '../ui/export/pdf'
+import { useSheetTemplates } from '../state/sheetTemplates'
 
 export type LoadedSheet = { name: string; bytes: Uint8Array; fingerprint: string; fromImage: boolean }
 
@@ -87,14 +87,8 @@ export async function formValues(bytes: Uint8Array): Promise<Record<string, stri
   return out
 }
 
-/** All templates: built-in ones and the saved ones. */
-export async function allTemplates(): Promise<SheetTemplate[]> {
-  const saved = (await luso().listTemplates()).flatMap((t) => {
-    const r = SheetTemplate.safeParse(t)
-    return r.success ? [r.data] : []
-  })
-  return [...builtInTemplates, ...saved]
-}
+/** All templates: built-in ones and the ones saved to the account. */
+export const allTemplates = (): SheetTemplate[] => [...builtInTemplates, ...useSheetTemplates.getState().templates]
 
 /** A template made for this sheet: same file, or (for built-ins) the same pages and form fields. */
 export function findTemplate(templates: SheetTemplate[], sheet: LoadedSheet, pdf: SheetPdf): SheetTemplate | undefined {

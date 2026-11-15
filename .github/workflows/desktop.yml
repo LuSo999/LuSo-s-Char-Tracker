@@ -57,7 +57,7 @@ jobs:
         with:
           name: LuSo Sheet Tool ${{ github.ref_name }}
           body: |
-            Desktop app for filling any character sheet PDF from a LuSo's Char Tracker character, and reading filled sheets back.
+            LuSo's Char Tracker on the desktop: the whole web app plus PDF tools (fill any character sheet with AI, create characters from filled sheets).
             Windows: LuSo-Sheet-Tool-…-win-x64.exe · macOS: …-mac-arm64.dmg (Apple silicon) or …-mac-x64.dmg (Intel) · Linux: …-linux-x86_64.AppImage
             See docs/desktop-app.md for first-start notes (unsigned app).
           files: installers/*

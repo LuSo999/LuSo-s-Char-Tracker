@@ -1344,7 +1344,7 @@
       },
       "export": {
         "title": "Export do PDF a desktopová appka",
-        "body": "📄 PDF vyplní postavu do oficiálního character sheetu 2024.\n\nNa jakýkoli jiný sheet, i grafický nebo naskenovaný, je desktopová appka pro Windows, macOS a Linux. S pomocí AI vyplní libovolný sheet a umí to i obráceně: z vyplněného PDF nebo fotky papírového sheetu udělá postavu k importu."
+        "body": "📄 PDF vyplní postavu do oficiálního character sheetu 2024.\n\nDesktopová appka pro Windows, macOS a Linux je celá tahle appka plus PDF nástroje: s pomocí AI vyplní jakýkoli jiný sheet, i grafický nebo naskenovaný, a vyplněná PDF, skeny a fotky papírových sheetů přečte do nových postav."
       },
       "look": {
         "title": "Vzhled, jazyk a nastavení",
@@ -1352,7 +1352,132 @@
       },
       "finish": {
         "title": "Hotovo!",
-        "body": "Teď si založ vlastní postavu: průvodce tě provede od edice přes classu, druh a background až po vybavení. S ukázkovou postavou si tu můžeš dál hrát."
+        "body": "Teď si založ vlastní postavu: stránka tvorby má vlastního krátkého průvodce (❓) a postava může vzniknout i ze sheetu, který už máš vyplněný. S ukázkovou postavou si tu můžeš dál hrát."
+      }
+    }
+  },
+  "desk": {
+    "getApp": "Stáhnout desktopovou appku",
+    "or": "nebo",
+    "cancel": "Zrušit",
+    "elapsed": "{{s}} s",
+    "pdfTitle": "PDF nástroje",
+    "tabFill": "Vyplnit sheet",
+    "tabAi": "Nastavení AI",
+    "pdfWebIntro": "Desktopová appka (Windows, macOS, Linux) ukazuje celou tuhle webovou appku a přidává PDF nástroje: s pomocí AI (Claude, ChatGPT nebo Gemini, vlastní API klíč) vyplní postavou jakýkoli character sheet – vyplňovací PDF, grafický nebo naskenovaný sheet, fotku – a vyplněné sheety, skeny a fotky přečte do nových postav.",
+    "exportIntro": "Vyplň postavou jakýkoli character sheet (PDF nebo obrázek): AI najde, kam co patří, ty to zkontroluješ v editoru a šablona se uloží k tvému účtu.",
+    "step1": "1. Postava",
+    "pickYourCharacter": "jedna z tvých postav",
+    "pickCharacter": "Soubor postavy (.luso-character.json)",
+    "badCharacter": "Tohle není soubor postavy z této appky.",
+    "step2": "2. Character sheet",
+    "step2Hint": "PDF (vyplnitelné i obyčejné) nebo obrázek / sken prázdného sheetu.",
+    "pickSheet": "Vyber sheet (PDF, PNG, JPG)",
+    "formFields": "{{count}} formulářových polí",
+    "templateFound": "Známý sheet: šablona „{{name}}“.",
+    "templateNew": "Nový sheet: potřebuje šablonu (kam co patří).",
+    "analyze": "Analyzovat",
+    "reanalyze": "Analyzovat znovu",
+    "analyzeLocal": "🔍 Jen místní analýza",
+    "analyzeLocalHint": "Bez AI funguje u vyplňovacích PDF (formulářová pole); u tištěných sheetů rozmístíš políčka ručně.",
+    "needKey": "AI potřebuje API klíč (PDF → Nastavení AI).",
+    "provider": "AI",
+    "edit": "✏️ Upravit šablonu",
+    "step3": "3. Uložit vyplněný sheet",
+    "fillSave": "💾 Vyplnit a uložit PDF",
+    "needCharacter": "Nejdřív vyber postavu.",
+    "saved": "Uloženo: {{path}}",
+    "missing": "{{count}} formulářových polí se v PDF nenašlo.",
+    "analyzing": "{{ai}} prohlíží sheet… (obvykle 1–4 minuty)",
+    "aiResult": "{{name}}: umístěno {{count}} hodnot.",
+    "aiError": "{{name}} selhal: {{error}}",
+    "errors": {
+      "no-key": "chybí API klíč (PDF → Nastavení AI)",
+      "auth": "API klíč není platný",
+      "rate-limit": "příliš mnoho požadavků, zkus to za minutu",
+      "refusal": "požadavek byl odmítnut",
+      "max-tokens": "odpověď byla moc dlouhá",
+      "bad-json": "odpověď nešla přečíst",
+      "cancelled": "zrušeno",
+      "model": "model není pro tento klíč dostupný",
+      "failed": "požadavek selhal"
+    },
+    "templates": "Tvoje šablony sheetů",
+    "noTemplates": "Zatím žádné.",
+    "deleteTemplate": "Smazat šablonu „{{name}}“?",
+    "anySheetTitle": "Jakýkoli jiný sheet (AI)",
+    "anySheetHint": "Grafický, naskenovaný nebo netypický sheet, fotka: AI najde, kam co patří.",
+    "anySheetButton": "Vyplnit jiný sheet postavou {{name}}",
+    "anySheetWeb": "Jakýkoli jiný sheet (grafický, naskenovaný, fotku) vyplní s pomocí AI desktopová appka. Nebo si pro ni stáhni soubor této postavy:",
+    "fromSheetTitle": "Založit z vyplněného character sheetu",
+    "fromSheetShort": "PDF, sken nebo fotka sheetu, který už máš.",
+    "fromSheetHint": "Vyber sheet: vyplňovací PDF se přečte přímo tady; před vytvořením postavy zkontroluješ, co se spárovalo s obsahem.",
+    "fromSheetDesktop": "Skeny, fotky, grafické a ručně psané sheety přečte s pomocí AI desktopová appka.",
+    "pickFilled": "Vyber vyplněný sheet (PDF nebo obrázky; víc obrázků = víc stran)",
+    "readLocal": "přečteno {{count}} vyplněných polí",
+    "readNone": "žádná vyplněná formulářová pole",
+    "useLocal": "Pokračovat s přečteným",
+    "read": "Přečíst pomocí AI",
+    "reading": "{{ai}} čte sheet…",
+    "keyTitle": "AI a API klíče",
+    "keyHint": "Analýza používá tvůj vlastní API klíč od Clauda (Anthropic), ChatGPT (OpenAI) nebo Gemini (Google); stačí jeden. Klíče zůstávají jen v tomto počítači{{enc}}. Vybrané kolečko je výchozí AI; u každého tlačítka jde zvolit jiná.",
+    "keyEncrypted": ", zašifrované systémovou klíčenkou",
+    "keyPlain": " (systém nemá klíčenku: uložené nešifrovaně v datové složce appky)",
+    "keySaved": "Klíč je uložený.",
+    "keyEnv": "Používá se klíč z proměnné prostředí.",
+    "keyNone": "Zatím žádný klíč.",
+    "keySave": "Uložit klíč",
+    "keyClear": "Odebrat klíč",
+    "default": "výchozí",
+    "model": "Model",
+    "tierBest": "nejpřesnější",
+    "tierFast": "levnější, rychlejší",
+    "getKey": "Získat klíč ↗",
+    "costs": "Analýza se platí z API kreditu účtu u poskytovatele podle jeho ceníku: nejpřesnější modely stojí desítky centů za sheet, levnější zlomek.",
+    "privacy": "Posílají se jen stránky sheetu (a při vyplňování hodnoty postavy), jen vybrané AI a jen když zmáčkneš Analyzovat / Přečíst.",
+    "signInBrowser": "Přihlas se v okně prohlížeče, které se otevřelo, a pak se vrať sem.",
+    "signInCancelled": "přihlášení zrušeno",
+    "loginTitle": "Přihlášení do desktopové appky",
+    "loginIntro": "Google nedovoluje přihlášení uvnitř aplikací, proto proběhne tady v prohlížeči. Po přihlášení se vrátíš rovnou do appky.",
+    "loginDone": "Přihlášeno. Okno můžeš zavřít a vrátit se do appky.",
+    "loginInvalid": "Tento odkaz už neplatí: spusť přihlášení znovu v desktopové appce."
+  },
+  "createTour": {
+    "open": "Průvodce",
+    "start": "Ukázat",
+    "offer": "Zakládáš první postavu? Krátký průvodce ukáže jednotlivé kroky.",
+    "steps": {
+      "welcome": {
+        "title": "Tvorba postavy",
+        "body": "Krok za krokem a vybíráš jen z toho, co tvoje postava opravdu může mít: appka hlídá počty a zbytek udělá sama.\n\nKe každému kroku se můžeš kdykoli vrátit; nic se neuloží až do posledního kroku."
+      },
+      "fromSheet": {
+        "title": "Už máš sheet?",
+        "body": "Z vyplněného character sheetu může být postava hned: vyplňovací PDF se přečte tady a před vytvořením postavy uvidíš, co se spárovalo s obsahem.\n\nSkeny, fotky, grafické a ručně psané sheety přečte s pomocí AI desktopová appka."
+      },
+      "edition": {
+        "title": "Edice",
+        "body": "5.5e (2024) nebo 5e (2014): pravidla, podle kterých se počítá každé číslo na sheetu. Každá postava má vlastní."
+      },
+      "level": {
+        "title": "Startovní level",
+        "body": "Vyšší level nejdřív založí postavu na 1. levelu a pak tě Level up provede každým levelem i s jeho volbami."
+      },
+      "books": {
+        "title": "Knihy",
+        "body": "Ze kterých knih může postava čerpat (SRD je vždy zapnuté). Se svolením DM jde i postavě 5.5e povolit starší subclassy, rasy, backgroundy a featy z 5e."
+      },
+      "origins": {
+        "title": "Classa, druh a background",
+        "body": "Další tři kroky: každý seznam je abecedně, s vyhledáváním a filtry (hit die, sesílání, velikost, darkvision, dovednosti…). Najetím na jméno uvidíš pravidlo, Ctrl+klik otevře jeho stránku na wiki."
+      },
+      "rest": {
+        "title": "Vlastnosti, volby, vybavení, jméno",
+        "body": "Vlastnosti: standard array, point buy nebo vlastní hody. Pak dovednosti, jazyky, featy a kouzla, které ti volby dovolí vybrat, startovní vybavení (nebo zlato) a jméno. Co zůstane otevřené, dokončíš později tlačítkem ⚠️ na sheetu."
+      },
+      "finish": {
+        "title": "Dál",
+        "body": "Tlačítkem Dál pokračuješ; lišta kroků nahoře tě vrátí zpět. Na konci Vytvořit otevře tvůj nový sheet."
       }
     }
   }

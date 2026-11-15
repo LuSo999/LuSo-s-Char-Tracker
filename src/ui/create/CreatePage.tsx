@@ -1,9 +1,12 @@
-import { useCallback, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import type { ContentIndex } from '../../content'
 import { abilities, type Ability, type Edition, type EquipmentChoice } from '../../content/schema'
-import type { Character } from '../../engine/character'
+import { Character } from '../../engine/character'
+import type { SheetImport } from '../../engine/exchange'
+import { DesktopHint } from '../../desktop/DesktopHint'
+import { SheetImportDialog } from '../SheetImportDialog'
 import {
   buildCharacter,
   gearComplete,
@@ -28,6 +31,7 @@ import { RuleRef } from '../rules/RuleRef'
 import { DraftSheet } from '../levelup/DraftSheet'
 import { DecisionList } from '../levelup/LevelUpDialog'
 import { BackgroundPicker, ClassPicker, SpeciesPicker } from './Pickers'
+import { CreateTourButton, CreateTourOffer } from '../tour/CreateTour'
 import { NumberInput } from '../NumberInput'
 import { signed } from '../sheet/format'
 import { BooksPicker, OtherEditionBadge } from '../sheet/BooksPicker'
@@ -44,7 +48,11 @@ export function CreatePage({ uid, onCreate }: { uid: string; onCreate?: (c: Char
   const content = useContent(edition)
   return (
     <div className="mx-auto max-w-4xl p-4">
-      <h1 className="mb-3 font-heading text-2xl font-semibold">{t('create.title')}</h1>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <h1 className="flex-1 font-heading text-2xl font-semibold">{t('create.title')}</h1>
+        <CreateTourButton />
+      </div>
+      <CreateTourOffer />
       {!content ? <p className="text-muted">{t('loading')}</p> : <Wizard key={edition} uid={uid} edition={edition} setEdition={setEdition} content={content} onCreate={onCreate} />}
     </div>
   )
@@ -155,7 +163,7 @@ function Wizard({
         </button>
       )}
       {step !== 'details' ? (
-        <button className="ml-auto rounded bg-accent px-3 py-1.5 text-sm font-semibold text-accent-text disabled:opacity-50" disabled={!valid[step]} onClick={() => setStep(STEPS[index + 1])}>
+        <button className="ml-auto rounded bg-accent px-3 py-1.5 text-sm font-semibold text-accent-text disabled:opacity-50" data-tour="create-next" disabled={!valid[step]} onClick={() => setStep(STEPS[index + 1])}>
           {t('levelUp.next')} ›
         </button>
       ) : (
@@ -170,7 +178,7 @@ function Wizard({
 
   return (
     <div className="framed rounded-card border border-border bg-card p-4 shadow-sm">
-      <ol className="mb-4 flex flex-wrap gap-1 text-xs">
+      <ol className="mb-4 flex flex-wrap gap-1 text-xs" data-tour="create-steps">
         {STEPS.map((s, i) => (
           <li key={s}>
             <button
@@ -186,7 +194,8 @@ function Wizard({
 
       {step === 'basics' && (
         <section className="space-y-3 text-sm">
-          <div>
+          <FromSheet uid={uid} onCreate={onCreate} />
+          <div data-tour="create-edition">
             <h2 className="mb-1 font-semibold">{t('create.edition')}</h2>
             {(['2024', '2014'] as Edition[]).map((e) => (
               <label key={e} className={`${radio(edition === e)} mb-1`}>
@@ -198,12 +207,12 @@ function Wizard({
               </label>
             ))}
           </div>
-          <label className="flex items-center gap-2">
+          <label className="flex items-center gap-2" data-tour="create-level">
             <span className="font-semibold">{t('create.startLevel')}</span>
             <NumberInput className="w-16 rounded border border-border bg-card px-1.5 py-0.5" ariaLabel={t('create.startLevel')} value={level} min={1} max={20} onChange={setLevel} />
           </label>
           {level > 1 && <p className="text-xs text-muted">{t('create.higherLevelHint', { level })}</p>}
-          <div>
+          <div data-tour="create-books">
             <h2 className="mb-1 font-semibold">{t('books.title')}</h2>
             <p className="mb-1 text-xs text-muted">{t('books.hint')}</p>
             <BooksPicker content={allContent} books={books} onChange={setBooks} legacy={{ on: legacy, onChange: setLegacy }} legacyOrigins={{ on: legacyOrigins, onChange: setLegacyOrigins }} />
@@ -569,6 +578,48 @@ function GearChoices({
           ))}
         </div>
       ))}
+    </div>
+  )
+}
+
+// The sheet reading tools (pdf.js) load only when this path is opened.
+const SheetToCharacter = lazy(() => import('../../desktop/SheetToCharacter').then((m) => ({ default: m.SheetToCharacter })))
+
+/** Another way to start: a filled character sheet (PDF, scan, photos) read into a new character. */
+function FromSheet({ uid, onCreate }: { uid: string; onCreate?: (c: Character, levelTo: number) => void }) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [data, setData] = useState<SheetImport>()
+  return (
+    <div className="rounded border border-dashed border-accent/70 bg-accent/5 p-3" data-tour="create-from-sheet">
+      <button className="flex w-full items-center gap-2 text-left" onClick={() => setOpen(!open)} aria-expanded={open}>
+        <span className="text-lg">📥</span>
+        <span className="flex-1">
+          <strong>{t('desk.fromSheetTitle')}</strong>
+          <span className="block text-xs text-muted">{t('desk.fromSheetShort')}</span>
+        </span>
+        <span className="text-muted">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div className="mt-3">
+          <Suspense fallback={<p className="text-muted">{t('loading')}</p>}>
+            <SheetToCharacter onResult={setData} />
+          </Suspense>
+        </div>
+      )}
+      {!open && <div className="mt-2"><DesktopHint text={t('desk.fromSheetDesktop')} /></div>}
+      {data && (
+        <SheetImportDialog
+          data={data}
+          onClose={() => setData(undefined)}
+          onCreate={async (c) => {
+            if (onCreate) return onCreate(Character.parse({ id: 'dev', ...c }), 1)
+            const id = await addCharacter(uid, c)
+            navigate(`/c/${id}`)
+          }}
+        />
+      )}
     </div>
   )
 }

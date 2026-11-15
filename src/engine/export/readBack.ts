@@ -49,6 +49,16 @@ export function parseItem(line: string): SheetImport['items'][number] {
   return { name: name.trim(), quantity, ...(equipped ? { equipped } : {}) }
 }
 
+/**
+ * Feat names from a feats box: "Name: what it does" per feat (descriptions may wrap onto more
+ * lines, which are skipped), or a plain list of names.
+ */
+export function featNames(text: string): string[] {
+  const lines = text.split(/\r?\n/).map((l) => l.replace(/^[\s•\-–*]+/, '').trim()).filter(Boolean)
+  if (lines.some((l) => l.includes(':'))) return lines.filter((l) => l.includes(':')).map((l) => l.split(':')[0].trim()).filter(Boolean)
+  return splitList(text)
+}
+
 /** A sheet import from export values (whatever of them the sheet had). */
 export function importFromValues(v: Values, edition?: '2014' | '2024'): SheetImport {
   const classes = parseClasses(str(v.class) || [str(v.className), str(v.level)].filter(Boolean).join(' '), str(v.subclass))
@@ -114,12 +124,7 @@ export function importFromValues(v: Values, edition?: '2014' | '2024'): SheetImp
     tools: splitList(str(v['prof.tools'])),
     cantrips: [...cantrips],
     spells: [...spells],
-    // "Name: what it does" per line, or a plain list of names.
-    feats: str(v.feats)
-      .split(/\r?\n/)
-      .flatMap((l) => (l.includes(':') ? [l.split(':')[0]] : splitList(l)))
-      .map((f) => f.replace(/^[\s•\-–*]+/, '').trim())
-      .filter(Boolean),
+    feats: featNames(str(v.feats)),
     items: splitList(str(v.equipment)).map(parseItem).filter((i) => i.name),
     currency,
     notes,

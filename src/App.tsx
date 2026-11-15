@@ -25,6 +25,10 @@ import { SignIn } from './ui/SignIn'
 import { Toasts } from './ui/Toasts'
 import { Effects } from './ui/fx/Effects'
 import { TourPage } from './ui/tour/TourPage'
+import { DesktopLogin } from './desktop/DesktopLogin'
+
+// The desktop app's PDF tools load only when opened.
+const PdfPage = lazy(() => import('./desktop/PdfPage').then((m) => ({ default: m.PdfPage })))
 
 // Dev-only sheet preview without sign-in; compiled out of production builds.
 const DevPreview = import.meta.env.DEV ? lazy(() => import('./ui/DevPreview')) : null
@@ -57,6 +61,8 @@ function Main() {
     if (uid) void loadOfficial(true)
   }, [uid])
 
+  // Opened by the desktop app in the system browser to sign in there (works signed out too).
+  if (location.hash.startsWith('#/desktop-login')) return <DesktopLogin />
   if (DevPreview && location.hash.startsWith('#/dev')) {
     return (
       <Suspense>
@@ -87,6 +93,7 @@ function Main() {
       <Route path="/homebrew/:packId/:entityId" element={<EntityEditor uid={uid} />} />
       <Route path="/settings" element={<SettingsPage uid={uid} />} />
       <Route path="/tour" element={<TourPage />} />
+      <Route path="/pdf" element={<Suspense fallback={null}><PdfPage uid={uid} /></Suspense>} />
       {ADMIN_UIDS.includes(uid) && <Route path="/admin" element={<AdminPage />} />}
       {ADMIN_UIDS.includes(uid) && <Route path="/feedback" element={<FeedbackPage />} />}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'" />
+    <title>LuSo's Char Tracker</title>
+    <style>
+      :root { color-scheme: light dark; --bg: #f4f1ea; --card: #fff; --text: #1f1b16; --muted: #6b6258; --accent: #7a3b12; --accent-text: #fff; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #15130f; --card: #221f1a; --text: #ece6dc; --muted: #a89f92; --accent: #d9894f; --accent-text: #15130f; } }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--text); font-family: Roboto, system-ui, sans-serif; }
+      main { background: var(--card); padding: 2rem; border-radius: 0.75rem; max-width: 28rem; margin: 1rem; box-shadow: 0 1px 3px rgb(0 0 0 / 0.15); }
+      p { color: var(--muted); }
+      button { background: var(--accent); color: var(--accent-text); border: 0; border-radius: 0.375rem; padding: 0.5rem 1rem; font-weight: 600; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>🎲 LuSo's Char Tracker</h1>
+      <p>The app couldn't reach the internet. Your characters are stored online, so the app needs a connection.</p>
+      <p>Appka se nemůže připojit k internetu. Postavy jsou uložené online, takže appka potřebuje připojení.</p>
+      <button onclick="window.lusoOffline && window.lusoOffline.retry()">↻ Try again / Zkusit znovu</button>
+    </main>
+  </body>
+</html>
