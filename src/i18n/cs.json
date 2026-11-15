@@ -1270,5 +1270,90 @@
     "matched": "Spárováno",
     "unmatched": "V tvém obsahu nenalezeno:",
     "create": "Vytvořit postavu"
+  },
+  "tour": {
+    "open": "Prohlídka appky",
+    "start": "Spustit prohlídku",
+    "notNow": "Teď ne",
+    "offerTitle": "Jsi tu poprvé?",
+    "offerText": "Dvouminutová prohlídka na ukázkové postavě ukáže, co appka umí. Nic se neuloží.",
+    "skip": "Přeskočit prohlídku",
+    "close": "Zavřít",
+    "back": "Zpět",
+    "next": "Dál",
+    "again": "Prohlídka znovu",
+    "toCharacters": "Tvoje postavy",
+    "sampleBanner": "Ukázková postava: klikej, házej, odpočívej, levelu – nic se neukládá.",
+    "desktopLink": "Desktopová appka na libovolný character sheet (Windows, macOS, Linux)",
+    "steps": {
+      "welcome": {
+        "title": "Vítej v LuSo's Char Tracker",
+        "body": "Character sheet, který za tebe počítá, pro D&D 5e (2014) i 5.5e (2024). Jede primárně z oficiálního materiálu od Wizards of the Coast.\n\nTohle je ukázková postava, Goliath Champion 4. levelu. Klikej na cokoli, nic se neuloží. Dál se posuneš tlačítkem Dál (nebo šipkami), Esc prohlídku zavře."
+      },
+      "identity": {
+        "title": "Postava",
+        "body": "Jméno, classa a subclass, druh a background. Na cokoli z pravidel stačí najet (nebo klepnout) a ukáže se náhled pravidla.\n\nCtrl+klik (na Macu Cmd+klik) otevře jeho stránku na wiki, kde si pravidlo zkontroluješ. Podržením Ctrl se zvýrazní všechno, co jde takhle otevřít."
+      },
+      "vitals": {
+        "title": "Životy a obrana",
+        "body": "HP, temporary HP, AC, iniciativa a rychlost. Do políčka u HP napiš třeba 7 a zmáčkni − (dostal jsem 7 damage) nebo + (léčení).\n\nAppka hlídá pravidla: damage jde nejdřív z temporary HP, léčení nepřekročí maximum a na nule se nabídnou death saves."
+      },
+      "abilities": {
+        "title": "Vlastnosti, záchrany a dovednosti",
+        "body": "Všechno se počítá samo z classy, druhu, backgroundu, featů a předmětů. Najeď na hodnotu (na telefonu klepni) a uvidíš, z čeho se skládá. Proficience jsou zvýrazněné."
+      },
+      "actions": {
+        "title": "Akce",
+        "body": "Všechno, co postava právě může udělat: útoky zbraní, kouzla, schopnosti classy, předměty. Filtry třídí podle Action / Bonus action / Reaction.\n\nKliknutím akci použiješ: odečte se munice, spell slot nebo použití a zapíše se to do historie."
+      },
+      "resources": {
+        "title": "Zdroje",
+        "body": "Použití schopností jako klikací tečky (Second Wind, Action Surge, Hit Dice…), u každé je, kdy se obnoví."
+      },
+      "features": {
+        "title": "Featury",
+        "body": "Schopnosti z classy, druhu, backgroundu a featů, s popisem a náhledem pravidla."
+      },
+      "rest": {
+        "title": "Short a long rest",
+        "body": "Odpočinek otevře dialog, který ukáže, co se obnoví (u short restu nabídne utracení Hit Dice). Po potvrzení se vše provede podle pravidel edice."
+      },
+      "undo": {
+        "title": "Zpět",
+        "body": "Překliknutí u stolu? Zpět (nebo Ctrl+Z) vrátí poslední akci, i celý odpočinek."
+      },
+      "levelup": {
+        "title": "Level up",
+        "body": "Průvodce krok za krokem: classa (i multiclass), HP, nové featury a volby. Vybíráš jen z toho, co tvoje postava opravdu může mít."
+      },
+      "edit": {
+        "title": "Edit mód",
+        "body": "Všechno jde přepsat: hodnoty, počty použití, názvy, popisy. Změněná hodnota je označená ✎ a jedním klikem se vrátí na spočítanou.\n\nTady se taky vybírají knihy, ze kterých postava může čerpat. Vlastní homebrew obsah (featury, předměty, kouzla…) vytvoříš v sekci Homebrew na seznamu postav."
+      },
+      "spells": {
+        "title": "Kouzla",
+        "body": "Z levého okraje (na telefonu dole) se vysune panel kouzel: spell sloty, připravená kouzla, detail kouzla a koncentrace."
+      },
+      "inventory": {
+        "title": "Inventář a vybavení",
+        "body": "Z pravého okraje se vysune inventář: batoh, peníze, nasazování předmětů, attunement a náboje. Co má postava na sobě a v ruce, ukazuje panel Equipped."
+      },
+      "history": {
+        "title": "Historie",
+        "body": "Každá akce, odpočinek i level up se zapisuje s časem. Dá se v ní hledat a zvlášť zobrazit herní dění a změny sheetu."
+      },
+      "export": {
+        "title": "Export do PDF a desktopová appka",
+        "body": "📄 PDF vyplní postavu do oficiálního character sheetu 2024.\n\nNa jakýkoli jiný sheet, i grafický nebo naskenovaný, je desktopová appka pro Windows, macOS a Linux. S pomocí AI vyplní libovolný sheet a umí to i obráceně: z vyplněného PDF nebo fotky papírového sheetu udělá postavu k importu."
+      },
+      "look": {
+        "title": "Vzhled, jazyk a nastavení",
+        "body": "🎨 mění vzhled (každá postava může mít vlastní), vedle je jazyk a ⚙️ nastavení účtu. ❓ spustí tuhle prohlídku kdykoli znovu."
+      },
+      "finish": {
+        "title": "Hotovo!",
+        "body": "Teď si založ vlastní postavu: průvodce tě provede od edice přes classu, druh a background až po vybavení. S ukázkovou postavou si tu můžeš dál hrát."
+      }
+    }
   }
 }

@@ -1270,5 +1270,90 @@
     "matched": "Matched",
     "unmatched": "Not found in your content:",
     "create": "Create the character"
+  },
+  "tour": {
+    "open": "Guided tour",
+    "start": "Start the tour",
+    "notNow": "Not now",
+    "offerTitle": "New here?",
+    "offerText": "A two-minute tour on a sample character shows what the app can do. Nothing is saved.",
+    "skip": "Skip the tour",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "again": "Tour again",
+    "toCharacters": "Your characters",
+    "sampleBanner": "Sample character: click, roll, rest, level up — nothing is saved.",
+    "desktopLink": "Desktop app for any character sheet (Windows, macOS, Linux)",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to LuSo's Char Tracker",
+        "body": "A character sheet that does the math for you, for D&D 5e (2014) and 5.5e (2024). It runs mainly on the official Wizards of the Coast material.\n\nThis is a sample character, a level 4 Goliath Champion. Click anything you like: nothing is saved. Move on with Next (or the arrow keys); Esc closes the tour."
+      },
+      "identity": {
+        "title": "The character",
+        "body": "Name, class and subclass, species and background. Point at (or tap) anything that comes from the rules and a preview of the rule appears.\n\nCtrl+click (Cmd+click on a Mac) opens its wiki page, so you can check the rule. Holding Ctrl highlights everything that can be opened like that."
+      },
+      "vitals": {
+        "title": "Hit points and defense",
+        "body": "HP, temporary HP, AC, initiative and speed. Type 7 into the field by the HP and press − (took 7 damage) or + (healing).\n\nThe app keeps the rules: damage goes to temporary HP first, healing stops at the maximum, and at 0 HP death saves come up."
+      },
+      "abilities": {
+        "title": "Abilities, saves and skills",
+        "body": "Everything is computed from the class, species, background, feats and items. Point at a value (tap on a phone) to see what it is made of. Proficiencies are highlighted."
+      },
+      "actions": {
+        "title": "Actions",
+        "body": "Everything the character can do right now: weapon attacks, spells, class abilities, items. The filters sort by Action / Bonus action / Reaction.\n\nClicking an action uses it: ammunition, a spell slot or a use is spent and it goes into the history."
+      },
+      "resources": {
+        "title": "Resources",
+        "body": "Uses of abilities as dots you click (Second Wind, Action Surge, Hit Dice…), each with when it comes back."
+      },
+      "features": {
+        "title": "Features",
+        "body": "Features from the class, species, background and feats, with their description and the rule preview."
+      },
+      "rest": {
+        "title": "Short and long rest",
+        "body": "A rest opens a dialog showing what comes back (a short rest offers to spend Hit Dice). Confirm and everything is done by the rules of the edition."
+      },
+      "undo": {
+        "title": "Undo",
+        "body": "Clicked the wrong thing at the table? Undo (or Ctrl+Z) takes back the last action, a whole rest included."
+      },
+      "levelup": {
+        "title": "Level up",
+        "body": "A step-by-step guide: the class (multiclassing too), hit points, new features and choices. You only pick from what your character can really take."
+      },
+      "edit": {
+        "title": "Edit mode",
+        "body": "Everything can be overwritten: values, uses, names, descriptions. A changed value is marked ✎ and goes back to the computed one in one click.\n\nThis is also where you choose the books the character may use. Your own homebrew content (features, items, spells…) is made under Homebrew in the character list."
+      },
+      "spells": {
+        "title": "Spells",
+        "body": "From the left edge (at the bottom on a phone) slides the spell panel: spell slots, prepared spells, spell details and concentration."
+      },
+      "inventory": {
+        "title": "Inventory and equipment",
+        "body": "From the right edge slides the inventory: backpack, money, equipping items, attunement and charges. What the character wears and holds is shown in the Equipped panel."
+      },
+      "history": {
+        "title": "History",
+        "body": "Every action, rest and level up is written down with its time. You can search it and show game events and sheet changes separately."
+      },
+      "export": {
+        "title": "PDF export and the desktop app",
+        "body": "📄 PDF fills the character into the official 2024 character sheet.\n\nFor any other sheet, even a graphic or scanned one, there is a desktop app for Windows, macOS and Linux. With AI it fills any sheet, and it also works the other way: a filled PDF or a photo of a paper sheet becomes a character to import."
+      },
+      "look": {
+        "title": "Look, language and settings",
+        "body": "🎨 changes the look (each character can have its own), next to it is the language and ⚙️ the account settings. ❓ starts this tour again any time."
+      },
+      "finish": {
+        "title": "That's it!",
+        "body": "Now create your own character: the guide takes you from the edition through class, species and background to the equipment. You can keep playing with the sample here too."
+      }
+    }
   }
 }

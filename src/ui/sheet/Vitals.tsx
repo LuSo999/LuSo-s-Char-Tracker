@@ -39,7 +39,7 @@ export function Vitals() {
   }, [])
 
   return (
-    <div className="grid grid-cols-3 gap-2 sm:grid-cols-[2.2fr_1fr_1fr_1fr_1.4fr]">
+    <div data-tour="vitals" className="grid grid-cols-3 gap-2 sm:grid-cols-[2.2fr_1fr_1fr_1fr_1.4fr]">
       {away && (
         <div className="fixed inset-x-0 top-0 z-30 border-b border-border bg-card px-3 pt-1 shadow-md sm:hidden">
           <div className="flex items-center gap-2">

@@ -1,8 +1,8 @@
 import { NumberAdjust } from './NumberAdjust'
 
-export function Panel({ title, icon, children, className = '' }: { title?: string; icon?: string; children: React.ReactNode; className?: string }) {
+export function Panel({ title, icon, children, className = '', tour }: { title?: string; icon?: string; children: React.ReactNode; className?: string; /** Spot for the guided tour. */ tour?: string }) {
   return (
-    <section className={`framed rounded-card border border-border bg-card p-3 shadow-sm ${className}`}>
+    <section data-tour={tour} className={`framed rounded-card border border-border bg-card p-3 shadow-sm ${className}`}>
       {title && (
         <h2 className="mb-2 font-heading text-sm font-semibold uppercase tracking-wide text-muted">
           {icon && (

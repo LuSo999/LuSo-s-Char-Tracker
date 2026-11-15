@@ -768,7 +768,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
   const thrown = Object.values(character.thrownOut).reduce((a, b) => a + b, 0)
 
   return (
-    <Panel title={t('sheet.actions')} icon="⚔️" className="flex min-h-0 flex-1 flex-col">
+    <Panel title={t('sheet.actions')} icon="⚔️" className="flex min-h-0 flex-1 flex-col" tour="actions">
       {mode !== 'off' && <TurnBar />}
       {sheet.spellcasting.any && onOpenSpells && <MagicTile onOpen={onOpenSpells} />}
       {mode !== 'off' && <AttackBanner />}

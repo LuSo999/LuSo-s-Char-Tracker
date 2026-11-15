@@ -27,7 +27,7 @@ export function EquippedPanel({ onOpen }: { onOpen: () => void }) {
   const attuned = character.inventory.filter((e) => e.attuned).length
 
   return (
-    <Panel>
+    <Panel tour="equipped">
       <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-2">
         <button className="font-heading text-sm font-semibold uppercase tracking-wide text-muted hover:text-accent" onClick={onOpen} title={t('inventory.open')}>
           <span className="mr-1.5" aria-hidden>

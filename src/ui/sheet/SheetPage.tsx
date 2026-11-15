@@ -133,7 +133,7 @@ function TopBar({
 
   return (
     <div className="framed-sm mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-card border border-border bg-card px-4 py-1.5 shadow-sm">
-      <div className="min-w-0">
+      <div className="min-w-0" data-tour="identity">
         <CharacterName />
         <div className="text-sm text-muted">
           {classes.map(({ entry, cls, sub }, i) => (
@@ -170,10 +170,10 @@ function TopBar({
         <NumberAdjust label="XP" value={character.xp} valueClassName="font-semibold text-text" onSet={(v) => void run(adjustXp(character, v - character.xp))} onDelta={(d) => void run(adjustXp(character, d))} />
       </span>
       <div className="ml-auto flex flex-wrap gap-1 sm:gap-1.5">
-        <button className={button} onClick={() => onRest('short')}>
+        <button className={button} data-tour="rest" onClick={() => onRest('short')}>
           ☕ <Term id="rule-short-rest">{t('sheet.buttons.shortRest')}</Term>
         </button>
-        <button className={button} onClick={() => onRest('long')}>
+        <button className={button} data-tour="rest" onClick={() => onRest('long')}>
           🌙 <Term id="rule-long-rest">{t('sheet.buttons.longRest')}</Term>
         </button>
         {pending > 0 && (
@@ -182,12 +182,13 @@ function TopBar({
             <span className="hidden sm:inline">{t('levelUp.badge', { count: pending })}</span>
           </button>
         )}
-        <button className={`${button} hidden sm:inline-block`} onClick={onLevelUp}>
+        <button className={`${button} hidden sm:inline-block`} data-tour="levelup" onClick={onLevelUp}>
           ⬆️ {t('sheet.buttons.levelUp')}
         </button>
         <EditToggle className={`${button} hidden sm:inline-block`} />
         <button
           className={button}
+          data-tour="undo"
           disabled={!last}
           aria-label={t('undo')}
           title={last ? `${t('sheet.undoHint', { what: groupSummary(t, last) })} (Ctrl+Z)` : undefined}
@@ -200,7 +201,7 @@ function TopBar({
           ↶<span className="hidden sm:inline"> {t('undo')}</span>
         </button>
         <ExportButton className={`${button} hidden sm:inline-block`} />
-        <button className={`${button} hidden sm:inline-block`} onClick={onHistory}>
+        <button className={`${button} hidden sm:inline-block`} data-tour="history" onClick={onHistory}>
           📜 {t('sheet.buttons.history')}
         </button>
         <Link to="/" className={`${button} hidden sm:inline-block`}>
@@ -278,7 +279,7 @@ function ExportButton({ className }: { className: string }) {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <button className={className} title={t('export.title')} onClick={() => setOpen(true)}>
+      <button className={className} data-tour="export" title={t('export.title')} onClick={() => setOpen(true)}>
         📄 {t('sheet.buttons.export')}
       </button>
       {open && (
@@ -299,7 +300,7 @@ function MoreMenu({ className, onLevelUp }: { className: string; onLevelUp: () =
   const item = 'block w-full rounded px-3 py-2 text-left text-sm hover:bg-bg'
   return (
     <div className="relative sm:hidden">
-      <button className={className} aria-label={t('sheet.buttons.more')} aria-expanded={open} onClick={() => setOpen(!open)}>
+      <button className={className} data-tour="more" aria-label={t('sheet.buttons.more')} aria-expanded={open} onClick={() => setOpen(!open)}>
         ⋯
       </button>
       {open && (
@@ -356,7 +357,7 @@ function EditToggle({ className }: { className: string }) {
   const { t } = useTranslation()
   const { on, toggle } = useEditMode()
   return (
-    <button className={`${className} ${on ? 'border-accent bg-accent text-accent-text hover:bg-accent' : ''}`} onClick={toggle} aria-pressed={on}>
+    <button className={`${className} ${on ? 'border-accent bg-accent text-accent-text hover:bg-accent' : ''}`} data-tour="edit" onClick={toggle} aria-pressed={on}>
       {on ? `✅ ${t('edit.done')}` : `✏️ ${t('sheet.buttons.editMode')}`}
     </button>
   )
@@ -535,14 +536,14 @@ function SheetLayout() {
       {/* The bar switches straight between panels (it doesn't count as a click outside them). */}
       <nav data-keep-panels className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-card pb-[env(safe-area-inset-bottom)] sm:hidden">
         {sheet.spellcasting.any && (
-          <button className="flex-1 border-r border-border py-2.5 text-sm font-semibold" onClick={() => openOnly('spells')}>
+          <button className="flex-1 border-r border-border py-2.5 text-sm font-semibold" data-tour="spells" onClick={() => openOnly('spells')}>
             ✨ {t('spells.title')}
           </button>
         )}
-        <button className="flex-1 py-2.5 text-sm font-semibold" onClick={() => openOnly('inventory')}>
+        <button className="flex-1 py-2.5 text-sm font-semibold" data-tour="inventory" onClick={() => openOnly('inventory')}>
           🎒 {t('inventory.title')}
         </button>
-        <button className="flex-1 border-l border-border py-2.5 text-sm font-semibold" onClick={() => openOnly('history')}>
+        <button className="flex-1 border-l border-border py-2.5 text-sm font-semibold" data-tour="history" onClick={() => openOnly('history')}>
           📜 {t('sheet.buttons.history')}
         </button>
       </nav>

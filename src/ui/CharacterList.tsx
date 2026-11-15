@@ -7,6 +7,7 @@ import { useOfficial } from '../state/official'
 import { Card } from './Card'
 import { parseSheetImport, type SheetImport } from '../engine/exchange'
 import { SheetImportDialog } from './SheetImportDialog'
+import { markTourSeen, tourSeen } from './tour/seen'
 
 export function CharacterList({ uid }: { uid: string }) {
   const { t } = useTranslation()
@@ -45,6 +46,7 @@ export function CharacterList({ uid }: { uid: string }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 px-4 py-8">
+      <TourOffer />
       <Card>
         <h2 className="font-heading text-xl">{t('characters.title')}</h2>
         {error && <p className="mt-3 text-sm text-danger">{t('characters.loadFailed', { message: error.message })}</p>}
@@ -125,6 +127,33 @@ export function CharacterList({ uid }: { uid: string }) {
         {official.status === 'error' && t('content.error', { message: official.error })}
       </p>
       {sheetImport && <SheetImportDialog data={sheetImport} onClose={() => setSheetImport(undefined)} onCreate={async (c) => void (await addCharacter(uid, c))} />}
+    </div>
+  )
+}
+
+/** New here: a short offer of the guided tour (until it is taken or dismissed). */
+function TourOffer() {
+  const { t } = useTranslation()
+  const [hidden, setHidden] = useState(tourSeen)
+  if (hidden) return null
+  return (
+    <div className="framed flex flex-wrap items-center gap-3 rounded-card border-2 border-accent bg-accent/10 p-4">
+      <p className="min-w-0 flex-1 text-sm">
+        <strong>🧭 {t('tour.offerTitle')}</strong>
+        <span className="block text-muted">{t('tour.offerText')}</span>
+      </p>
+      <Link to="/tour" className="rounded bg-accent px-4 py-2 font-semibold text-accent-text">
+        {t('tour.start')}
+      </Link>
+      <button
+        className="text-sm text-muted hover:underline"
+        onClick={() => {
+          markTourSeen()
+          setHidden(true)
+        }}
+      >
+        {t('tour.notNow')}
+      </button>
     </div>
   )
 }

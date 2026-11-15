@@ -83,6 +83,7 @@ export function EdgeHandle({ side, icon, label, onClick }: { side: 'left' | 'rig
     <button
       onClick={onClick}
       aria-label={label}
+      data-tour={side === 'left' ? 'spells' : 'inventory'}
       data-keep-panels
       className={`fixed top-1/2 z-20 hidden min-h-64 w-9 -translate-y-1/2 flex-col items-center justify-center gap-2 border border-border bg-card py-5 text-sm font-semibold shadow-md hover:bg-accent hover:text-accent-text sm:flex ${side === 'left' ? 'left-0 rounded-r-card border-l-0' : 'right-0 rounded-l-card border-r-0'}`}
     >

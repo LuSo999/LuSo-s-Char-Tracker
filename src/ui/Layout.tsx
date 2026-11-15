@@ -32,7 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="hidden sm:block">
             <ShortcutsButton />
           </div>
-          <label className="flex items-center gap-1 text-sm text-muted">
+          <label data-tour="language" className="flex items-center gap-1 text-sm text-muted">
             <span className="sr-only">{t('language')}</span>
             <select
               className="rounded border border-border bg-card px-2 py-1 text-text"
@@ -50,10 +50,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ))}
             </select>
           </label>
-          <ThemeButton />
+          <span data-tour="theme" className="inline-flex">
+            <ThemeButton />
+          </span>
           {user && (
             <>
-              <Link to="/settings" className="text-sm text-muted hover:underline" aria-label={t('settings.title')}>
+              <Link to="/tour" className="text-sm text-muted hover:underline" title={t('tour.open')} aria-label={t('tour.open')}>
+                ❓
+              </Link>
+              <Link to="/settings" data-tour="settings" className="text-sm text-muted hover:underline" aria-label={t('settings.title')}>
                 <span aria-hidden>⚙️</span>
                 <span className="hidden sm:inline"> {t('settings.title')}</span>
               </Link>

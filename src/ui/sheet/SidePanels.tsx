@@ -29,7 +29,7 @@ export function ResourcesPanel() {
   const run = useRun()
   const edit = useEditMode((s) => s.on)
   return (
-    <Panel title={t('sheet.resources')} icon="🔋">
+    <Panel title={t('sheet.resources')} icon="🔋" tour="resources">
       {(sheet.spellcasting.slots.length > 0 || sheet.spellcasting.pact) && (
         <div className="mb-2 border-b border-border pb-2">
           <div className="flex items-center justify-between gap-2">
@@ -274,7 +274,7 @@ export function FeaturesPanel() {
   const extraOf = (ae: ActiveEntity) => (/^extra:([^/]+)$/.exec(ae.grantKey) ? character.extras.find((x) => `extra:${x.uid}` === ae.grantKey) : undefined)
 
   return (
-    <Panel title={t('sheet.features')} icon="📜">
+    <Panel title={t('sheet.features')} icon="📜" tour="features">
       {groups.map((g) => (
         <div key={g.key} className="mb-2">
           <h3 className="text-xs font-semibold uppercase text-muted">{g.title}</h3>

@@ -24,6 +24,7 @@ import { SheetPage } from './ui/sheet/SheetPage'
 import { SignIn } from './ui/SignIn'
 import { Toasts } from './ui/Toasts'
 import { Effects } from './ui/fx/Effects'
+import { TourPage } from './ui/tour/TourPage'
 
 // Dev-only sheet preview without sign-in; compiled out of production builds.
 const DevPreview = import.meta.env.DEV ? lazy(() => import('./ui/DevPreview')) : null
@@ -85,6 +86,7 @@ function Main() {
       <Route path="/homebrew/:packId" element={<PackPage uid={uid} />} />
       <Route path="/homebrew/:packId/:entityId" element={<EntityEditor uid={uid} />} />
       <Route path="/settings" element={<SettingsPage uid={uid} />} />
+      <Route path="/tour" element={<TourPage />} />
       {ADMIN_UIDS.includes(uid) && <Route path="/admin" element={<AdminPage />} />}
       {ADMIN_UIDS.includes(uid) && <Route path="/feedback" element={<FeedbackPage />} />}
       <Route path="*" element={<Navigate to="/" replace />} />

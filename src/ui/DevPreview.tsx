@@ -17,6 +17,7 @@ import { HomebrewPage } from './homebrew/HomebrewPage'
 import { PackPage } from './homebrew/PackPage'
 import { EntityEditor } from './homebrew/EntityEditor'
 import { CreatePage } from './create/CreatePage'
+import { TourPage } from './tour/TourPage'
 
 const privateFiles: Partial<Record<string, () => Promise<{ default: unknown }>>> = import.meta.glob<{ default: unknown }>('../../private/{official-content,valdric}.json')
 
@@ -68,6 +69,8 @@ export default function DevPreview() {
   const createdContent = useMemo(() => created && state && new ContentIndex(created.character.edition, created.character.edition === '2014' ? [...state.packs].reverse() : state.packs), [created, state])
   // #/dev/homebrew tries the homebrew editor with packs kept in memory.
   if (location.hash.startsWith('#/dev/homebrew')) return <DevHomebrew />
+  // #/dev/tour tries the guided tour.
+  if (location.hash.startsWith('#/dev/tour')) return <TourPage />
   if (location.hash.startsWith('#/dev/new') && !created) {
     return (
       <CreatePage
