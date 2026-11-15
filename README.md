@@ -4,9 +4,24 @@ I was not happy with any of the available character trackers, so i decided to ha
 Webová appka, která nahrazuje papírový character sheet pro D&D 5e (2014) a 5.5e (2024). Sama počítá odvozené hodnoty, hlídá zdroje a umí odpočinky a level up.
 
 - Appka běží na <https://luso999.github.io/LuSo-s-Char-Tracker/>.
+- Desktopová appka na character sheety (Windows, macOS, Linux) je v [Releases](https://github.com/LuSo999/LuSo-s-Char-Tracker/releases).
 - Zadání je v `dnd-tracker-spec2.md` a plán v `docs/plan.md`.
 
 **Appka je pro kamarády.** Postavy si může uložit kdokoli s Google účtem, ale sdílený obsah z oficiálních knih mimo SRD vidí jen e-maily, které správce pozve.
+
+## Co umí
+
+- **Počítá za tebe.** Vlastnosti, záchrany, skills, AC, útoky, spell DC, sloty i zdroje se odvodí z classy, druhu, featů a nasazených předmětů. Ruční úprava v edit módu jde jedním klikem vrátit.
+- **Hra na jedné obrazovce.** Seznam akcí ve stylu Baldur's Gate 3 s filtry (Action, Bonus action, Reaction), zdroje jako klikací tečky, HP s rychlým „-3 / +3“, death saves, koncentrace a stavy. Na telefonu zvlášť upravené rozložení.
+- **Tvorba postavy a level up průvodcem.** Hráč jen vybírá z platných možností, včetně multiclassu, subclass, ASI a featů, nových kouzel a výchozího vybavení.
+- **Odpočinky podle pravidel edice** a undo pro všechno, co se u stolu překlikne.
+- **Kouzla, inventář a munice.** Připravená kouzla a sloty, attunement, náboje předmětů, munice napojená na zbraň a nabíjení střelných zbraní.
+- **Wild Shape a mazlíčci.** Přepnutí celého sheetu do podoby zvířete, familiar, steed, beast companion a summony s vlastním stat blokem a akcemi.
+- **Historie postavy.** Herní dění a změny sheetu s časem, hledáním a seskupením po akcích.
+- **Wiki po ruce.** Náhled pravidla u každé položky a Ctrl+klik na zdroj.
+- **Obě edice:** 5e (2014) a 5.5e (2024). V základu je obsah z SRD, k tomu homebrew balíčky.
+- **Export do PDF.** Na webu oficiální sheet 2024; desktopová appka vyplní libovolný sheet a umí i opačný směr (viz níže).
+- **Čeština a angličtina**, světlý a tmavý režim a tematické vzhledy s ilustracemi.
 
 ## Nastavení (jednorázově, ručně)
 
