@@ -4,23 +4,11 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { create } from 'zustand'
 import { DESKTOP_URL, isDesktop } from '../../desktop/bridge'
+import { CREATE_TOUR, markTourSeen, tourSeen } from './seen'
 import { Tour, type TourStep } from './Tour'
 
-const SEEN = 'createTourSeen'
-const seen = () => {
-  try {
-    return localStorage.getItem(SEEN) === '1'
-  } catch {
-    return false
-  }
-}
-const markSeen = () => {
-  try {
-    localStorage.setItem(SEEN, '1')
-  } catch {
-    // no storage: offered again next time
-  }
-}
+const seen = () => tourSeen(CREATE_TOUR)
+const markSeen = () => markTourSeen(CREATE_TOUR)
 
 const useCreateTour = create<{ running: boolean; offered: boolean }>(() => ({ running: false, offered: !seen() }))
 const start = () => {

@@ -90,10 +90,10 @@ function TourSheet({ character, content }: { character: Character; content: Cont
           onClose={close}
           finish={
             <div className="flex flex-wrap gap-2">
-              <Link to="/new" onClick={markTourSeen} className="rounded bg-accent px-3 py-1.5 font-semibold text-accent-text">
+              <Link to="/new" onClick={() => markTourSeen()} className="rounded bg-accent px-3 py-1.5 font-semibold text-accent-text">
                 ➕ {t('create.new')}
               </Link>
-              <Link to="/" onClick={markTourSeen} className="rounded border border-border px-3 py-1.5 hover:bg-bg">
+              <Link to="/" onClick={() => markTourSeen()} className="rounded border border-border px-3 py-1.5 hover:bg-bg">
                 👥 {t('tour.toCharacters')}
               </Link>
             </div>

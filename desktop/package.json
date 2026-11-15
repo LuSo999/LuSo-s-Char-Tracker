@@ -1,7 +1,7 @@
 {
   "name": "luso-sheet-tool",
   "productName": "LuSo Sheet Tool",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "LuSo's Char Tracker on the desktop: the whole web app plus PDF tools (fill any character sheet with AI, read filled sheets into characters).",
   "author": "LuSo999",
   "license": "MIT",

@@ -14,8 +14,18 @@ import { FilePick, Section } from './ui'
 
 function SavedCharacter({ character }: { character: Character }) {
   const content = useContent(character.edition)
-  const values = useMemo(() => (content ? characterValues(character, content) : undefined), [character, content])
-  return <FillAnySheet key={character.id} character={values ? { name: character.name, values } : undefined} />
+  const { t } = useTranslation()
+  // A character whose sheet can't be computed (content it uses was removed…) shows why instead of breaking the page.
+  const result = useMemo(() => {
+    if (!content) return undefined
+    try {
+      return { values: characterValues(character, content) }
+    } catch (e) {
+      return { error: e instanceof Error ? e.message : String(e) }
+    }
+  }, [character, content])
+  if (result && 'error' in result) return <p className="rounded border border-danger p-2 text-sm text-danger">{t('desk.characterError', { name: character.name, message: result.error })}</p>
+  return <FillAnySheet key={character.id} character={result ? { name: character.name, values: result.values } : undefined} />
 }
 
 export function PdfPage({ uid }: { uid: string }) {

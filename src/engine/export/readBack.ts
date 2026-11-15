@@ -50,13 +50,26 @@ export function parseItem(line: string): SheetImport['items'][number] {
 }
 
 /**
- * Feat names from a feats box: "Name: what it does" per feat (descriptions may wrap onto more
- * lines, which are skipped), or a plain list of names.
+ * Feat names from a feats box: one feat per line as "Name: what it does" or just "Name"; a long
+ * description may wrap onto more lines (a line after an unfinished description that starts in
+ * lower case, has punctuation or is long continues it). Without any "Name:" line it is a plain
+ * list ("Alert, Lucky").
  */
 export function featNames(text: string): string[] {
   const lines = text.split(/\r?\n/).map((l) => l.replace(/^[\s•\-–*]+/, '').trim()).filter(Boolean)
-  if (lines.some((l) => l.includes(':'))) return lines.filter((l) => l.includes(':')).map((l) => l.split(':')[0].trim()).filter(Boolean)
-  return splitList(text)
+  if (!lines.some((l) => l.includes(':'))) return splitList(text)
+  const out: string[] = []
+  let open = false // the previous line is a description that hasn't ended
+  for (const line of lines) {
+    const continues: boolean = open && (/^[a-z]/.test(line) || /[.!?,;]/.test(line) || line.length > 40)
+    if (!continues) {
+      const colon = line.indexOf(':')
+      const name = (colon >= 0 ? line.slice(0, colon) : line).trim()
+      if (name && name.length <= 40 && !/[.!?]/.test(name)) out.push(name)
+    }
+    open = (continues || line.includes(':')) && !/[.!?)]$/.test(line)
+  }
+  return out
 }
 
 /** A sheet import from export values (whatever of them the sheet had). */

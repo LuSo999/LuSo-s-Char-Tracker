@@ -4,7 +4,8 @@ import { analyzeFields, proposalsToFields } from '../../engine/export/analyze'
 import { pdfFingerprint, type SheetTemplate } from '../../engine/export/template'
 import { exportValues } from '../../engine/export/values'
 import { makeCharacterExport } from '../../engine/exchange'
-import { isDesktop, saveAs } from '../../desktop/bridge'
+import { isDesktop } from '../../desktop/bridge'
+import { safeFileName, saveAs } from '../files'
 import { FillAnySheet } from '../../desktop/FillAnySheet'
 import { DesktopHint } from '../../desktop/DesktopHint'
 import { useAuth } from '../../state/auth'
@@ -101,7 +102,7 @@ export default function ExportDialog({ onClose }: { onClose: () => void }) {
     if (!selected || !pdf) return
     setBusy(t('export.filling'))
     try {
-      const report = await downloadFilled(pdf, selected, values, `${character.name || 'character'} – ${selected.name}.pdf`)
+      const report = await downloadFilled(pdf, selected, values, `${safeFileName(character.name)} – ${safeFileName(selected.name, 'sheet')}.pdf`)
       if (report.missingFields.length) toast(t('export.missing', { count: report.missingFields.length }), { tone: 'error' })
     } catch (e) {
       toast(t('export.readError', { message: e instanceof Error ? e.message : String(e) }), { tone: 'error' })
@@ -206,7 +207,7 @@ export default function ExportDialog({ onClose }: { onClose: () => void }) {
               className="mt-1 rounded border border-border px-3 py-1.5 hover:bg-bg"
               onClick={() => {
                 const data = makeCharacterExport(character, sheet, content)
-                void saveAs(`${character.name.replace(/[^\p{L}\p{N}\- ]+/gu, '').trim() || 'character'}.luso-character.json`, JSON.stringify(data, null, 2), 'application/json', 'json')
+                void saveAs(`${safeFileName(character.name)}.luso-character.json`, JSON.stringify(data, null, 2), 'application/json', 'json')
               }}
             >
               ⬇️ {t('export.desktopDownload')}

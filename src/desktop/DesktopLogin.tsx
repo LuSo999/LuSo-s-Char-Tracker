@@ -22,7 +22,9 @@ export function DesktopLogin() {
       const { idToken, accessToken } = await googleTokensForDesktop()
       const q = new URLSearchParams({ state, id_token: idToken, ...(accessToken ? { access_token: accessToken } : {}) })
       setDone(true)
-      window.location.href = `http://127.0.0.1:${port}/callback?${q}`
+      // Replaces this page (no Back into it); the app answers with a redirect to a page without
+      // the tokens, so they don't stay on screen or among visible history entries.
+      window.location.replace(`http://127.0.0.1:${port}/callback?${q}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }

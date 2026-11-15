@@ -1,16 +1,17 @@
-// Whether the guided tour was offered already (this browser).
-const TOUR_SEEN = 'tourSeen'
+// Whether a guided tour was offered already (this browser), by key.
+export const TOUR = 'tourSeen'
+export const CREATE_TOUR = 'createTourSeen'
 
-export function markTourSeen() {
+export function markTourSeen(key = TOUR) {
   try {
-    localStorage.setItem(TOUR_SEEN, '1')
+    localStorage.setItem(key, '1')
   } catch {
     // no storage: the offer shows again next time
   }
 }
-export function tourSeen() {
+export function tourSeen(key = TOUR) {
   try {
-    return localStorage.getItem(TOUR_SEEN) === '1'
+    return localStorage.getItem(key) === '1'
   } catch {
     return false
   }

@@ -2,37 +2,43 @@
 // the current version) and gives it what a browser can't: AI requests with the API keys kept on
 // this computer (encrypted with the OS keychain when available), saving files with a dialog,
 // and Google sign-in through the system browser (Google doesn't allow it inside apps).
-const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron')
+const { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell } = require('electron')
 const crypto = require('node:crypto')
 const fs = require('node:fs/promises')
 const http = require('node:http')
 const path = require('node:path')
+const { pathToFileURL } = require('node:url')
 const { runners } = require('./ai.cjs')
 
 /** The web app; LUSO_WEB_URL points elsewhere for development (http://localhost:5173/LuSo-s-Char-Tracker/). */
 const WEB_URL = process.env.LUSO_WEB_URL || 'https://luso999.github.io/LuSo-s-Char-Tracker/'
 const WEB_ORIGIN = new URL(WEB_URL).origin
+/** The web app itself: its origin and path (other pages of the same site are not it). */
+const WEB_BASE = new URL(WEB_URL).origin + new URL(WEB_URL).pathname
+const isWebApp = (url) => {
+  try {
+    const u = new URL(url)
+    return u.origin + u.pathname === WEB_BASE || (u.origin === WEB_ORIGIN && u.pathname.startsWith(WEB_BASE.slice(WEB_ORIGIN.length)))
+  } catch {
+    return false
+  }
+}
+const OFFLINE_URL = pathToFileURL(path.join(__dirname, 'offline.html')).href
 const PROVIDERS = ['claude', 'openai', 'gemini']
 const ENV = { claude: ['ANTHROPIC_API_KEY'], openai: ['OPENAI_API_KEY'], gemini: ['GEMINI_API_KEY', 'GOOGLE_API_KEY'] }
 const dataDir = () => app.getPath('userData')
 const keyFile = (provider) => path.join(dataDir(), provider === 'claude' ? 'api-key.bin' : `api-key-${provider}.bin`)
 
-/** Only the web app's own pages may use the desktop functions. */
-const trusted = (e) => {
-  try {
-    return new URL(e.senderFrame.url).origin === WEB_ORIGIN
-  } catch {
-    return false
-  }
-}
+/** Only the web app's own pages (main frame) may use the desktop functions. */
+const trusted = (e) => !!e.senderFrame && e.senderFrame === e.sender.mainFrame && isWebApp(e.senderFrame.url)
 const handle = (channel, fn) =>
   ipcMain.handle(channel, (e, ...args) => {
     if (!trusted(e)) throw new Error('Not allowed')
     return fn(e, ...args)
   })
-// The preload asks once, synchronously: which page gets the bridge, and the app's version.
+// The preload asks once, synchronously: whether this page gets the bridge, and the app's version.
 ipcMain.on('desktop:info', (e) => {
-  e.returnValue = { origin: WEB_ORIGIN, version: app.getVersion() }
+  e.returnValue = { trusted: trusted(e), offline: e.senderFrame?.url.split(/[?#]/)[0] === OFFLINE_URL, version: app.getVersion() }
 })
 
 let win
@@ -50,12 +56,14 @@ function createWindow() {
     if (/^https?:/.test(url)) void shell.openExternal(url)
     return { action: 'deny' }
   })
+  // The window shows only the web app (and the offline page); anything else opens in the browser.
   win.webContents.on('will-navigate', (e, url) => {
-    if (url.startsWith('file:')) return
-    if (new URL(url).origin !== WEB_ORIGIN) {
-      e.preventDefault()
-      if (/^https?:/.test(url)) void shell.openExternal(url)
-    }
+    if (isWebApp(url) || url.split(/[?#]/)[0] === OFFLINE_URL) return
+    e.preventDefault()
+    if (/^https?:/.test(url)) void shell.openExternal(url)
+  })
+  win.webContents.on('will-redirect', (e, url) => {
+    if (!isWebApp(url)) e.preventDefault()
   })
   // No connection: a small page with a retry button.
   win.webContents.on('did-fail-load', (_e, code, _desc, _url, isMainFrame) => {
@@ -66,6 +74,9 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // The web app needs no camera, microphone, location, notifications… : nothing is granted.
+  session.defaultSession.setPermissionRequestHandler((_wc, permission, done) => done(permission === 'clipboard-sanitized-write'))
+  session.defaultSession.setPermissionCheckHandler((_wc, permission) => permission === 'clipboard-sanitized-write')
   createWindow()
   app.on('activate', () => BrowserWindow.getAllWindows().length === 0 && createWindow())
 })
@@ -144,51 +155,73 @@ handle('ai:run', async (_e, req) => {
 // --- Google sign-in through the system browser ----------------------------------------------
 // A one-time local address (127.0.0.1, random port) waits for the browser: the web app's
 // #/desktop-login page signs in with Google there and comes back with the Google tokens and the
-// random state value; the window then signs in with them (Firebase signInWithCredential).
+// random state value. The address answers with a redirect to a page without the tokens, takes
+// them only once and closes; the window then signs in with them (Firebase signInWithCredential).
 
-let signIn // { server, finish } of the sign-in in progress
+let signIn // the sign-in in progress: { promise, url, finish }
 const page = (text) =>
   `<!doctype html><meta charset="utf-8"><title>LuSo's Char Tracker</title><body style="font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem"><h2>LuSo's Char Tracker</h2><p>${text}</p></body>`
+const DONE = 'Signed in — you can close this tab and go back to the app. / Přihlášeno — tuhle záložku můžeš zavřít a vrátit se do appky.'
+const INVALID = 'This sign-in link is not valid any more: start the sign-in again in the app. / Tento odkaz pro přihlášení už neplatí: spusť přihlášení znovu v appce.'
+
 handle('auth:cancel', () => {
   signIn?.finish({ ok: false, error: 'cancelled' })
   return true
 })
 handle('auth:signIn', () => {
-  signIn?.finish({ ok: false, error: 'cancelled' })
-  return new Promise((resolve) => {
-    const state = crypto.randomBytes(24).toString('base64url')
-    const server = http.createServer((req, res) => {
-      const url = new URL(req.url, 'http://127.0.0.1')
-      if (url.pathname !== '/callback') {
-        res.writeHead(404).end()
-        return
-      }
-      const ok = url.searchParams.get('state') === state && !!url.searchParams.get('id_token')
-      res.writeHead(ok ? 200 : 400, { 'content-type': 'text/html; charset=utf-8' })
-      res.end(
-        page(
-          ok
-            ? 'Signed in — you can close this tab and go back to the app. / Přihlášeno — tuhle záložku můžeš zavřít a vrátit se do appky.'
-            : 'This sign-in link is not valid any more. / Tento odkaz pro přihlášení už neplatí.',
-        ),
-      )
-      if (ok) {
-        finish({ ok: true, idToken: url.searchParams.get('id_token'), accessToken: url.searchParams.get('access_token') || undefined })
-        if (win?.isMinimized()) win.restore()
-        win?.focus()
-      }
-    })
-    const timer = setTimeout(() => finish({ ok: false, error: 'timeout' }), 10 * 60 * 1000)
-    const finish = (result) => {
-      clearTimeout(timer)
-      server.close()
-      if (signIn?.server === server) signIn = undefined
-      resolve(result)
+  // Already waiting (a second click): show the same sign-in in the browser again.
+  if (signIn) {
+    if (signIn.url) void shell.openExternal(signIn.url)
+    return signIn.promise
+  }
+  const state = crypto.randomBytes(24).toString('base64url')
+  let used = false
+  let done = false
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url, 'http://127.0.0.1')
+    res.setHeader('connection', 'close')
+    if (url.pathname === '/done') {
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }).end(page(DONE))
+      return
     }
-    signIn = { server, finish }
-    server.listen(0, '127.0.0.1', () => {
-      const { port } = server.address()
-      void shell.openExternal(`${WEB_URL}#/desktop-login?port=${port}&state=${state}`)
-    })
+    if (url.pathname !== '/callback') {
+      res.writeHead(404).end()
+      return
+    }
+    const idToken = url.searchParams.get('id_token')
+    if (used || done || url.searchParams.get('state') !== state || !idToken) {
+      res.writeHead(400, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }).end(page(INVALID))
+      return
+    }
+    used = true
+    // Away from the address with the tokens at once (the tab shows /done; the page is kept a moment for it).
+    res.writeHead(303, { location: '/done', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }).end()
+    finish({ ok: true, idToken, accessToken: url.searchParams.get('access_token') || undefined }, 5000)
+    if (win?.isMinimized()) win.restore()
+    win?.focus()
   })
+  let resolve
+  const promise = new Promise((r) => (resolve = r))
+  const timer = setTimeout(() => finish({ ok: false, error: 'timeout' }), 10 * 60 * 1000)
+  /** Ends this sign-in once: the answer to the page, then the address closes (after `linger` ms for the /done page). */
+  function finish(result, linger = 0) {
+    if (done) return
+    done = true
+    clearTimeout(timer)
+    if (signIn?.promise === promise) signIn = undefined
+    setTimeout(() => {
+      server.close()
+      server.closeAllConnections()
+    }, linger)
+    resolve(result)
+  }
+  server.on('error', (err) => finish({ ok: false, error: `sign-in: ${err.message}` }))
+  signIn = { promise, url: undefined, finish }
+  server.listen(0, '127.0.0.1', () => {
+    if (done) return // cancelled before it started
+    const { port } = server.address()
+    signIn.url = `${WEB_URL}#/desktop-login?port=${port}&state=${state}`
+    void shell.openExternal(signIn.url)
+  })
+  return promise
 })

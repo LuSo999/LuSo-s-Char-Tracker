@@ -12,14 +12,14 @@ import { useAuth } from '../state/auth'
 import { deleteTemplate, saveTemplate, storePdf, useSheetTemplates } from '../state/sheetTemplates'
 import { loadFont, readSheet, type SheetPdf } from '../ui/export/pdf'
 import { TemplateEditor } from '../ui/export/TemplateEditor'
-import { saveAs, type AiContent } from './bridge'
+import type { AiContent } from './bridge'
+import { safeFileName, saveAs } from '../ui/files'
 import { findTemplate, loadSheet, pageImages, allTemplates, type LoadedSheet } from './sheets'
 import { AiButton, Busy, FilePick, Section } from './ui'
 import { useAi } from './useAi'
 
 const catalogue = exportCatalogue()
 const catalogueKeys = new Set(catalogue.map((f) => f.key))
-const safe = (s: string) => s.replace(/[^\p{L}\p{N}\- ]+/gu, '').trim()
 
 export type FillCharacter = { name: string; values: Record<string, string | boolean> }
 
@@ -35,10 +35,17 @@ export function FillAnySheet({ character }: { character: FillCharacter | undefin
 
   async function pickSheet(files: File[]) {
     setMessage('')
-    const file = await loadSheet(files)
-    const pdf = await readSheet(file.bytes)
-    setSheet({ file, pdf })
-    setTemplate(findTemplate(allTemplates(), file, pdf))
+    try {
+      const file = await loadSheet(files)
+      const pdf = await readSheet(file.bytes)
+      setSheet({ file, pdf })
+      setTemplate(findTemplate(allTemplates(), file, pdf))
+    } catch (e) {
+      // A broken / encrypted PDF or a picture format this system can't open: say so, drop the old sheet.
+      setSheet(undefined)
+      setTemplate(undefined)
+      setMessage(t('desk.sheetError', { message: e instanceof Error ? e.message : String(e) }))
+    }
   }
 
   const newTemplate = (fields: TemplateField[]): SheetTemplate => ({
@@ -83,7 +90,7 @@ export function FillAnySheet({ character }: { character: FillCharacter | undefin
   async function fillAndSave() {
     if (!sheet || !template || !character) return
     const { bytes, report } = await fillSheet(sheet.file.bytes, template, character.values, await loadFont())
-    const path = await saveAs(`${safe(character.name) || 'character'} – ${safe(template.name) || 'sheet'}.pdf`, bytes, 'application/pdf', 'pdf')
+    const path = await saveAs(`${safeFileName(character.name)} – ${safeFileName(template.name, 'sheet')}.pdf`, bytes, 'application/pdf', 'pdf')
     if (path) setMessage([t('desk.saved', { path }), report.missingFields.length ? t('desk.missing', { count: report.missingFields.length }) : ''].filter(Boolean).join(' '))
   }
 

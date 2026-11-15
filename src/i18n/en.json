@@ -1440,7 +1440,10 @@
     "loginTitle": "Sign in to the desktop app",
     "loginIntro": "Google doesn't allow signing in inside apps, so it happens here in your browser. After signing in you go straight back to the app.",
     "loginDone": "Signed in. You can close this window and go back to the app.",
-    "loginInvalid": "This link is not valid any more: start the sign-in again in the desktop app."
+    "loginInvalid": "This link is not valid any more: start the sign-in again in the desktop app.",
+    "signInTimeout": "took too long, try again",
+    "sheetError": "The sheet could not be opened: {{message}}",
+    "characterError": "{{name}} can’t be computed: {{message}}. Open the character’s sheet to fix it."
   },
   "createTour": {
     "open": "Guide",

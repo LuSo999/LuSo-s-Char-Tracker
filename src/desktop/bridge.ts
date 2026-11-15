@@ -45,16 +45,3 @@ export const luso = (): Bridge => {
 }
 
 export const DESKTOP_URL = 'https://github.com/LuSo999/LuSo-s-Char-Tracker/releases'
-
-/** Save a file: the desktop app asks where, a browser downloads it. */
-export async function saveAs(name: string, data: Uint8Array | string, mime: string, extension: string): Promise<string | undefined> {
-  const b = desktop()
-  if (b) return (await b.saveFile(name, data, [{ name: extension.toUpperCase(), extensions: [extension] }])) ?? undefined
-  const url = URL.createObjectURL(new Blob([data as BlobPart], { type: mime }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = name
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(url), 10000)
-  return name
-}

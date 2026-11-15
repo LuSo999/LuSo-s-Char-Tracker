@@ -10,6 +10,7 @@ export function SignIn() {
   const [waiting, setWaiting] = useState(false)
 
   async function handleSignIn() {
+    if (waiting) return
     setError(null)
     try {
       const app = desktop()
@@ -17,7 +18,7 @@ export function SignIn() {
         // The desktop app: Google sign-in happens in the system browser.
         setWaiting(true)
         const r = await app.signIn()
-        if (!r.ok) throw new Error(r.error === 'cancelled' ? t('desk.signInCancelled') : r.error)
+        if (!r.ok) throw new Error(r.error === 'cancelled' ? t('desk.signInCancelled') : r.error === 'timeout' ? t('desk.signInTimeout') : r.error)
         await signInWithGoogleTokens(r.idToken, r.accessToken)
       } else await signInWithGoogle()
     } catch (e) {
@@ -32,7 +33,8 @@ export function SignIn() {
       <Card>
         <p className="text-muted">{t('signInIntro')}</p>
         <button
-          className="mt-4 rounded bg-accent px-4 py-2 font-medium text-accent-text hover:opacity-90"
+          className="mt-4 rounded bg-accent px-4 py-2 font-medium text-accent-text hover:opacity-90 disabled:opacity-50"
+          disabled={waiting}
           onClick={() => void handleSignIn()}
         >
           {t('signIn')}

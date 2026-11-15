@@ -1440,7 +1440,10 @@
     "loginTitle": "Přihlášení do desktopové appky",
     "loginIntro": "Google nedovoluje přihlášení uvnitř aplikací, proto proběhne tady v prohlížeči. Po přihlášení se vrátíš rovnou do appky.",
     "loginDone": "Přihlášeno. Okno můžeš zavřít a vrátit se do appky.",
-    "loginInvalid": "Tento odkaz už neplatí: spusť přihlášení znovu v desktopové appce."
+    "loginInvalid": "Tento odkaz už neplatí: spusť přihlášení znovu v desktopové appce.",
+    "signInTimeout": "trvalo to moc dlouho, zkus to znovu",
+    "sheetError": "Sheet nejde otevřít: {{message}}",
+    "characterError": "Postavu {{name}} nejde spočítat: {{message}}. Otevři její sheet a oprav ji."
   },
   "createTour": {
     "open": "Průvodce",

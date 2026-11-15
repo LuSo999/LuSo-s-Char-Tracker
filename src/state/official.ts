@@ -26,13 +26,20 @@ const officialDoc = () => doc(db!, 'content', 'official')
 const partsCol = () => collection(db!, 'content', 'official', 'packs')
 const accessDoc = () => doc(db!, 'content', 'access')
 
+const RETRY_MS = 60_000
+let lastTry = 0
+
 export async function loadOfficial(force = false) {
   if (!db) return
   const current = useOfficial.getState()
-  // Once asked (whatever came back: ready, empty, no access, error), only a forced reload asks
-  // again (sign-in): otherwise every page opening would flash "Loading" while it retries.
-  if (!force && current.status !== 'idle') return
-  useOfficial.setState({ status: 'loading', error: undefined })
+  if (!force) {
+    if (current.status === 'loading' || current.status === 'ready' || current.status === 'empty') return
+    // No access / an error: asked again when a page needs the content, at most once a minute,
+    // and quietly (the pages keep what they have instead of flashing "Loading").
+    if (current.status !== 'idle' && Date.now() - lastTry < RETRY_MS) return
+  }
+  lastTry = Date.now()
+  if (force || current.status === 'idle') useOfficial.setState({ status: 'loading', error: undefined })
   try {
     const metaSnap = await getDoc(officialDoc())
     if (!metaSnap.exists()) {

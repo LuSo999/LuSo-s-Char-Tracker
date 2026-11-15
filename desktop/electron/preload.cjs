@@ -2,13 +2,13 @@
 // app's own pages get it; the main process checks the sender of every call as well.
 const { contextBridge, ipcRenderer } = require('electron')
 
-// The app's version and the web app's address, from the main process.
+// Whether this page is the web app (or the offline page), from the main process.
 const info = ipcRenderer.sendSync('desktop:info')
 
-if (location.protocol === 'file:') {
+if (info.offline) {
   // The offline page: only its retry button.
   contextBridge.exposeInMainWorld('lusoOffline', { retry: () => ipcRenderer.send('offline:retry') })
-} else if (location.origin === info.origin) {
+} else if (info.trusted) {
   contextBridge.exposeInMainWorld('luso', {
     version: info.version,
     keyStatus: () => ipcRenderer.invoke('key:status'),

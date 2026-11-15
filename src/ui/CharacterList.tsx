@@ -8,6 +8,7 @@ import { Card } from './Card'
 import { parseSheetImport, type SheetImport } from '../engine/exchange'
 import { SheetImportDialog } from './SheetImportDialog'
 import { markTourSeen, tourSeen } from './tour/seen'
+import { safeFileName, saveAs } from './files'
 
 export function CharacterList({ uid }: { uid: string }) {
   const { t } = useTranslation()
@@ -36,12 +37,7 @@ export function CharacterList({ uid }: { uid: string }) {
     if (!c) return
     const data: Partial<typeof c> = { ...c }
     delete data.id
-    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${c.name.replace(/[^\w\- ]+/g, '').trim() || 'character'}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    void saveAs(`${safeFileName(c.name)}.json`, JSON.stringify(data, null, 2), 'application/json', 'json')
   }
 
   return (

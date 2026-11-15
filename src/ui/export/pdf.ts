@@ -6,6 +6,7 @@ import fontUrl from '../../assets/fonts/Roboto-Regular.ttf?url'
 import type { Widget, Word } from '../../engine/export/analyze'
 import { fillSheet } from '../../engine/export/fill'
 import type { SheetTemplate } from '../../engine/export/template'
+import { saveAs } from '../files'
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc
 
@@ -68,14 +69,9 @@ export function renderPage(doc: pdfjs.PDFDocumentProxy, index: number, canvas: H
 let font: Promise<Uint8Array> | undefined
 export const loadFont = () => (font ??= fetch(fontUrl).then(async (r) => new Uint8Array(await r.arrayBuffer())))
 
-/** Fill the sheet and hand it to the browser as a download. */
+/** Fill the sheet and save it (a download, or the desktop app's save dialog). */
 export async function downloadFilled(pdf: Uint8Array, template: SheetTemplate, values: Record<string, string | boolean>, fileName: string) {
   const { bytes, report } = await fillSheet(pdf, template, values, await loadFont())
-  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/pdf' }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = fileName
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(url), 10000)
+  await saveAs(fileName, bytes, 'application/pdf', 'pdf')
   return report
 }

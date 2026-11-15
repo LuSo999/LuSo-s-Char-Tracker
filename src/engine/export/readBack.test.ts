@@ -18,6 +18,9 @@ describe('Reading a filled sheet back', () => {
     // A wrapped description isn't more feats.
     expect(featNames('Magic Initiate: You learn two cantrips of your choice from the Cleric,\nDruid, or Wizard spell list.\nAlert: Initiative')).toEqual(['Magic Initiate', 'Alert'])
     expect(featNames('Alert, Lucky')).toEqual(['Alert', 'Lucky'])
+    // A feat without a description among described ones stays.
+    expect(featNames('Lucky: You gain luck points\nHomebrew Feat')).toEqual(['Lucky', 'Homebrew Feat'])
+    expect(featNames('Tough: Your HP maximum increases.\nHomebrew Feat\nAlert: Initiative')).toEqual(['Tough', 'Homebrew Feat', 'Alert'])
   })
 
   it('round-trips a character through its export values', () => {
