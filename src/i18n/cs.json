@@ -905,7 +905,22 @@
     "thenLevelUp": "Po uložení proběhne Level up až na level {{level}}.",
     "openChoices": "Otevřených voleb: {{count}} (jde dokončit později).",
     "create": "Vytvořit postavu",
-    "createAndLevel": "Vytvořit a levelovat na {{level}}"
+    "createAndLevel": "Vytvořit a levelovat na {{level}}",
+    "speciesSearch": "Hledat podle jména nebo vlastnosti…",
+    "speciesBook": "Kniha",
+    "speciesAllBooks": "Všechny knihy",
+    "speciesAbility": "Zvýšení vlastnosti",
+    "speciesClear": "Zrušit filtry",
+    "speciesCount": "{{shown}} / {{total}}",
+    "speciesSelectedHidden": "Vybráno: {{name}} (skryto filtry).",
+    "speciesNone": "Filtrům nic neodpovídá.",
+    "speciesFeature": {
+      "darkvision": "Darkvision",
+      "fly": "Létání",
+      "swim": "Plavání",
+      "climb": "Šplhání",
+      "resistance": "Odolnost"
+    }
   },
   "books": {
     "title": "Povolené knihy",

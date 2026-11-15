@@ -27,6 +27,7 @@ import { useContent } from '../../state/content'
 import { RuleRef } from '../rules/RuleRef'
 import { DraftSheet } from '../levelup/DraftSheet'
 import { DecisionList } from '../levelup/LevelUpDialog'
+import { SpeciesPicker } from './SpeciesPicker'
 import { signed } from '../sheet/format'
 import { BooksPicker, OtherEditionBadge } from '../sheet/BooksPicker'
 
@@ -232,26 +233,7 @@ function Wizard({
 
       {step === 'species' && (
         <section className="space-y-3">
-          <ul className="grid gap-1.5 sm:grid-cols-2">
-            {allSpecies.map((s) => (
-              <li key={s.id}>
-                <label className={radio(draft.speciesId === s.id)}>
-                  <input type="radio" className="mt-1" checked={draft.speciesId === s.id} onChange={() => set({ speciesId: s.id, subspeciesId: undefined })} />
-                  <span>
-                    <RuleRef entity={s} content={content} className="font-semibold">
-                      {s.name}
-                    </RuleRef>
-                    <OtherEditionBadge tags={s.tags} />
-                    <span className="ml-2 text-xs text-muted">
-                      {s.size} · {s.speed} ft
-                      {s.abilityBonuses.length > 0 && ` · ${s.abilityBonuses.map((b) => `${b.ability.toUpperCase()} ${signed(b.bonus)}`).join(', ')}`}
-                    </span>
-                    <span className="block text-xs text-muted">{s.traits.map((id) => content.get(id)?.name ?? id).join(', ')}</span>
-                  </span>
-                </label>
-              </li>
-            ))}
-          </ul>
+          <SpeciesPicker species={allSpecies} content={content} value={draft.speciesId} onChange={(id) => set({ speciesId: id, subspeciesId: undefined })} radio={radio} />
           {species?.tags.includes('legacy-2014') && <p className="rounded border border-amber-500/60 bg-amber-500/10 p-2 text-xs">⚠️ {t('books.otherEditionHint')} {t('books.legacyOriginsHint')}</p>}
           {subspecies.length > 0 && (
             <div>

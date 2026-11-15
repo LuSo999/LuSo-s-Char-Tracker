@@ -905,7 +905,22 @@
     "thenLevelUp": "After saving, Level up runs up to level {{level}}.",
     "openChoices": "{{count}} choices still open (can be finished later).",
     "create": "Create character",
-    "createAndLevel": "Create and level up to {{level}}"
+    "createAndLevel": "Create and level up to {{level}}",
+    "speciesSearch": "Search by name or trait…",
+    "speciesBook": "Book",
+    "speciesAllBooks": "All books",
+    "speciesAbility": "Ability score increase",
+    "speciesClear": "Clear filters",
+    "speciesCount": "{{shown}} / {{total}}",
+    "speciesSelectedHidden": "Selected: {{name}} (hidden by the filters).",
+    "speciesNone": "Nothing matches the filters.",
+    "speciesFeature": {
+      "darkvision": "Darkvision",
+      "fly": "Flying",
+      "swim": "Swimming",
+      "climb": "Climbing",
+      "resistance": "Resistance"
+    }
   },
   "books": {
     "title": "Allowed books",
