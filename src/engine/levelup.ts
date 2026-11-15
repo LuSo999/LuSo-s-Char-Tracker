@@ -264,7 +264,7 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
       return content.all('subclass').filter((s) => s.class === ae.classId).map((s) => ({ id: s.id, label: s.name, entity: s }))
     case 'spell': {
       // No fixed level (Magical Secrets / Discoveries): a cantrip or a level the class has slots for.
-      const maxLevel = sheet.spellcasting.casters.find((c) => c.classId === ae.classId)?.maxSpellLevel ?? 9
+      const maxLevel = Math.min(choice.maxSpellLevel ?? 9, sheet.spellcasting.casters.find((c) => c.classId === ae.classId)?.maxSpellLevel ?? 9)
       const levelOk = (l: number) => (choice.spellLevel === undefined ? l <= maxLevel : l === choice.spellLevel)
       // The list may be fixed by a preset (2024 Sage: Magic Initiate from the Wizard list).
       const lists = choice.classesFromChoice ? selections(char, ae, choice.classesFromChoice) : (choice.spellClasses ?? [])
@@ -272,7 +272,7 @@ export function choiceOptions(char: Character, content: ContentIndex, sheet: She
       return content
         .all('spell')
         .filter((s) => (choice.options ? choice.options.includes(s.id) : levelOk(s.level) && (!lists.length || s.classes.some((k) => lists.includes(k)) || lists.some((k) => content.getTyped(k, 'class')?.caster?.extraSpells?.includes(s.id)))))
-        .filter((s) => (!choice.spellSchools || choice.spellSchools.includes(s.school.toLowerCase())) && (!choice.ritualOnly || s.ritual))
+        .filter((s) => (!choice.spellSchools || choice.spellSchools.includes(s.school.toLowerCase())) && (!choice.ritualOnly || s.ritual) && (!choice.attackOnly || !!s.attack))
         .sort((a, b) => a.name.localeCompare(b.name))
         .map((s) => ({ id: s.id, label: s.name, entity: s, blocked: known && !known.has(s.id) && !chosen.has(s.id) ? 'notKnown' : undefined }))
     }

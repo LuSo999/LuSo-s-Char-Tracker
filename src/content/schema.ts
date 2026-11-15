@@ -264,6 +264,9 @@ export const Choice = z.object({
   /** For kind "spell": only these schools (Fey Touched: divination, enchantment) / only Ritual spells (Ritual Caster). */
   spellSchools: z.array(z.string()).optional(),
   ritualOnly: z.boolean().optional(),
+  /** For kind "spell": only spells that make an attack roll (2014 Spell Sniper) / of this level or lower (Boon of Siberys: 8). */
+  attackOnly: z.boolean().optional(),
+  maxSpellLevel: z.number().int().min(0).max(9).optional(),
   /** On a class: only for the starting class, not when multiclassing into it (tool choice). */
   startingClassOnly: z.boolean().optional(),
   /** Either this choice or the named one is made (2014: a feat instead of the Ability Score Improvement). */
