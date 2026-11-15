@@ -7,7 +7,7 @@ Sama počítá odvozené hodnoty, hlídá zdroje a umí odpočinky a level up.
 
 - Appka běží na <https://luso999.github.io/LuSo-s-Char-Tracker/>.
 - Desktopová appka na character sheety (Windows, macOS, Linux) je v [Releases](https://github.com/LuSo999/LuSo-s-Char-Tracker/releases).
-- Zadání je v `dnd-tracker-spec2.md` a plán v `docs/plan.md`.
+- Zadání je v `dnd-tracker-spec.md` a plán v `docs/plan.md`.
 
 **Appka je pro kamarády.** Postavy si může uložit kdokoli s Google účtem,
 ale sdílený obsah z oficiálních knih mimo SRD vidí jen e-maily, které správce pozve.
