@@ -27,7 +27,7 @@ import { useContent } from '../../state/content'
 import { RuleRef } from '../rules/RuleRef'
 import { DraftSheet } from '../levelup/DraftSheet'
 import { DecisionList } from '../levelup/LevelUpDialog'
-import { SpeciesPicker } from './SpeciesPicker'
+import { BackgroundPicker, ClassPicker, SpeciesPicker } from './Pickers'
 import { signed } from '../sheet/format'
 import { BooksPicker, OtherEditionBadge } from '../sheet/BooksPicker'
 
@@ -211,24 +211,16 @@ function Wizard({
       )}
 
       {step === 'class' && (
-        <ul className="grid gap-1.5 sm:grid-cols-2">
-          {classes.map((c) => (
-            <li key={c.id}>
-              <label className={radio(draft.classId === c.id)}>
-                <input type="radio" className="mt-1" checked={draft.classId === c.id} onChange={() => { set({ classId: c.id, choices: {}, spells: {} }); setGearSel((g) => ({ ...g, cls: [] })) }} />
-                <span>
-                  <RuleRef entity={c} content={content} className="font-semibold">
-                    {c.name}
-                  </RuleRef>
-                  <span className="ml-2 text-xs text-muted">
-                    d{c.hitDie} · {c.primaryAbility.map((a) => a.toUpperCase()).join('/')} · {t('create.saves')} {c.savingThrows.map((a) => a.toUpperCase()).join(', ')}
-                  </span>
-                  {c.description && <span className="block text-xs text-muted">{c.description}</span>}
-                </span>
-              </label>
-            </li>
-          ))}
-        </ul>
+        <ClassPicker
+          classes={classes}
+          content={content}
+          value={draft.classId}
+          radio={radio}
+          onChange={(id) => {
+            set({ classId: id, choices: {}, spells: {} })
+            setGearSel((g) => ({ ...g, cls: [] }))
+          }}
+        />
       )}
 
       {step === 'species' && (
@@ -262,29 +254,16 @@ function Wizard({
 
       {step === 'background' && (
         <section className="space-y-3">
-          <ul className="grid gap-1.5 sm:grid-cols-2">
-            {backgrounds.map((b) => (
-              <li key={b.id}>
-                <label className={radio(draft.backgroundId === b.id)}>
-                  <input type="radio" className="mt-1" checked={draft.backgroundId === b.id} onChange={() => { set({ backgroundId: b.id, backgroundBonuses: {} }); setGearSel((g) => ({ ...g, bg: [] })) }} />
-                  <span>
-                    <RuleRef entity={b} content={content} className="font-semibold">
-                      {b.name}
-                    </RuleRef>
-                    <span className="block text-xs text-muted">
-                      {[
-                        b.skills.map((s) => content.get(`skill-${s}`)?.name ?? s).join(', '),
-                        b.feat && content.get(b.feat)?.name,
-                        b.abilityOptions.length > 0 && b.abilityOptions.map((a) => a.toUpperCase()).join('/'),
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </span>
-                  </span>
-                </label>
-              </li>
-            ))}
-          </ul>
+          <BackgroundPicker
+            backgrounds={backgrounds}
+            content={content}
+            value={draft.backgroundId}
+            radio={radio}
+            onChange={(id) => {
+              set({ backgroundId: id, backgroundBonuses: {} })
+              setGearSel((g) => ({ ...g, bg: [] }))
+            }}
+          />
           {edition === '2024' && background && <BackgroundBonuses options={background.abilityOptions} value={draft.backgroundBonuses} onChange={(v) => set({ backgroundBonuses: v })} />}
         </section>
       )}

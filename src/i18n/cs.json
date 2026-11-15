@@ -906,20 +906,32 @@
     "openChoices": "Otevřených voleb: {{count}} (jde dokončit později).",
     "create": "Vytvořit postavu",
     "createAndLevel": "Vytvořit a levelovat na {{level}}",
-    "speciesSearch": "Hledat podle jména nebo vlastnosti…",
-    "speciesBook": "Kniha",
-    "speciesAllBooks": "Všechny knihy",
-    "speciesAbility": "Zvýšení vlastnosti",
-    "speciesClear": "Zrušit filtry",
-    "speciesCount": "{{shown}} / {{total}}",
-    "speciesSelectedHidden": "Vybráno: {{name}} (skryto filtry).",
-    "speciesNone": "Filtrům nic neodpovídá.",
-    "speciesFeature": {
-      "darkvision": "Darkvision",
-      "fly": "Létání",
-      "swim": "Plavání",
-      "climb": "Šplhání",
-      "resistance": "Odolnost"
+    "filterSearch": "Hledat…",
+    "filterBook": "Kniha",
+    "filterAllBooks": "Všechny knihy",
+    "filterClear": "Zrušit filtry",
+    "filterSelectedHidden": "Vybráno: {{name}} (skryto filtry).",
+    "filterNone": "Filtrům nic neodpovídá.",
+    "filter": {
+      "hitDie": "Hit die",
+      "primary": "Primární vlastnost",
+      "abilityIncrease": "Zvýšení vlastnosti",
+      "skill": "Proficience v dovednosti",
+      "feat": "Origin feat",
+      "casting": {
+        "full": "Plný sesilatel",
+        "half": "Poloviční sesilatel",
+        "third": "Třetinový sesilatel",
+        "pact": "Pact magic",
+        "none": "Bez kouzel"
+      },
+      "species": {
+        "darkvision": "Darkvision",
+        "fly": "Létání",
+        "swim": "Plavání",
+        "climb": "Šplhání",
+        "resistance": "Odolnost"
+      }
     }
   },
   "books": {
