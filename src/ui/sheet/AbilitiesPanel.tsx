@@ -10,6 +10,7 @@ import { Editable } from './Editable'
 import { useEditMode } from './editMode'
 import { breakdown, signed } from './format'
 import { Term } from '../rules/Term'
+import { NumberInput } from '../NumberInput'
 
 const abilityNames = { str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' }
 
@@ -124,20 +125,15 @@ function BaseScore({ ability }: { ability: (typeof abilities)[number] }) {
   const base = character.baseScores[ability]
   if (draft !== undefined) {
     return (
-      <input
+      <NumberInput
         autoFocus
-        onFocus={(e) => e.target.select()}
-        inputMode="numeric"
-        aria-label={t('edit.baseScore')}
+        ariaLabel={t('edit.baseScore')}
         className="w-10 rounded border border-accent bg-card text-center text-[11px]"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value.replace(/\D/g, ''))}
-        onBlur={() => {
-          const n = Number.parseInt(draft, 10)
-          if (Number.isFinite(n)) void run(setBaseScore(character, ability, n))
-          setDraft(undefined)
-        }}
-        onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+        value={base}
+        min={1}
+        max={30}
+        onChange={(n) => void run(setBaseScore(character, ability, n))}
+        onDone={() => setDraft(undefined)}
       />
     )
   }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { NumberInput } from '../NumberInput'
 import { useTranslation } from 'react-i18next'
 import type { Item } from '../../content/schema'
 import { addItem } from '../../engine/inventory'
@@ -174,12 +175,7 @@ export function AddItemDialog({ onClose }: { onClose: () => void }) {
           )}
           <label className="flex items-center gap-2 text-sm">
             {t('inventory.howMany')}
-            <input
-              inputMode="numeric"
-              className="w-20 rounded border border-border bg-card px-2 py-1"
-              value={quantity}
-              onChange={(e) => setQuantityState(Math.max(1, Number.parseInt(e.target.value.replace(/\D/g, ''), 10) || 1))}
-            />
+            <NumberInput className="w-20 rounded border border-border bg-card px-2 py-1" ariaLabel={t('inventory.howMany')} value={quantity} min={1} onChange={setQuantityState} />
           </label>
           <div className="flex justify-end gap-2">
             <button className="rounded border border-border px-4 py-2" onClick={() => setPicked(undefined)}>

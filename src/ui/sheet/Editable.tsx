@@ -5,6 +5,7 @@ import type { Value } from '../../engine/derive'
 import { useRun, useSheet } from './context'
 import { useEditMode } from './editMode'
 import { breakdown } from './format'
+import { NumberInput } from '../NumberInput'
 
 /**
  * A computed number that can be overridden in edit mode. An overridden value
@@ -29,30 +30,17 @@ export function Editable({
   const edit = useEditMode((s) => s.on)
   const [draft, setDraft] = useState<string>()
 
-  const commit = (raw: string) => {
-    setDraft(undefined)
-    const n = Number.parseInt(raw.replace('−', '-'), 10)
-    if (Number.isFinite(n)) void run(setOverride(character, overrideKey, n, label, value.computed))
-  }
-
   const title = `${label}\n${breakdown(value)}${value.overridden ? `\n✎ ${t('edit.overriddenHint', { computed: format(value.computed) })}` : ''}`
 
   if (draft !== undefined) {
     return (
-      <input
+      <NumberInput
         autoFocus
-        onFocus={(e) => e.target.select()}
-        inputMode="numeric"
-        aria-label={label}
+        ariaLabel={label}
         className="w-16 rounded border border-accent bg-card px-1 text-center tabular-nums"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={(e) => commit(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') commit((e.target as HTMLInputElement).value)
-          if (e.key === 'Escape') setDraft(undefined)
-        }}
-        onClick={(e) => e.stopPropagation()}
+        value={value.value}
+        onChange={(n) => void run(setOverride(character, overrideKey, n, label, value.computed))}
+        onDone={() => setDraft(undefined)}
       />
     )
   }

@@ -28,6 +28,7 @@ import { RuleRef } from '../rules/RuleRef'
 import { DraftSheet } from '../levelup/DraftSheet'
 import { DecisionList } from '../levelup/LevelUpDialog'
 import { BackgroundPicker, ClassPicker, SpeciesPicker } from './Pickers'
+import { NumberInput } from '../NumberInput'
 import { signed } from '../sheet/format'
 import { BooksPicker, OtherEditionBadge } from '../sheet/BooksPicker'
 
@@ -199,7 +200,7 @@ function Wizard({
           </div>
           <label className="flex items-center gap-2">
             <span className="font-semibold">{t('create.startLevel')}</span>
-            <input type="number" min={1} max={20} className="w-16 rounded border border-border bg-card px-1.5 py-0.5" value={level} onChange={(e) => setLevel(Math.min(20, Math.max(1, Number(e.target.value) || 1)))} />
+            <NumberInput className="w-16 rounded border border-border bg-card px-1.5 py-0.5" ariaLabel={t('create.startLevel')} value={level} min={1} max={20} onChange={setLevel} />
           </label>
           {level > 1 && <p className="text-xs text-muted">{t('create.higherLevelHint', { level })}</p>}
           <div>
@@ -469,7 +470,7 @@ function AbilitiesStep({
                     </button>
                   </span>
                 ) : method === 'roll' && rolls.length === 0 ? (
-                  <input className="w-14 rounded border border-border bg-card px-1" inputMode="numeric" value={scores[a]} onChange={(e) => setScores({ ...scores, [a]: Math.min(18, Math.max(3, Number(e.target.value.replace(/\D/g, '')) || 3)) })} />
+                  <NumberInput className="w-14 rounded border border-border bg-card px-1" ariaLabel={a.toUpperCase()} value={scores[a]} min={3} max={18} onChange={(n) => setScores({ ...scores, [a]: n })} />
                 ) : (
                   <select className="rounded border border-border bg-card px-1" value={scores[a]} onChange={(e) => assign(a, Number(e.target.value))}>
                     {[...new Set([...pool, scores[a]])].sort((x, y) => y - x).map((v) => (
