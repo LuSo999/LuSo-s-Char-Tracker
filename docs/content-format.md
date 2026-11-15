@@ -76,6 +76,7 @@ Pravidla v appce (SRD, oficiální knihy i tvůj homebrew) jsou **balíčky** (p
 | `toggle` | Zapne stav (`"Raging"`). Efekty s `when: { toggle }` pak platí. Rest stav ukončí. |
 | `attack`, `perTurn`, `perAttack`, `costsAttack` | Efekt při zásahu, limit za tah / za útok, nahrazuje útok |
 | `minLevel` | Od levelu postavy |
+| `table` | Náhodná tabulka: `{ "dice": "1d20", "rows": [{ "min": 1, "max": 10, "text": "…", "creature": "<id tvora>", "effects": [ … ], "state": "…" }], "noOwnAbilities": true }`. Na sheetu dialog hodí (nebo vezme fyzický hod) a uplatní řádek: `creature` = proměna ve stylu Wild Shape (s `noOwnAbilities` bez vlastních akcí, útoků a kouzel), `effects` = platí, dokud trvá stav výsledku (končí odpočinkem nebo ručně), jen `text` = zapíše se do připomínek. |
 
 Ve vzorcích akcí fungují: `pb`, `level`, `characterLevel`, `str`…`cha` (modifikátory), `strScore`…, skills (`athletics`), `hpMax`, `attuned`, `used_<zdroj>`, `max_<zdroj>`, `die_<zdroj>` (velikost kostky zásoby) a `mod_<id volby>` (modifikátor vlastnosti vybrané ve volbě).
 

@@ -8,7 +8,8 @@ import { pickUpThrown, recoverAmmo, reload, selectAmmo } from '../../engine/inve
 import { offhandEligible } from '../../engine/items'
 import type { ActivityRow, AttackRow } from '../../engine/derive'
 import type { CreatureActionView } from '../../engine/creatures'
-import { startShape, spendCompanionAction } from '../../engine/shape'
+import { rollTable, startShape, spendCompanionAction } from '../../engine/shape'
+import { TableRollDialog } from './TableRollDialog'
 import { ShapePicker } from '../creatures/ShapePicker'
 import { actionSummary } from '../creatures/format'
 import { spellBrief, spellDice, upcastNote, type SpellRow } from '../../engine/spells'
@@ -563,6 +564,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     ...sheet.companions.flatMap((c) => c.actions.map((a, i) => ({ ...creatureRow(a, i, c.entry.name ?? c.creature.name, false, c.creature, c.entry), key: `${c.entry.uid}:${i}` }))),
   ].sort((a, b) => a.order - b.order)
   const [shaping, setShaping] = useState<Row>()
+  const [tabling, setTabling] = useState<Row>()
   /** The form limits of a shapechange row: Wild Shape's, or its own group's (Boon of Fluid Forms). */
   const rulesOf = (r: Row) => {
     const group = r.activity?.activity.shapeGroup
@@ -619,6 +621,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     spendOnly = false,
     slots: { slotKey?: string; recover?: number[]; spent?: number } = {},
     shapeId?: string,
+    tableTotal?: number,
   ) {
     if (r.creature) {
       // Stat block actions: the turn tracker counts beast-form actions; companions act on their own.
@@ -635,6 +638,11 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       // Wild Shape: pay the use and take the chosen form in one step.
       const shaped = startShape(result.character, content, shapeId, r.activity?.activity.shapeGroup)
       if (shaped.ok) result = { ...result, character: shaped.character, items: [...result.items, ...shaped.items] }
+    }
+    if (result.ok && tableTotal !== undefined && r.activity) {
+      // A random table: pay the use and apply the rolled outcome in one step.
+      const rolled = rollTable(result.character, content, r.activity.activity, tableTotal)
+      if (rolled.ok) result = { ...result, character: rolled.character, items: [...result.items, ...rolled.items] }
     }
     if (!result.ok) return void run(result)
     const before = snapshotTurn()
@@ -686,6 +694,8 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     }
     // Wild Shape: choose the beast form first.
     if (r.activity?.activity.toggle === 'Wild Shape' && rulesOf(r)) return setShaping(r)
+    // A random table: roll first, then pay and apply the outcome.
+    if (r.activity?.activity.table) return setTabling(r)
     if (needsPrompt(r)) return setPrompt(r.key)
     await perform(r, undefined, at, autoRoll(r), thrown)
   }
@@ -808,6 +818,17 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
             const r = shaping
             setShaping(undefined)
             void perform(r, undefined, undefined, autoRoll(r), false, false, {}, id)
+          }}
+        />
+      )}
+      {tabling?.activity && (
+        <TableRollDialog
+          activity={tabling.activity.activity}
+          onClose={() => setTabling(undefined)}
+          onApply={(total) => {
+            const r = tabling
+            setTabling(undefined)
+            void perform(r, undefined, undefined, undefined, false, false, {}, undefined, total)
           }}
         />
       )}

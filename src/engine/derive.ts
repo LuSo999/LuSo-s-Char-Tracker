@@ -12,6 +12,8 @@ import {
   type Armor,
   type Dice,
   type Edition,
+  activityStates,
+  entityEffects,
   type Effect,
   type Scaled,
   type Entity,
@@ -387,11 +389,11 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const pbComputed = proficiencyBonus(characterLevel)
   // States switched on by activities (Raging) are shared by every effect that names them: one switch
   // "state:<name>". Other toggles belong to their entity ("<grantKey>#<name>").
-  const stateNames = new Set(active.flatMap((ae) => ae.entity.activities.flatMap((a) => (a.toggle ? [a.toggle] : []))))
+  const stateNames = new Set(active.flatMap((ae) => activityStates(ae.entity)))
   const togglesIn = (w: Effect['when']): string[] => (w === undefined ? [] : Array.isArray(w) ? w.flatMap(togglesIn) : typeof w === 'object' ? [w.toggle] : [])
   const toggleSet = new Set(char.toggles)
   for (const ae of active) {
-    for (const e of ae.entity.effects) for (const name of togglesIn(e.when)) if (stateNames.has(name) && char.toggles.includes(`state:${name}`)) toggleSet.add(`${ae.grantKey}#${name}`)
+    for (const e of entityEffects(ae.entity)) for (const name of togglesIn(e.when)) if (stateNames.has(name) && char.toggles.includes(`state:${name}`)) toggleSet.add(`${ae.grantKey}#${name}`)
   }
   const notes: string[] = []
   // Wild Shape: the beast form applies while the Wild Shape state is on.
@@ -420,7 +422,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   // "@<choice>" in a target stands for each value picked in that choice of the entity
   // (Boon of Energy Resistance: "resistance:@types" → resistance:fire, resistance:cold).
   const allEffects = active.flatMap((ae) =>
-    ae.entity.effects.flatMap((effect) => {
+    entityEffects(ae.entity).flatMap((effect) => {
       // "shape@<group>:…" names a shapechange group and "companion@<filter>:…" which creatures, not a choice.
       const group = /^(shape|companion)@[^:]+:/.exec(effect.target)?.[0] ?? ''
       const rest = effect.target.slice(group.length)
@@ -904,8 +906,10 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
 
   // --- Activities -------------------------------------------------------------
   const activities: ActivityRow[] = []
+  // A table transformation without your own abilities (noOwnAbilities): only the creature's actions remain.
+  const ownAbilities = !(shapeCreature && char.shape?.noOwnAbilities)
   for (const ae of active) {
-    if (ae.hidden) continue
+    if (ae.hidden || !ownAbilities) continue
     for (const activity of ae.entity.activities) {
       if (activity.minLevel !== undefined && characterLevel < activity.minLevel) continue
       // Activity formulas may also use skill totals (e.g. "athletics" for a 2014 grapple check).
@@ -973,7 +977,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     const key = state ? `state:${name}` : `${ae.grantKey}#${name}`
     if (!toggles.some((t) => t.key === key)) toggles.push({ key, label: name, source: ae, on: char.toggles.includes(key), state })
   }
-  for (const ae of active) for (const a of ae.entity.activities) if (a.toggle) addToggle(ae, a.toggle)
+  for (const ae of active) for (const name of activityStates(ae.entity)) addToggle(ae, name)
   for (const { effect, ae } of allEffects) for (const name of togglesIn(effect.when)) addToggle(ae, name)
 
   // Reminders: effect notes whose conditions hold (a Rage note only while Raging).

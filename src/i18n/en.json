@@ -454,7 +454,8 @@
       "pactSlots": "Pact Magic slots",
       "cantripDice": "{{name}}: damage",
       "contentChanged": "Homebrew changed: {{name}}",
-      "companionUse": "{{name}}: uses"
+      "companionUse": "{{name}}: uses",
+      "tableRoll": "{{name}}: {{dice}} = {{total}} → {{result}}"
     },
     "attackAction": "Attack action",
     "undoPastConfirm": "Undo “{{what}}”? Changes made after it stay (HP, uses and dice are recounted).",
@@ -1456,7 +1457,8 @@
       "freeCast": "free cast for {{what}}",
       "filter": "any {{type}} up to CR {{cr}}",
       "slot": "scales with the slot",
-      "allClasses": "all spells"
+      "allClasses": "all spells",
+      "table": "rolls {{dice}} on a table ({{count}} outcomes)"
     },
     "help": {
       "open": "What is “{{what}}”?",
@@ -1539,6 +1541,10 @@
       "expandedSpells": {
         "label": "Extra spells on the list",
         "desc": "added to the class spell list"
+      },
+      "table": {
+        "label": "Random table",
+        "desc": "roll a die (d20, d100…), outcomes from a table: a creature form, effects, text"
       }
     },
     "scaled": {
@@ -1656,6 +1662,27 @@
       "attunementSlots": "Attunement slots",
       "capacity": "Carrying capacity",
       "shape": "Wild Shape"
+    },
+    "table": {
+      "title": "Random table",
+      "add": "Add a random table",
+      "dice": "Dice",
+      "customDice": "other…",
+      "split": "Split evenly into",
+      "splitCount": "Number of rows",
+      "rows": "rows",
+      "noOwnAbilities": "While transformed, your own abilities are unavailable",
+      "outcomes": "Outcomes",
+      "from": "From",
+      "to": "To",
+      "text": "What happens",
+      "textPh": "e.g. You turn into a bear for 1 minute",
+      "creature": "Turn into a creature",
+      "creaturePh": "creature id (type to search)",
+      "state": "State name (optional)",
+      "effects": "Effects while it lasts",
+      "gaps": "Rolls {{list}} have no outcome.",
+      "overlaps": "Rolls {{list}} match more than one row."
     }
   },
   "theme": {
@@ -1994,5 +2021,13 @@
         "body": "Next takes you on; the step bar at the top lets you jump back. At the end, Create opens your new sheet."
       }
     }
+  },
+  "tableRoll": {
+    "roll": "Roll",
+    "or": "or enter your roll",
+    "enter": "Your roll",
+    "nothing": "No outcome for this roll.",
+    "noOwn": "While transformed, your own actions, attacks and spells are unavailable.",
+    "apply": "Apply"
   }
 }

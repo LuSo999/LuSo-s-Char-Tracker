@@ -11,6 +11,7 @@ import { Field, IdList, Label, Rows } from './fields'
 import { Help } from './help/Help'
 import { useTemplateSink } from './help/context'
 import type { HelpId } from './help/text.en'
+import { TableEditor } from './TableEditor'
 import { ActivityFields, AttackFields, ChoiceFields, CompanionFields, ResourceFields, SpellGrantFields } from './MechanicRows'
 import { effectPlace } from './targets'
 
@@ -26,6 +27,13 @@ const MENU: { id: string; icon: string; help: HelpId; section: SectionKey; make:
   { id: 'defense', icon: '🛡️', help: 'section.defenses', section: 'effects', make: () => ({ target: 'resistance:fire' }) },
   { id: 'note', icon: '📝', help: 'section.notes', section: 'effects', make: () => ({ target: 'note', note: '' }) },
   { id: 'activity', icon: '⚡', help: 'section.activities', section: 'activities', make: (d) => ({ id: `use-${(d.activities?.length ?? 0) + 1}`, name: d.name, actionType: 'action', cost: [] }) },
+  {
+    id: 'table',
+    icon: '🎲',
+    help: 'activity.table',
+    section: 'activities',
+    make: (d) => ({ id: `table-${(d.activities?.length ?? 0) + 1}`, name: d.name, actionType: 'action', cost: [], table: { dice: '1d20', rows: [] } }),
+  },
   { id: 'resource', icon: '🔋', help: 'section.resources', section: 'resources', make: (d) => ({ id: `res-${(d.resources?.length ?? 0) + 1}`, name: '', max: 1, recharge: [{ on: 'longRest', amount: 'all' }] }) },
   { id: 'choice', icon: '🎯', help: 'section.choices', section: 'choices', make: (d) => ({ id: `choice-${(d.choices?.length ?? 0) + 1}`, label: '', kind: 'option', count: 1, options: [] }) },
   { id: 'spell', icon: '✨', help: 'section.spells', section: 'spells', make: () => ({ id: '' }) },
@@ -158,7 +166,18 @@ export function Mechanics({ draft, set, content, packCreatures }: { draft: Raw; 
             make={() => MENU.find((m) => m.id === 'activity')!.make(draft)}
             summary={(a) => describeActivity(a, ctx)}
             place={(a) => (a.attack ? 'attacks' : 'actions')}
-            render={(a, setA) => <ActivityFields a={a} setA={setA} />}
+            render={(a, setA) => (
+              <>
+                <ActivityFields a={a} setA={setA} />
+                {a.table ? (
+                  <TableEditor a={a} setA={setA} content={content} choiceIds={choiceIds} />
+                ) : (
+                  <button type="button" className="mt-2 rounded border border-border px-2 py-0.5 text-xs hover:bg-bg" onClick={() => setA({ ...a, table: { dice: '1d20', rows: [] } })}>
+                    🎲 {t('homebrew.table.add')}
+                  </button>
+                )}
+              </>
+            )}
           />
         )}
         {show('choices') && (

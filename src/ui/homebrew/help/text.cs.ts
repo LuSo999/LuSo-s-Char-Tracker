@@ -136,6 +136,12 @@ export const cs: Record<HelpId, string> = {
   'activity.endsWith': 'Její stav skončí i s tímto stavem (Frenzied končí s Raging).',
   'activity.minLevel': 'Dostupná od tohoto levelu postavy.',
   'activity.costsAttack': 'Nahrazuje jeden útok akce Attack (Grapple, Shove).',
+  'activity.table': 'Použití akce hodí na **náhodnou tabulku** (divoká magie, náhodná proměna…). Na sheetu dialog hodí kostkou (nebo vezme tvůj fyzický hod), ukáže odpovídající řádek a jedním krokem ho uplatní spolu s cenou akce (např. jednou za Long Rest).',
+  'table.dice': 'Čím se hází: jedna kostka (d4 … d20, d100) nebo víc sečtených (2d6, 3d6). Součet vybere řádek, do jehož rozsahu padne.',
+  'table.row': 'Jeden výsledek: rozsah hodů, který pokrývá, a co se stane. **Rozdělit rovnoměrně** rozsahy vyplní za tebe; editor upozorní na hody bez výsledku nebo překrývající se řádky.',
+  'table.creature': 'Proměna v tohoto tvora ve stylu Wild Shape: jeho stat block, Str/Dex/Con, AC, rychlost a akce nahradí tvoje, dokud proměnu neukončíš (⚡ v připomínkách) nebo si neodpočineš. Jakýkoli tvor z pravidel nebo z tvého balíčku (vlastní zvířata vytvoříš jako typ Tvor).',
+  'table.effects': 'Efekty, které platí, dokud výsledek trvá (+2 AC, odolnost…). Hod zapne stav pojmenovaný podle výsledku (nebo podle jména, které zadáš); ukáže se jako ⚡, který jde ukončit, a odpočinek ho ukončí.',
+  'table.noOwnAbilities': 'Během proměny z této tabulky nejsou dostupné tvoje vlastní akce, útoky ani kouzla — jen stat block tvora. (Běžný Wild Shape schopnosti třídy ponechává.)',
 
   // --- Volby ----------------------------------------------------------------------
   'choice.label': 'Otázka, kterou hráč uvidí („Fighting Style“, „Typ zranění“).',

@@ -135,6 +135,12 @@ export const en = {
   'activity.endsWith': 'Its state also ends when this state ends (Frenzied ends with Raging).',
   'activity.minLevel': 'Available from this character level.',
   'activity.costsAttack': 'Replaces one attack of the Attack action (Grapple, Shove).',
+  'activity.table': 'Using the action rolls on a **random table** (wild magic, a random transformation…). On the sheet a dialog rolls the dice (or takes your physical roll), shows the matching row and applies it in one step, together with the action\'s cost (e.g. once per Long Rest).',
+  'table.dice': 'What is rolled: one die (d4 … d20, d100) or several added up (2d6, 3d6). The total picks the row whose range contains it.',
+  'table.row': 'One outcome: the range of totals it covers and what happens. **Split evenly** fills the ranges for you; the editor warns about totals no row covers or rows that overlap.',
+  'table.creature': 'Turn into this creature, Wild Shape-style: its stat block, Str/Dex/Con, AC, speed and actions replace yours until you end it (⚡ chip in the reminders) or rest. Any creature from the rules or your own pack (create custom animals as the Creature type).',
+  'table.effects': 'Effects that apply while this outcome lasts (+2 AC, resistance…). Rolling it switches on a state named after the outcome (or the name you give); it shows as a ⚡ chip you can end, and rests end it.',
+  'table.noOwnAbilities': 'While transformed by this table, your own actions, attacks and spells are unavailable — only the creature\'s stat block. (Regular Wild Shape keeps class features.)',
 
   // --- Choices --------------------------------------------------------------------
   'choice.label': 'The question the player sees ("Fighting Style", "Damage type").',

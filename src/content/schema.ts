@@ -182,6 +182,38 @@ export const Resource = z.object({
 })
 export type Resource = z.infer<typeof Resource>
 
+/**
+ * A table rolled when an activity is used (wild magic, a random transformation…): the total of
+ * `dice` picks the row whose min–max contains it.
+ */
+export const RollTable = z.object({
+  /** "1d20", "1d100", "2d6". */
+  dice: z.string().regex(/^\d+d\d+$/),
+  rows: z
+    .array(
+      z.object({
+        min: z.number().int(),
+        max: z.number().int(),
+        /** What happens: shown in the result, history and (for text-only outcomes) the reminders. */
+        text: z.string().default(''),
+        /** Turn into this creature, Wild Shape-style (its stat block and actions replace yours). */
+        creature: z.string().optional(),
+        /** Effects while this outcome lasts (its own state, ended by a rest or by hand). */
+        effects: z.array(Effect).default([]),
+        /** Name of that state; default "<activity name>: <text>". */
+        state: z.string().optional(),
+      }),
+    )
+    .default([]),
+  /** While transformed by this table your own actions, attacks and spells are unavailable. */
+  noOwnAbilities: z.boolean().optional(),
+})
+export type RollTable = z.infer<typeof RollTable>
+
+/** The state name an outcome of a table switches on. */
+export const tableRowState = (activityName: string, row: { state?: string; text: string; min: number; max: number }) =>
+  row.state || `${activityName}: ${row.text || (row.min === row.max ? row.min : `${row.min}–${row.max}`)}`
+
 /** Something the character can do that appears in the action list. */
 export const Activity = z.object({
   id: z.string(),
@@ -234,6 +266,8 @@ export const Activity = z.object({
   toggle: z.string().optional(),
   /** With toggle "Wild Shape": whose limits the form picker uses (effects "shape@<group>:maxCr"…); default Wild Shape's "shape:…". */
   shapeGroup: z.string().optional(),
+  /** Using it rolls on this table; the outcome applies (a creature form, a state with effects, a note). */
+  table: RollTable.optional(),
 })
 export type Activity = z.infer<typeof Activity>
 
@@ -849,3 +883,28 @@ export const OfficialContent = z.object({
   packs: z.array(Pack),
 })
 export type OfficialContent = z.infer<typeof OfficialContent>
+
+/**
+ * Every effect an entity carries: its own, plus the effects of its tables' outcomes, each only
+ * while that outcome's state is on.
+ */
+export function entityEffects(e: { effects: Effect[]; activities: Activity[] }): Effect[] {
+  const fromTables = e.activities.flatMap((a) =>
+    (a.table?.rows ?? []).flatMap((row) => {
+      const toggle = { toggle: tableRowState(a.name, row) }
+      return row.effects.map((x) => ({ ...x, when: x.when === undefined ? toggle : Array.isArray(x.when) ? [...x.when, toggle] : [x.when, toggle] }))
+    }),
+  )
+  return fromTables.length ? [...e.effects, ...fromTables] : e.effects
+}
+
+/**
+ * States an entity's activities switch on: their toggles, their tables' outcomes with effects or a
+ * state name, and Wild Shape for tables that turn you into a creature (ended by hand or a rest).
+ */
+export const activityStates = (e: { activities: Activity[] }): string[] =>
+  e.activities.flatMap((a) => [
+    ...(a.toggle ? [a.toggle] : []),
+    ...(a.table?.rows ?? []).filter((r) => r.effects.length || r.state).map((r) => tableRowState(a.name, r)),
+    ...(a.table?.rows.some((r) => r.creature) ? ['Wild Shape'] : []),
+  ])

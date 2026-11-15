@@ -14,7 +14,7 @@ import { useContentPacks } from '../../state/content'
 import { Card } from '../Card'
 import { describeEffect } from './describe'
 import { PlaceBadge } from './fields'
-import { input } from './ui'
+import { inputBase } from './ui'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = Record<string, any>
@@ -82,7 +82,7 @@ function TryOnBody({ candidates, pack, draft }: { candidates: Candidate[]; pack:
     <div className="mt-2 space-y-2 text-sm">
       <label className="flex flex-wrap items-center gap-2">
         <span className="text-muted">{t('homebrew.tryOn.character')}</span>
-        <select className={`${input} w-auto`} value={chosen?.id} onChange={(e) => {
+        <select className={`${inputBase} w-auto`} value={chosen?.id} onChange={(e) => {
             setPickedId(e.target.value)
             setToggles([])
           }}>

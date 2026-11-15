@@ -4,7 +4,7 @@ import type { ContentIndex } from '../../content'
 import type { EffectWhen } from '../../content/schema'
 import { argLabel, type Ctx } from './describe'
 import { Field, Label, ScaledInput, Segmented, Num, Text } from './fields'
-import { input } from './ui'
+import { input, inputBase } from './ui'
 import { Help } from './help/Help'
 import type { HelpId } from './help/text.en'
 import { CATEGORIES, COMPANION_KINDS, FAMILIES, familyById, formatTarget, paramOptions, parseTarget, type Category, type Family, type Op, type Param } from './targets'
@@ -143,7 +143,7 @@ export function TargetPicker({
           {fam?.id === 'companion' && (
             <label className="flex items-center gap-2 text-xs">
               <span className="text-muted">{t('homebrew.f.whichCreatures')}</span>
-              <select className={`${input} w-auto`} value={parsed.group ?? ''} onChange={(e) => onChange(formatTarget('companion', parsed.args, e.target.value || undefined), fam)}>
+              <select className={`${inputBase} w-auto`} value={parsed.group ?? ''} onChange={(e) => onChange(formatTarget('companion', parsed.args, e.target.value || undefined), fam)}>
                 <option value="">{t('homebrew.d.allCreatures')}</option>
                 {COMPANION_KINDS.map((k) => (
                   <option key={k} value={k}>
@@ -183,7 +183,7 @@ export function WhenPicker({ value, onChange, defaultToggle }: { value: EffectWh
           <input type="checkbox" checked={!!toggle} onChange={(e) => write(conds, e.target.checked ? { toggle: defaultToggle } : undefined)} />
           <Label text={t('homebrew.m.whenToggle')} help="when.toggle" className="" />
         </label>
-        {toggle && <input className={`${input} w-40`} value={toggle.toggle} onChange={(e) => write(conds, { toggle: e.target.value })} placeholder={t('homebrew.m.toggleName')} />}
+        {toggle && <input className={`${inputBase} w-40`} value={toggle.toggle} onChange={(e) => write(conds, { toggle: e.target.value })} placeholder={t('homebrew.m.toggleName')} />}
       </div>
       {(Object.keys(WHEN_GROUPS) as (keyof typeof WHEN_GROUPS)[]).map((g) => (
         <div key={g} className="flex flex-wrap items-center gap-1 text-xs">

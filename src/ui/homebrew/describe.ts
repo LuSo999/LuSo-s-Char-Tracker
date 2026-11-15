@@ -165,6 +165,7 @@ export function describeActivity(a: Raw, ctx: Ctx): string {
   if (a.toggle) parts.push(t('homebrew.d.toggles', { name: a.toggle }))
   for (const r of (a.restore as Raw[] | undefined) ?? []) parts.push(t('homebrew.d.restores', { what: poolLabel(r.resource, ctx), amount: r.amount === 'all' ? t('homebrew.d.all') : scaledText(r.amount, ctx) }))
   if (a.grants === 'action') parts.push(t('homebrew.d.grantsAction'))
+  if (a.table) parts.push(t('homebrew.d.table', { dice: a.table.dice, count: (a.table.rows as Raw[] | undefined)?.length ?? 0 }))
   return parts.join(', ')
 }
 

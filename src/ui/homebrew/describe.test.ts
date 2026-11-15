@@ -44,6 +44,7 @@ describe('sentences', () => {
   it('describes resources and actions', () => {
     expect(describeResource({ id: 'x', name: 'Lantern Dice', max: 'pb', die: 8, recharge: [{ on: 'longRest', amount: 'all' }] }, { t })).toBe('Lantern Dice: pb× d8, back on long rest')
     expect(describeActivity({ name: 'Rage', actionType: 'bonusAction', cost: [{ resource: 'rage', amount: 1 }], toggle: 'Raging' }, { t })).toBe('Rage (Bonus action), spends 1× rage, switches on “Raging”')
+    expect(describeActivity({ name: 'Wild Blood', actionType: 'action', table: { dice: '1d100', rows: [{}, {}] } }, { t })).toBe('Wild Blood (Action), rolls 1d100 on a table (2 outcomes)')
   })
 })
 

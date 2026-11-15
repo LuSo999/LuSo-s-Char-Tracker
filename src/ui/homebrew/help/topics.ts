@@ -46,6 +46,7 @@ const ACTIVITY_FIELD: Record<string, (a: Raw) => boolean> = {
   endsWith: (a) => !!a.endsWith,
   minLevel: (a) => a.minLevel !== undefined,
   costsAttack: (a) => !!a.costsAttack,
+  table: (a) => !!a.table,
 }
 
 const RESOURCE_FIELD: Record<string, (r: Raw) => boolean> = {
@@ -155,6 +156,8 @@ export function topicMeta(id: HelpId): TopicMeta {
     case 'companion':
       if (a === 'kind') return { place: 'companions', examples: rows('companions', (c) => c.kind === b) }
       return { place: 'companions', examples: COMPANION_FIELD[a] && rows('companions', COMPANION_FIELD[a]) }
+    case 'table':
+      return { place: a === 'creature' ? 'shape' : a === 'effects' ? 'situational' : 'actions', examples: rows('activities', (x) => !!x.table) }
     case 'attack':
       return { place: 'attacks', examples: rows('attacks', (x) => (a === 'while' ? !!x.while : a === 'ability' ? !!x.ability : true)) }
     case 'formula':

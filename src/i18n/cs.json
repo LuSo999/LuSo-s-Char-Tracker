@@ -454,7 +454,8 @@
       "pactSlots": "Pact Magic sloty",
       "cantripDice": "{{name}}: zranění",
       "contentChanged": "Změněný homebrew: {{name}}",
-      "companionUse": "{{name}}: použití"
+      "companionUse": "{{name}}: použití",
+      "tableRoll": "{{name}}: {{dice}} = {{total}} → {{result}}"
     },
     "attackAction": "Attack action",
     "undoPastConfirm": "Vrátit „{{what}}“? Změny provedené potom zůstanou (HP, použití a kostky se přepočítají).",
@@ -1456,7 +1457,8 @@
       "freeCast": "zdarma za {{what}}",
       "filter": "jakýkoli {{type}} do CR {{cr}}",
       "slot": "škáluje se slotem",
-      "allClasses": "všechna kouzla"
+      "allClasses": "všechna kouzla",
+      "table": "hází {{dice}} na tabulku ({{count}} výsledků)"
     },
     "help": {
       "open": "Co je „{{what}}“?",
@@ -1539,6 +1541,10 @@
       "expandedSpells": {
         "label": "Kouzla navíc na seznam",
         "desc": "přidají se na seznam kouzel třídy"
+      },
+      "table": {
+        "label": "Náhodná tabulka",
+        "desc": "hod kostkou (d20, d100…), výsledky z tabulky: proměna v tvora, efekty, text"
       }
     },
     "scaled": {
@@ -1656,6 +1662,27 @@
       "attunementSlots": "Sloty attunementu",
       "capacity": "Nosnost",
       "shape": "Wild Shape"
+    },
+    "table": {
+      "title": "Náhodná tabulka",
+      "add": "Přidat náhodnou tabulku",
+      "dice": "Kostky",
+      "customDice": "jiné…",
+      "split": "Rozdělit rovnoměrně na",
+      "splitCount": "Počet řádků",
+      "rows": "řádků",
+      "noOwnAbilities": "Během proměny nejsou dostupné vlastní schopnosti",
+      "outcomes": "Výsledky",
+      "from": "Od",
+      "to": "Do",
+      "text": "Co se stane",
+      "textPh": "např. Na 1 minutu se proměníš v medvěda",
+      "creature": "Proměna v tvora",
+      "creaturePh": "id tvora (piš a vyber)",
+      "state": "Název stavu (nepovinné)",
+      "effects": "Efekty, dokud trvá",
+      "gaps": "Hody {{list}} nemají žádný výsledek.",
+      "overlaps": "Hody {{list}} odpovídají víc řádkům."
     }
   },
   "theme": {
@@ -1994,5 +2021,13 @@
         "body": "Tlačítkem Dál pokračuješ; lišta kroků nahoře tě vrátí zpět. Na konci Vytvořit otevře tvůj nový sheet."
       }
     }
+  },
+  "tableRoll": {
+    "roll": "Hodit",
+    "or": "nebo zadej svůj hod",
+    "enter": "Tvůj hod",
+    "nothing": "Pro tento hod není žádný výsledek.",
+    "noOwn": "Během proměny nejsou dostupné tvoje vlastní akce, útoky ani kouzla.",
+    "apply": "Uplatnit"
   }
 }

@@ -8,7 +8,7 @@ import { Card } from '../Card'
 import { Check, Field, Label, Multi, Num, Rows, Select, Text } from './fields'
 import { More } from './MechanicRows'
 import { ARMOR_PROFS, WEAPON_PROFS } from './targets'
-import { grid, input } from './ui'
+import { grid, input, inputBase } from './ui'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = Record<string, any>
@@ -124,7 +124,7 @@ export function ClassFields({ draft, set, content, ownFeatures, newLinked }: { d
               <Check value={caster.spellbook} onChange={(v) => setCaster({ spellbook: v })} label={t('homebrew.f.spellbook')} help="class.caster" />
               <label className="flex items-center gap-1 text-xs">
                 <span className="text-muted">{t('homebrew.f.copyTable')}</span>
-                <select className={`${input} w-auto`} value="" onChange={(e) => e.target.value && copyTable(e.target.value)}>
+                <select className={`${inputBase} w-auto`} value="" onChange={(e) => e.target.value && copyTable(e.target.value)}>
                   <option value="">—</option>
                   {[...casterClasses, ...subclassTables].map((c) => (
                     <option key={c.id} value={c.id}>
@@ -204,10 +204,10 @@ function SpellTable({ table, onChange, mode }: { table: Record<string, TableRow>
                 <tr key={l}>
                   <td className="pr-2 tabular-nums">{l}</td>
                   <td className="pr-1">
-                    <input className={`${input} w-14`} inputMode="numeric" value={row?.cantrips ?? ''} onChange={(e) => setRow(l, { cantrips: Number(e.target.value) || 0 })} />
+                    <input className={`${inputBase} w-14`} inputMode="numeric" value={row?.cantrips ?? ''} onChange={(e) => setRow(l, { cantrips: Number(e.target.value) || 0 })} />
                   </td>
                   <td className="pr-1">
-                    <input className={`${input} w-14`} inputMode="numeric" value={row?.[count] ?? ''} onChange={(e) => setRow(l, { [count]: e.target.value === '' ? undefined : Number(e.target.value) || 0 })} />
+                    <input className={`${inputBase} w-14`} inputMode="numeric" value={row?.[count] ?? ''} onChange={(e) => setRow(l, { [count]: e.target.value === '' ? undefined : Number(e.target.value) || 0 })} />
                   </td>
                   <td>
                     <input

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { resolveScaled } from '../../engine/formula'
 import { Help, HelpButton } from './help/Help'
 import type { HelpId } from './help/text.en'
-import { input } from './ui'
+import { input, inputBase } from './ui'
 
 
 /** A label with optional Ctrl help: Ctrl+hover explains it, ⓘ opens the same help. */
@@ -108,7 +108,7 @@ export function ScaledInput({ value, onChange, placeholder, preview = true }: { 
           {steps.map(([lvl, v], i) => (
             <span key={i} className="flex items-center gap-1 text-xs">
               <span className="text-muted">{t('homebrew.f.level')}</span>
-              <input className={`${input} w-14`} inputMode="numeric" value={lvl} onChange={(e) => setSteps(steps.map((s, j) => (j === i ? [e.target.value.replace(/\D/g, ''), s[1]] : s)))} />
+              <input className={`${inputBase} w-14`} inputMode="numeric" value={lvl} onChange={(e) => setSteps(steps.map((s, j) => (j === i ? [e.target.value.replace(/\D/g, ''), s[1]] : s)))} />
               <span>→</span>
               <input className={input} value={String(v)} onChange={(e) => setSteps(steps.map((s, j) => (j === i ? [s[0], /^-?\d+(\.\d+)?$/.test(e.target.value) ? Number(e.target.value) : e.target.value] : s)))} />
               <button type="button" className="text-danger" aria-label={t('homebrew.removeRow')} onClick={() => setSteps(steps.filter((_, j) => j !== i))}>
