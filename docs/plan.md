@@ -1,6 +1,6 @@
 # Plán projektu
 
-Platné zadání je v `dnd-tracker-spec2.md` (`dnd-tracker-spec.md` je původní verze, jen pro referenci). Tady jsou odsouhlasená rozhodnutí a struktura.
+Zadání je v `dnd-tracker-spec.md`. Tady jsou odsouhlasená rozhodnutí a struktura.
 
 ## Rozhodnutí
 
