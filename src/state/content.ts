@@ -16,6 +16,12 @@ function srd(edition: Edition) {
 const otherEdition = (e: Edition): Edition => (e === '2014' ? '2024' : '2014')
 
 export function useContent(edition: Edition | undefined): ContentIndex | undefined {
+  const packs = useContentPacks(edition)
+  return useMemo(() => (edition && packs ? new ContentIndex(edition, packs) : undefined), [edition, packs])
+}
+
+/** The packs a character of the edition sees (SRD of both editions, shared books, homebrew), once loaded. */
+export function useContentPacks(edition: Edition | undefined): Pack[] | undefined {
   // This edition's SRD plus the other one, whose items can be used too.
   const [srdPacks, setSrdPacks] = useState<Pack[]>()
   const official = useOfficial()
@@ -39,6 +45,6 @@ export function useContent(edition: Edition | undefined): ContentIndex | undefin
     // Wait for the shared content once, so a character using it doesn't flash an error.
     if (official.status === 'idle' || official.status === 'loading') return undefined
     // Homebrew last: it may deliberately replace an SRD or book entity.
-    return new ContentIndex(edition, [...srdPacks, ...official.packs, ...homebrew])
+    return [...srdPacks, ...official.packs, ...homebrew]
   }, [edition, srdPacks, official.status, official.packs, homebrew])
 }

@@ -16,6 +16,7 @@ import { ACTION_TYPES, grid } from './ui'
 import { Mechanics } from './Mechanics'
 import { ClassFields } from './ClassFields'
 import { CreatureFields } from './CreatureFields'
+import { TryOn } from './TryOn'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = Record<string, any>
@@ -147,6 +148,7 @@ function Editor({ uid, pack, entity }: { uid: string; pack: Pack; entity: Entity
           </Card>
           {content && <TypeFields draft={draft} set={set} content={content} ownFeatures={ownFeatures} addLinked={addLinked} />}
           {draft.type !== 'creature' && <Mechanics draft={draft} set={set} content={content} packCreatures={packCreatures} />}
+          <TryOn uid={uid} pack={pack} draft={draft} />
         </>
       )}
 
