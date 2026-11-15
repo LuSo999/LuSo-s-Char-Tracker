@@ -1,6 +1,9 @@
 // Homebrew pack import: readable errors.
 import { describe, expect, it } from 'vitest'
-import { newPack, parsePackFile, stampChanges } from './homebrew'
+import { ContentIndex } from '../content'
+import { computeSheet } from './derive'
+import { makeCharacter, packOf, srd } from './fixtures'
+import { checkEntity, HOMEBREW_TYPES, homebrewKind, newEntity, newPack, parsePackFile, stampChanges } from './homebrew'
 
 describe('Import errors', () => {
   it('name the entity and the field, using its own type’s rules', () => {
@@ -27,5 +30,25 @@ describe('Homebrew change stamps', () => {
     const prev = { ...p, entities: [a, b] }
     const next = stampChanges({ ...p, entities: [{ ...(a as object), name: 'A2' } as never, b] }, prev, 100)
     expect(next.entities.map((e) => e.updatedAt)).toEqual([100, 5])
+  })
+})
+
+describe('New homebrew entities', () => {
+  it.each(HOMEBREW_TYPES)('a new %s is valid', (type) => {
+    const p = newPack('2024', 'P')
+    const e = newEntity(p, type, 'Thing')
+    expect(checkEntity(e).ok).toBe(true)
+    expect(homebrewKind(e)).toBe(type)
+  })
+
+  it('a homebrew class with a copied spell table gives slots on the sheet', () => {
+    const p = newPack('2024', 'P')
+    const content0 = srd('2024')
+    const wizard = content0.require('wizard', 'class')
+    const cls = newEntity(p, 'class', 'Rune Scribe', { spellcasting: 'full', caster: wizard.caster, spellTable: wizard.spellTable, hitDie: 6 })
+    const content = new ContentIndex('2024', [packOf('2024'), { ...p, entities: [cls] }])
+    const c = makeCharacter({ edition: '2024', classes: [{ classId: cls.id, level: 3 }], speciesId: 'human', backgroundId: 'soldier' })
+    const s = computeSheet(c, content)
+    expect(s.spellcasting.slots.map((x) => x.max)).toEqual([4, 2])
   })
 })

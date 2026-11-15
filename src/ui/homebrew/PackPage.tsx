@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router'
 import type { Pack } from '../../content/schema'
-import { HOMEBREW_TYPES, missingReferences, newEntity, type HomebrewType } from '../../engine/homebrew'
+import { HOMEBREW_TYPES, homebrewKind, missingReferences, newEntity, type HomebrewType } from '../../engine/homebrew'
 import { savePack, useHomebrew } from '../../state/homebrew'
 import { useContent } from '../../state/content'
 import { Card } from '../Card'
@@ -67,12 +67,12 @@ function PackView({ uid, pack }: { uid: string; pack: Pack }) {
         )}
       </Card>
 
-      {HOMEBREW_TYPES.filter((ty) => pack.entities.some((e) => e.type === ty)).map((ty) => (
+      {[...HOMEBREW_TYPES, 'trait' as const].filter((ty) => pack.entities.some((e) => homebrewKind(e) === ty)).map((ty) => (
         <Card key={ty}>
           <h2 className="mb-1 font-heading text-lg font-semibold">{t(`homebrew.typesPlural.${ty}`)}</h2>
           <ul className="divide-y divide-border">
             {pack.entities
-              .filter((e) => e.type === ty)
+              .filter((e) => homebrewKind(e) === ty)
               .map((e) => (
                 <li key={e.id} className="flex items-center gap-2 py-1.5">
                   <Link to={`${base}/${pack.id}/${encodeURIComponent(e.id)}`} className="font-semibold text-accent underline">

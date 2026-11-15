@@ -982,7 +982,11 @@
       "background": "Background",
       "item": "Item",
       "spell": "Spell",
-      "trait": "Trait"
+      "trait": "Trait",
+      "option": "Option (invocation, maneuver…)",
+      "class": "Class",
+      "creature": "Creature",
+      "condition": "Condition"
     },
     "typesPlural": {
       "feature": "Features",
@@ -993,7 +997,11 @@
       "background": "Backgrounds",
       "item": "Items",
       "spell": "Spells",
-      "trait": "Traits"
+      "trait": "Traits",
+      "option": "Options",
+      "class": "Classes",
+      "creature": "Creatures",
+      "condition": "Conditions"
     },
     "typeHints": {
       "feature": "A class / subclass feature, or anything the DM grants (add it to a character in edit mode).",
@@ -1003,7 +1011,11 @@
       "subspecies": "A lineage / subrace of any species.",
       "background": "Skills, tools, origin feat and ability options (2024).",
       "item": "Weapon, armor or magic item; appears in Add item.",
-      "spell": "Appears in the class lists you tick."
+      "spell": "Appears in the class lists you tick.",
+      "option": "An invocation, maneuver, fighting style…: pick whose choice offers it, next to the official ones.",
+      "class": "Hit die, proficiencies, features per level and spellcasting; offered in character creation and multiclassing.",
+      "creature": "A stat block for a familiar, steed, companion, summon or Wild Shape form; grant it from a feature or spell.",
+      "condition": "Your own condition with effects; switch it on in the sheet's Conditions panel."
     },
     "tab": {
       "form": "Form",
@@ -1105,7 +1117,46 @@
       "idPlaceholder": "id (e.g. thieves-tools)",
       "optionOf": "Offer as an option in",
       "optionOfNone": "— (granted directly)",
-      "prereqAbilities": "Ability prerequisites"
+      "prereqAbilities": "Ability prerequisites",
+      "hitDie": "Hit die",
+      "subclassLevel": "Subclass at level",
+      "skillCount": "Skills to pick",
+      "primaryAbility": "Primary ability",
+      "savingThrows": "Saving throws",
+      "skillOptions": "Skills to pick from",
+      "armorProfs": "Armor",
+      "weaponProfs": "Weapons",
+      "spellcasting": "Spellcasting",
+      "castingAbility": "Spellcasting ability",
+      "casterMode": "Spells",
+      "ritualCasting": "Rituals",
+      "spellbook": "Spellbook",
+      "copyTable": "Copy the spell table from",
+      "classSpellsHint": "Its spell list: spells that tick this class (id {{id}}) — the spell form offers it.",
+      "multiclass": "Multiclassing",
+      "multiclassMin": "Minimum scores to multiclass into it",
+      "multiclassSkills": "Skills for a multiclass",
+      "spellTable": "Spell table by level",
+      "cantrips": "Cantrips",
+      "slots": "Slots (levels 1, 2, 3…)",
+      "creatureType": "Creature type",
+      "hitDice": "Hit dice",
+      "speeds": "Speeds (ft)",
+      "scores": "Ability scores",
+      "noScores": "no scores (object)",
+      "tagSummon": "Made for a summon spell",
+      "tagCompanion": "Made for a companion feature",
+      "traitsList": "Traits",
+      "creatureActions": "Actions",
+      "passivePerception": "Passive Perception",
+      "attackBonus": "Attack bonus",
+      "usesMax": "Limited uses",
+      "damageParts": "Damage",
+      "preview": "Preview",
+      "ownerLevel": "Owner level",
+      "slotLevel": "Slot",
+      "previewVars": "pb +{{pb}}, spell attack +{{attack}}, spell DC {{dc}}, Wis/Cha +3",
+      "conditionHint": "Add the effects below (−2 to saves, a reminder…). The condition is offered in the Conditions panel on the sheet; while it is on, its effects apply."
     },
     "m": {
       "resources": "Resources",
@@ -1521,6 +1572,44 @@
       "ally": "Effect on allies",
       "advantage": "Advantage",
       "disadvantage": "Disadvantage"
+    },
+    "armorProf": {
+      "light": "Light",
+      "medium": "Medium",
+      "heavy": "Heavy",
+      "shields": "Shields"
+    },
+    "weaponProf": {
+      "simple": "Simple",
+      "martial": "Martial"
+    },
+    "progression": {
+      "none": "none",
+      "full": "full (Wizard)",
+      "half": "half (Paladin)",
+      "third": "third (Eldritch Knight)",
+      "pact": "pact (Warlock)"
+    },
+    "casterMode": {
+      "prepared": "prepared",
+      "known": "known"
+    },
+    "ritual": {
+      "none": "none",
+      "prepared": "prepared spells",
+      "book": "any in the spellbook"
+    },
+    "speedMode": {
+      "walk": "Walk",
+      "fly": "Fly",
+      "swim": "Swim",
+      "climb": "Climb",
+      "burrow": "Burrow"
+    },
+    "usesRecharge": {
+      "shortRest": "short rest",
+      "longRest": "long rest",
+      "roll": "recharge roll"
     }
   },
   "theme": {

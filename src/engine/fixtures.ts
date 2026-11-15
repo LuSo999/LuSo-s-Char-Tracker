@@ -7,6 +7,11 @@ import { Character, type CharacterInput } from './character'
 
 const packs = new Map<Edition, Pack>()
 
+/** The SRD pack of an edition. */
+export function packOf(edition: Edition): Pack {
+  return pack(edition)
+}
+
 function pack(edition: Edition): Pack {
   if (!packs.has(edition)) {
     const raw = JSON.parse(readFileSync(new URL(`../data/srd/${edition}.json`, import.meta.url), 'utf8'))

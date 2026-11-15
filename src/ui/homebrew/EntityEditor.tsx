@@ -14,6 +14,8 @@ import { HelpContent } from './help/context'
 import type { HelpId } from './help/text.en'
 import { ACTION_TYPES, grid } from './ui'
 import { Mechanics } from './Mechanics'
+import { ClassFields } from './ClassFields'
+import { CreatureFields } from './CreatureFields'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Raw = Record<string, any>
@@ -144,7 +146,7 @@ function Editor({ uid, pack, entity }: { uid: string; pack: Pack; entity: Entity
             </div>
           </Card>
           {content && <TypeFields draft={draft} set={set} content={content} ownFeatures={ownFeatures} addLinked={addLinked} />}
-          <Mechanics draft={draft} set={set} content={content} packCreatures={packCreatures} />
+          {draft.type !== 'creature' && <Mechanics draft={draft} set={set} content={content} packCreatures={packCreatures} />}
         </>
       )}
 
@@ -421,7 +423,7 @@ function TypeFields({
             )}
           </div>
           <Field label={t('homebrew.f.classes')}>
-            <Multi value={draft.classes} onChange={(v) => set({ classes: v })} options={opts(CLASSES_FOR_SPELLS)} />
+            <Multi value={draft.classes} onChange={(v) => set({ classes: v })} options={[...opts(CLASSES_FOR_SPELLS), ...content.all('class').filter((c) => !CLASSES_FOR_SPELLS.includes(c.id)).map((c) => ({ value: c.id, label: c.name }))]} />
           </Field>
           <Field label={t('homebrew.f.brief')}>
             <Text value={draft.brief} onChange={(v) => set({ brief: v || undefined })} />
@@ -429,6 +431,16 @@ function TypeFields({
           <Field label={t('homebrew.f.higherLevels')}>
             <Text value={draft.higherLevels} onChange={(v) => set({ higherLevels: v || undefined })} />
           </Field>
+        </Card>
+      )
+    case 'class':
+      return <ClassFields draft={draft} set={set} content={content} ownFeatures={ownFeatures} newLinked={(link) => newLinked('feature', link)} />
+    case 'creature':
+      return <CreatureFields draft={draft} set={set} />
+    case 'condition':
+      return (
+        <Card>
+          <p className="text-sm text-muted">{t('homebrew.f.conditionHint')}</p>
         </Card>
       )
     default:

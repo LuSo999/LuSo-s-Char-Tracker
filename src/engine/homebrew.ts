@@ -2,9 +2,12 @@
 // Stored per user in Firestore (users/{uid}/packs); shared by exporting a file.
 import { Entity, Pack, type Edition } from '../content/schema'
 
-/** What the editor can create. */
-export const HOMEBREW_TYPES = ['feature', 'subclass', 'feat', 'species', 'subspecies', 'background', 'item', 'spell'] as const
+/** What the editor can create ("option": a feature offered in another entity's choice, like an invocation). */
+export const HOMEBREW_TYPES = ['feature', 'option', 'subclass', 'class', 'feat', 'species', 'subspecies', 'background', 'item', 'spell', 'creature', 'condition'] as const
 export type HomebrewType = (typeof HOMEBREW_TYPES)[number]
+
+/** How an entity is listed in a pack: options apart from other features. */
+export const homebrewKind = (e: Entity): HomebrewType | 'trait' => (e.type === 'feature' && e.optionOf !== undefined ? 'option' : (e.type as HomebrewType | 'trait'))
 
 export const slug = (s: string) =>
   s
@@ -35,6 +38,17 @@ export function newEntity(pack: Pack, type: HomebrewType, name: string, extra: R
   const common = { id: entityId(pack, name), edition: pack.edition, name, description: '', source: { book: pack.book } }
   const byType: Record<HomebrewType, Record<string, unknown>> = {
     feature: {},
+    option: { optionOf: '' },
+    class: {
+      hitDie: 8,
+      savingThrows: ['str', 'con'],
+      proficiencies: { armor: [], weapons: ['simple'], tools: [] },
+      skillChoice: { count: 2, options: [] },
+      subclassLevel: 3,
+      levels: [{ level: 1, features: [] }],
+    },
+    creature: { size: 'Medium', creatureType: 'beast', cr: 0.25, ac: 12, hp: 11, hitDice: '2d8', speed: { walk: 30 }, scores: { str: 12, dex: 14, con: 12, int: 3, wis: 12, cha: 6 } },
+    condition: {},
     subclass: { class: 'fighter', levels: [{ level: 3, features: [] }] },
     feat: { category: pack.edition === '2024' ? 'general' : undefined, tags: pack.edition === '2024' ? ['general'] : [] },
     species: { size: 'Medium', speed: 30 },
@@ -43,7 +57,7 @@ export function newEntity(pack: Pack, type: HomebrewType, name: string, extra: R
     item: { kind: 'wondrous', magic: true },
     spell: { level: 1, school: 'evocation', castingTime: '1 action', actionType: 'action', range: '60 feet', components: ['V', 'S'], duration: 'Instantaneous', concentration: false, ritual: false, classes: [] },
   }
-  return Entity.parse({ ...common, type, ...byType[type], ...extra })
+  return Entity.parse({ ...common, type: type === 'option' ? 'feature' : type, ...byType[type], ...extra })
 }
 
 /** Validate one entity (edited in the form or as JSON): the parsed entity, or readable errors. */
@@ -105,6 +119,9 @@ export function missingReferences(pack: Pack, known: (id: string) => boolean): s
       if (!ok(e.class)) out.push(`${e.name}: class "${e.class}"`)
       for (const l of e.levels) for (const f of l.features) if (!ok(f)) out.push(`${e.name}: feature "${f}"`)
     }
+    if (e.type === 'class') for (const l of e.levels) for (const f of l.features) if (!ok(f)) out.push(`${e.name}: feature "${f}"`)
+    if (e.type === 'feature' && e.optionOf && !ok(e.optionOf)) out.push(`${e.name}: option of "${e.optionOf}"`)
+    for (const c of e.companions) for (const id of c.creatures) if (!ok(id)) out.push(`${e.name}: creature "${id}"`)
     if (e.type === 'subspecies' && !ok(e.species)) out.push(`${e.name}: species "${e.species}"`)
     if (e.type === 'species') for (const t of e.traits) if (!ok(t)) out.push(`${e.name}: trait "${t}"`)
     for (const c of e.choices) for (const id of c.from?.ids ?? []) if (!ok(id)) out.push(`${e.name} / ${c.label}: "${id}"`)

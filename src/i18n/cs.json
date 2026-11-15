@@ -982,7 +982,11 @@
       "background": "Background",
       "item": "Předmět",
       "spell": "Kouzlo",
-      "trait": "Trait"
+      "trait": "Trait",
+      "option": "Možnost (invokace, manévr…)",
+      "class": "Třída",
+      "creature": "Tvor",
+      "condition": "Stav"
     },
     "typesPlural": {
       "feature": "Featury",
@@ -993,7 +997,11 @@
       "background": "Backgroundy",
       "item": "Předměty",
       "spell": "Kouzla",
-      "trait": "Traity"
+      "trait": "Traity",
+      "option": "Možnosti",
+      "class": "Třídy",
+      "creature": "Tvorové",
+      "condition": "Stavy"
     },
     "typeHints": {
       "feature": "Featura classy nebo subclassy, nebo cokoli od DM (k postavě se přidá v edit módu).",
@@ -1003,7 +1011,11 @@
       "subspecies": "Lineage / podrasa libovolné rasy.",
       "background": "Skills, nástroje, origin feat a vlastnosti ke zvýšení (2024).",
       "item": "Zbraň, zbroj nebo magický předmět; objeví se v Přidat předmět.",
-      "spell": "Objeví se v seznamech zaškrtnutých class."
+      "spell": "Objeví se v seznamech zaškrtnutých class.",
+      "option": "Invokace, manévr, fighting style…: vyber, v čí volbě se nabídne, vedle oficiálních.",
+      "class": "Hit die, proficience, featury po levelech a kouzla; nabídne se při tvorbě postavy a multiclassu.",
+      "creature": "Stat block pro familiara, oře, společníka, summon nebo formu Wild Shape; uděl ho z featury či kouzla.",
+      "condition": "Vlastní stav s efekty; zapíná se v panelu Stavy na sheetu."
     },
     "tab": {
       "form": "Formulář",
@@ -1105,7 +1117,46 @@
       "idPlaceholder": "id (např. thieves-tools)",
       "optionOf": "Nabídnout jako možnost v",
       "optionOfNone": "— (dává se přímo)",
-      "prereqAbilities": "Podmínky na vlastnosti"
+      "prereqAbilities": "Podmínky na vlastnosti",
+      "hitDie": "Hit die",
+      "subclassLevel": "Subclassa na levelu",
+      "skillCount": "Kolik skillů",
+      "primaryAbility": "Hlavní vlastnost",
+      "savingThrows": "Záchrany",
+      "skillOptions": "Skilly na výběr",
+      "armorProfs": "Zbroj",
+      "weaponProfs": "Zbraně",
+      "spellcasting": "Sesílání kouzel",
+      "castingAbility": "Vlastnost pro kouzla",
+      "casterMode": "Kouzla",
+      "ritualCasting": "Rituály",
+      "spellbook": "Spellbook",
+      "copyTable": "Převzít tabulku kouzel z",
+      "classSpellsHint": "Seznam kouzel: kouzla, která mají tuto třídu zaškrtnutou (id {{id}}) — formulář kouzla ji nabízí.",
+      "multiclass": "Multiclass",
+      "multiclassMin": "Minimální hodnoty pro multiclass do této třídy",
+      "multiclassSkills": "Skilly pro multiclass",
+      "spellTable": "Tabulka kouzel podle levelu",
+      "cantrips": "Cantripy",
+      "slots": "Sloty (úrovně 1, 2, 3…)",
+      "creatureType": "Typ tvora",
+      "hitDice": "Hit dice",
+      "speeds": "Rychlosti (ft)",
+      "scores": "Hodnoty vlastností",
+      "noScores": "bez hodnot (objekt)",
+      "tagSummon": "Vytvořený pro přivolávací kouzlo",
+      "tagCompanion": "Vytvořený pro featuru společníka",
+      "traitsList": "Vlastnosti",
+      "creatureActions": "Akce",
+      "passivePerception": "Passive Perception",
+      "attackBonus": "Bonus útoku",
+      "usesMax": "Omezená použití",
+      "damageParts": "Zranění",
+      "preview": "Náhled",
+      "ownerLevel": "Level majitele",
+      "slotLevel": "Slot",
+      "previewVars": "pb +{{pb}}, útok kouzlem +{{attack}}, DC {{dc}}, Wis/Cha +3",
+      "conditionHint": "Přidej efekty níže (−2 k záchranám, připomínka…). Stav se nabídne v panelu Stavy na sheetu; dokud je zapnutý, jeho efekty platí."
     },
     "m": {
       "resources": "Zdroje",
@@ -1521,6 +1572,44 @@
       "ally": "Efekt na spojence",
       "advantage": "Výhoda",
       "disadvantage": "Nevýhoda"
+    },
+    "armorProf": {
+      "light": "Lehká",
+      "medium": "Střední",
+      "heavy": "Těžká",
+      "shields": "Štíty"
+    },
+    "weaponProf": {
+      "simple": "Jednoduché",
+      "martial": "Válečné"
+    },
+    "progression": {
+      "none": "žádné",
+      "full": "plné (Wizard)",
+      "half": "poloviční (Paladin)",
+      "third": "třetinové (Eldritch Knight)",
+      "pact": "pakt (Warlock)"
+    },
+    "casterMode": {
+      "prepared": "připravená",
+      "known": "známá"
+    },
+    "ritual": {
+      "none": "žádné",
+      "prepared": "připravená kouzla",
+      "book": "cokoli ve spellbooku"
+    },
+    "speedMode": {
+      "walk": "Chůze",
+      "fly": "Létání",
+      "swim": "Plavání",
+      "climb": "Šplhání",
+      "burrow": "Hrabání"
+    },
+    "usesRecharge": {
+      "shortRest": "short rest",
+      "longRest": "long rest",
+      "roll": "hod na recharge"
     }
   },
   "theme": {
