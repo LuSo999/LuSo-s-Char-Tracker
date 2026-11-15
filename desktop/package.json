@@ -1,7 +1,7 @@
 {
   "name": "luso-sheet-tool",
   "productName": "LuSo Sheet Tool",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Fill any character sheet PDF from a LuSo's Char Tracker character, and read filled sheets back.",
   "author": "LuSo999",
   "license": "MIT",

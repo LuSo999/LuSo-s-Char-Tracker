@@ -90,7 +90,13 @@ async function runGemini(apiKey, { baseURL, model, system, content, schema, maxT
       {
         model,
         system_instruction: system,
-        input: content.map((c) => (c.type === 'image' ? { type: 'image', data: c.data, mime_type: c.mime, resolution: 'high' } : { type: 'text', text: c.text })),
+        // The v1 API takes the input as steps: one user turn with all the text and images.
+        input: [
+          {
+            type: 'user_input',
+            content: content.map((c) => (c.type === 'image' ? { type: 'image', data: c.data, mime_type: c.mime, resolution: 'high' } : { type: 'text', text: c.text })),
+          },
+        ],
         response_format: { type: 'text', mime_type: 'application/json', schema },
         generation_config: { thinking_level: effort, max_output_tokens: maxTokens },
         store: false,
