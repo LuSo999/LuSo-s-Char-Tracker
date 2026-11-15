@@ -11,15 +11,16 @@ Webová appka, která nahrazuje papírový character sheet pro D&D 5e (2014) a 5
 
 ## Co umí
 
-- **Počítá za tebe.** Vlastnosti, záchrany, skills, AC, útoky, spell DC, sloty i zdroje se odvodí z classy, druhu, featů a nasazených předmětů. Ruční úprava v edit módu jde jedním klikem vrátit.
+- **Oficiální pravidla od Wizards of the Coast** (SRD, pro pozvané i obsah z knih), u každé položky náhled pravidla a proklik na wiki stránku pro kontrolu.
+- **Počítá za tebe a ukáže jak.** Vlastnosti, záchrany, skills, AC, útoky, spell DC, sloty i zdroje se odvodí z classy, druhu, featů a nasazených předmětů. U každé hodnoty je rozpis, z čeho se skládá.
+- **Všechno jde upravit.** V edit módu přepíšeš cokoli a ruční úpravu jedním klikem vrátíš na spočítanou hodnotu. Vlastní homebrew obsah (featury, předměty, kouzla…) si vytvoříš v appce.
 - **Hra na jedné obrazovce.** Seznam akcí ve stylu Baldur's Gate 3 s filtry (Action, Bonus action, Reaction), zdroje jako klikací tečky, HP s rychlým „-3 / +3“, death saves, koncentrace a stavy. Na telefonu zvlášť upravené rozložení.
 - **Tvorba postavy a level up průvodcem.** Hráč jen vybírá z platných možností, včetně multiclassu, subclass, ASI a featů, nových kouzel a výchozího vybavení.
 - **Odpočinky podle pravidel edice** a undo pro všechno, co se u stolu překlikne.
 - **Kouzla, inventář a munice.** Připravená kouzla a sloty, attunement, náboje předmětů, munice napojená na zbraň a nabíjení střelných zbraní.
 - **Wild Shape a mazlíčci.** Přepnutí celého sheetu do podoby zvířete, familiar, steed, beast companion a summony s vlastním stat blokem a akcemi.
 - **Historie postavy.** Herní dění a změny sheetu s časem, hledáním a seskupením po akcích.
-- **Wiki po ruce.** Náhled pravidla u každé položky a Ctrl+klik na zdroj.
-- **Obě edice:** 5e (2014) a 5.5e (2024). V základu je obsah z SRD, k tomu homebrew balíčky.
+- **Obě edice:** 5e (2014) a 5.5e (2024), volí se pro každou postavu zvlášť.
 - **Export do PDF.** Na webu oficiální sheet 2024; desktopová appka vyplní libovolný sheet a umí i opačný směr (viz níže).
 - **Čeština a angličtina**, světlý a tmavý režim a tematické vzhledy s ilustracemi.
 
