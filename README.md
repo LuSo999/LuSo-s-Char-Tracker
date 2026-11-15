@@ -1,20 +1,27 @@
 # LuSo-s-Char-Tracker
+
 I was not happy with any of the available character trackers, so i decided to have a spin at it.
 
-Webová appka, která nahrazuje papírový character sheet pro D&D 5e (2014) a 5.5e (2024). Sama počítá odvozené hodnoty, hlídá zdroje a umí odpočinky a level up.
+Webová appka, která nahrazuje papírový character sheet pro D&D 5e (2014) a 5.5e (2024).
+Sama počítá odvozené hodnoty, hlídá zdroje a umí odpočinky a level up.
 
 - Appka běží na <https://luso999.github.io/LuSo-s-Char-Tracker/>.
 - Desktopová appka na character sheety (Windows, macOS, Linux) je v [Releases](https://github.com/LuSo999/LuSo-s-Char-Tracker/releases).
 - Zadání je v `dnd-tracker-spec2.md` a plán v `docs/plan.md`.
 
-**Appka je pro kamarády.** Postavy si může uložit kdokoli s Google účtem, ale sdílený obsah z oficiálních knih mimo SRD vidí jen e-maily, které správce pozve.
+**Appka je pro kamarády.** Postavy si může uložit kdokoli s Google účtem,
+ale sdílený obsah z oficiálních knih mimo SRD vidí jen e-maily, které správce pozve.
 
 ## Co umí
 
 - **Oficiální pravidla od Wizards of the Coast** (SRD, pro pozvané i obsah z knih), u každé položky náhled pravidla a proklik na wiki stránku pro kontrolu.
 - **Počítá za tebe a ukáže jak.** Vlastnosti, záchrany, skills, AC, útoky, spell DC, sloty i zdroje se odvodí z classy, druhu, featů a nasazených předmětů. U každé hodnoty je rozpis, z čeho se skládá.
 - **Všechno jde upravit.** V edit módu přepíšeš cokoli a ruční úpravu jedním klikem vrátíš na spočítanou hodnotu. Vlastní homebrew obsah (featury, předměty, kouzla…) si vytvoříš v appce.
-- **Hra na jedné obrazovce.** Seznam akcí ve stylu Baldur's Gate 3 s filtry (Action, Bonus action, Reaction), zdroje jako klikací tečky, HP s rychlým „-3 / +3“, death saves, koncentrace a stavy. Na telefonu zvlášť upravené rozložení.
+- **Hra na jedné obrazovce.**
+Seznam akcí ve stylu Baldur's Gate 3 s filtry (Action, Bonus action, Reaction),
+zdroje jako klikací tečky, HP s rychlým „-3 / +3“, death saves, koncentrace a stavy.
+Na telefonu zvlášť upravené rozložení.
+
 - **Tvorba postavy a level up průvodcem.** Hráč jen vybírá z platných možností, včetně multiclassu, subclass, ASI a featů, nových kouzel a výchozího vybavení.
 - **Odpočinky podle pravidel edice** a undo pro všechno, co se u stolu překlikne.
 - **Kouzla, inventář a munice.** Připravená kouzla a sloty, attunement, náboje předmětů, munice napojená na zbraň a nabíjení střelných zbraní.
@@ -73,13 +80,18 @@ Správci jsou určení svými UID v `firestore.rules` a v `src/config.ts`. Po zm
 
 ## Desktopová appka
 
-Ve složce `desktop/` je program pro Windows, macOS a Linux (Electron). Vyplní postavou libovolný character sheet a umí to i obráceně: přečte vyplněný sheet do souboru pro import. Analýzu dělá Claude, ChatGPT nebo Gemini (vlastní API klíč) a bez klíče funguje místní záloha. Instalátory jsou v [Releases](https://github.com/LuSo999/LuSo-s-Char-Tracker/releases), podrobnosti v [docs/desktop-app.md](docs/desktop-app.md).
+Ve složce `desktop/` je program pro Windows, macOS a Linux (Electron).
+Vyplní postavou libovolný character sheet a umí to i obráceně: přečte vyplněný sheet do souboru pro import.
+Analýzu dělá Claude, ChatGPT nebo Gemini (vlastní API klíč) a bez klíče funguje místní záloha.
+Instalátory jsou v [Releases](https://github.com/LuSo999/LuSo-s-Char-Tracker/releases),
+podrobnosti v [docs/desktop-app.md](docs/desktop-app.md).
 
 ## Lokální vývoj
 
-Potřebuješ Node.js 24. Na Fedoře ho nainstaluješ příkazem `sudo dnf install nodejs24 nodejs24-npm`.
+Potřebuješ Node.js 24.
+Na Fedoře ho nainstaluješ příkazem `sudo dnf install nodejs24 nodejs24-npm`.
 
-```
+```bash
 npm install
 npm run dev      # vývojový server na http://localhost:5173/LuSo-s-Char-Tracker/
 npm test         # testy
@@ -92,7 +104,11 @@ Ve vývojovém režimu je na `#/dev` náhled listu bez přihlášení (v produkc
 
 ## Licence obsahu a uvedení zdroje
 
-This work includes material from the System Reference Document 5.1 ("SRD 5.1") and the System Reference Document 5.2 ("SRD 5.2") by Wizards of the Coast LLC, available at <https://www.dndbeyond.com/srd>. The SRD 5.1 and SRD 5.2 are licensed under the Creative Commons Attribution 4.0 International License, available at <https://creativecommons.org/licenses/by/4.0/legalcode>.
+This work includes material from the System Reference Document 5.1 ("SRD 5.1")
+and the System Reference Document 5.2 ("SRD 5.2") by Wizards of the Coast LLC,
+available at <https://www.dndbeyond.com/srd>. The SRD 5.1 and SRD 5.2 are
+licensed under the Creative Commons Attribution 4.0 International License,
+available at <https://creativecommons.org/licenses/by/4.0/legalcode>.
 
 Strojově čitelná SRD data pocházejí z projektu [5e-bits/5e-srd-api](https://github.com/5e-bits/5e-srd-api) (kód pod licencí MIT).
 
