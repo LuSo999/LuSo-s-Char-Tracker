@@ -6,7 +6,7 @@
 // items), under ids prefixed with their edition ("2014:alchemy-jug"). They
 // keep their own rules; magic weapons/armor are linked to this edition's base
 // items and ammunition kinds where the same item exists.
-import type { Edition, Entity, EntityType, Item, Pack } from './schema'
+import { abilities, type Ability, type Edition, type Entity, type EntityType, type EquipmentChoice, type Item, type Pack } from './schema'
 
 type ByType<T extends EntityType> = Extract<Entity, { type: T }>
 
@@ -140,6 +140,12 @@ export class ContentIndex {
       const out: string[] = []
       const x = e as Entity & { levels?: { features: string[] }[]; optionOf?: string; upgradeOf?: string; traits?: string[]; subspecies?: string[]; species?: string }
       for (const l of x.levels ?? []) out.push(...l.features)
+      if (e.type === 'background') {
+        // Its feature and its starting gear (items this edition lacks come along).
+        const bg = e as Entity & { feat?: string; features: string[]; startingItems: { id: string }[]; startingEquipment: EquipmentChoice[] }
+        out.push(...bg.features, ...bg.startingItems.map((i) => i.id), ...(bg.feat ? [bg.feat] : []))
+        for (const c of bg.startingEquipment) for (const o of c.options) out.push(...o.items.map((i) => i.id), ...o.picks.flatMap((p) => p.from))
+      }
       out.push(...(x.traits ?? []), ...(x.subspecies ?? []))
       if (e.type === 'subspecies' && x.species) out.push(x.species)
       if (x.optionOf) out.push(x.optionOf)
@@ -153,6 +159,8 @@ export class ContentIndex {
       const o = old.get(id)
       if (!o || take.has(id)) return
       if (o.e.type === 'spell' && localSpell.has(o.e.name.toLowerCase())) return
+      // Items this edition has (same id) stay this edition's.
+      if (o.e.type === 'item' && this.byId.has(id)) return
       // Class features the subclass refers to stay this edition's (Channel Divinity…).
       if (o.e.type === 'class' || (o.e.type === 'feature' && old.get(o.e.parent ?? '')?.e.type === 'class' && this.byId.has(id))) return
       take.add(id)
@@ -160,8 +168,8 @@ export class ContentIndex {
     }
     for (const { e } of old.values()) {
       if (on && e.type === 'subclass' && this.byId.get(e.class)?.type === 'class') visit(e.id)
-      // 2014 species and feats (the 2024 rules allow older ones with the DM's OK).
-      if (origins && (e.type === 'species' || e.type === 'subspecies' || e.type === 'feat')) visit(e.id)
+      // 2014 species, backgrounds and feats (the 2024 rules allow older ones with the DM's OK).
+      if (origins && (e.type === 'species' || e.type === 'subspecies' || e.type === 'feat' || e.type === 'background')) visit(e.id)
     }
     const mapId = (id: string): string => {
       const o = old.get(id)
@@ -169,6 +177,8 @@ export class ContentIndex {
       if (o.e.type === 'spell') return localSpell.get(o.e.name.toLowerCase()) ?? (take.has(id) ? `2014:${id}` : id)
       return take.has(id) ? `2014:${id}` : id
     }
+    // Gear: this edition's item of the same id, or of the 2024 name ("dragonchess-set" → "dragonchess").
+    const itemId = (id: string) => [id, id.replace(/-set$/, ''), id.replace(/-card-set$/, '-cards')].find((x) => this.byId.get(x)?.type === 'item') ?? mapId(id)
     const ki = (v: string) => v.replace(/\bused_ki\b/g, 'used_focus').replace(/\bmax_ki\b/g, 'max_focus')
     const convert = (e: Entity): Entity => {
       const c = structuredClone(e) as Entity & { levels?: { level: number; features: string[] }[]; optionOf?: string; upgradeOf?: string; parent?: string }
@@ -180,6 +190,21 @@ export class ContentIndex {
       if (sp.traits) sp.traits = sp.traits.map(mapId)
       if (sp.subspecies) sp.subspecies = sp.subspecies.map(mapId)
       if (c.type === 'subspecies' && sp.species) sp.species = mapId(sp.species)
+      // 2024 rules for an older background (DMG, custom background): any three abilities
+      // (+2/+1 or +1/+1/+1) and an origin feat of the player's choice; its gear by this edition's ids.
+      if (c.type === 'background') {
+        const bg = c as Entity & { abilityOptions: Ability[]; feat?: string; features: string[]; startingItems: { id: string; count: number }[]; startingEquipment: EquipmentChoice[] }
+        if (!bg.abilityOptions.length) bg.abilityOptions = [...abilities]
+        if (!bg.feat && !bg.choices.some((ch) => ch.from?.type === 'feat'))
+          bg.choices = [...bg.choices, { id: 'origin-feat', label: 'Origin feat', count: 1, kind: 'entity', from: { type: 'feat', tags: ['origin'] }, changeable: 'never' } as Entity['choices'][number]]
+        bg.features = bg.features.map(mapId)
+        if (bg.feat) bg.feat = mapId(bg.feat)
+        bg.startingItems = bg.startingItems.map((i) => ({ ...i, id: itemId(i.id) }))
+        bg.startingEquipment = bg.startingEquipment.map((ch) => ({
+          ...ch,
+          options: ch.options.map((o) => ({ ...o, items: o.items.map((i) => ({ ...i, id: itemId(i.id) })), picks: o.picks.map((pk) => ({ ...pk, from: [...new Set(pk.from.map(itemId))] })) })),
+        }))
+      }
       // 2024: ability increases come from the background, so older species give none.
       if (c.type === 'species' || c.type === 'subspecies') {
         sp.abilityBonuses = []
@@ -207,7 +232,7 @@ export class ContentIndex {
       copy.id = `2014:${id}`
       ;(copy as { edition: Edition }).edition = this.edition
       copy.tags = [...e.tags, 'legacy-2014']
-      if (e.type === 'species' || e.type === 'subspecies' || e.type === 'feat') copy.name = `${e.name} (2014)`
+      if (e.type === 'species' || e.type === 'subspecies' || e.type === 'feat' || e.type === 'background') copy.name = `${e.name} (2014)`
       if (e.type === 'feat') {
         // Offered where 2024 general feats are (Ability Score Improvement), from level 4.
         const f = copy as Entity & { category?: string; prerequisite?: { level?: number } }

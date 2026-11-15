@@ -430,7 +430,7 @@
       "spellCopied": "Copied {{name}} into the spellbook ({{gp}} GP, {{hours}} h)",
       "books": "Allowed books",
       "legacySubclasses": "5e subclasses allowed",
-      "legacyOrigins": "5e species and feats allowed",
+      "legacyOrigins": "5e species, backgrounds and feats allowed",
       "theme": "Theme",
       "frames": "Ornate frames",
       "shapeStart": "Wild Shape: {{name}}",
@@ -873,6 +873,8 @@
     "subspecies": "{{species}}: choose one",
     "bgBonuses": "Ability score increases",
     "bgBonusesHint": "+2 to one and +1 to another, or +1 to all three.",
+    "bgBonusesAny": "Older background (2024 rules): +2 to one ability and +1 to another, or +1 to any three.",
+    "bgAnyThree": "any 3 abilities",
     "bgBonusesInvalid": "Choose +2/+1 or +1/+1/+1.",
     "method": {
       "standard": "Standard array",
@@ -942,8 +944,8 @@
     "none": "No books are uploaded yet; only SRD content is available.",
     "legacy": "Allow 5e (2014) subclasses",
     "legacyHint": "With the DM's OK, the 2024 rules allow older subclasses: their features before level 3 come at level 3; Ki uses Focus Points; spells use the 2024 versions where they exist.",
-    "legacyOrigins": "Allow 5e (2014) species and feats",
-    "legacyOriginsHint": "Content of another edition, marked ⚠️ 5e. Older species give no ability increases in 2024 (they come from the background); older feats count as general feats (level 4+).",
+    "legacyOrigins": "Allow 5e (2014) species, backgrounds and feats",
+    "legacyOriginsHint": "Content of another edition, marked ⚠️ 5e. Older species give no ability increases in 2024 (they come from the background); older feats count as general feats (level 4+). An older background gets, by the 2024 DMG, increases to any three abilities and an origin feat of your choice.",
     "otherEdition": "5e (2014)",
     "otherEditionHint": "From another edition (5e 2014): check with your DM; the 2024 rules may work differently."
   },

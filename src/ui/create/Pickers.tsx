@@ -135,8 +135,9 @@ export function BackgroundPicker({ backgrounds, ...common }: Common & { backgrou
           <RuleRef entity={b} content={content} className="font-semibold">
             {b.name}
           </RuleRef>
+          <OtherEditionBadge tags={b.tags} />
           <span className="block text-xs text-muted">
-            {[b.skills.map(skillName).join(', '), b.feat && content.get(b.feat)?.name, b.abilityOptions.length > 0 && b.abilityOptions.map((a) => a.toUpperCase()).join('/')].filter(Boolean).join(' · ')}
+            {[b.skills.map(skillName).join(', '), b.feat && content.get(b.feat)?.name, b.abilityOptions.length > 0 && (b.abilityOptions.length > 3 ? t('create.bgAnyThree') : b.abilityOptions.map((a) => a.toUpperCase()).join('/'))].filter(Boolean).join(' · ')}
           </span>
         </>
       )}

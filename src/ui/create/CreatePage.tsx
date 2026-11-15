@@ -354,7 +354,7 @@ function BackgroundBonuses({ options, value, onChange }: { options: Ability[]; v
   return (
     <div className="text-sm">
       <h2 className="font-semibold">{t('create.bgBonuses')}</h2>
-      <p className="mb-1 text-xs text-muted">{t('create.bgBonusesHint')}</p>
+      <p className="mb-1 text-xs text-muted">{t(options.length > 3 ? 'create.bgBonusesAny' : 'create.bgBonusesHint')}</p>
       <div className="flex flex-wrap gap-2">
         {options.map((a) => (
           <span key={a} className="flex items-center gap-1 rounded border border-border px-2 py-0.5">
@@ -366,9 +366,11 @@ function BackgroundBonuses({ options, value, onChange }: { options: Ability[]; v
             ))}
           </span>
         ))}
-        <button className="rounded border border-border px-2 text-xs hover:bg-bg" onClick={() => onChange(Object.fromEntries(options.map((a) => [a, 1])))}>
-          +1/+1/+1
-        </button>
+        {options.length === 3 && (
+          <button className="rounded border border-border px-2 text-xs hover:bg-bg" onClick={() => onChange(Object.fromEntries(options.map((a) => [a, 1])))}>
+            +1/+1/+1
+          </button>
+        )}
       </div>
       {!ok && <p className="mt-1 text-xs text-danger">{t('create.bgBonusesInvalid')}</p>}
     </div>
