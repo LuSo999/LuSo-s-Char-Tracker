@@ -13,3 +13,7 @@ scripts/.cache/
 
 # Desktop app builds
 desktop/release/
+
+# nix build output links
+result
+result-*
