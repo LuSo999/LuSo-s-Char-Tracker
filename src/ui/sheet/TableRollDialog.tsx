@@ -65,8 +65,16 @@ export function TableRollDialog({ activity, onApply, onClose }: { activity: Acti
         </tbody>
       </table>
       {valid && !row && <p className="mt-2 text-sm text-muted">{t('tableRoll.nothing')}</p>}
-      {row?.creature && <p className="mt-2 text-xs text-muted">{t('tableRoll.shapeEnds')}{table.noOwnAbilities ? ` ${t('tableRoll.noOwn')}` : ''}</p>}
-      {row && (row.effects.length > 0 || row.state) && <p className="mt-2 text-xs text-muted">{t('tableRoll.effectsEnd')}</p>}
+      {row?.creature &&
+        (content.get(row.creature) ? (
+          <p className="mt-2 text-xs text-muted">
+            {t('tableRoll.shapeEnds', { reminders: t('sheet.reminders') })}
+            {table.noOwnAbilities ? ` ${t('tableRoll.noOwn')}` : ''}
+          </p>
+        ) : (
+          <p className="mt-2 text-xs text-danger">⚠️ {t('tableRoll.missingCreature', { id: row.creature })}</p>
+        ))}
+      {row && row.effects.length > 0 && <p className="mt-2 text-xs text-muted">{t('tableRoll.effectsEnd', { reminders: t('sheet.reminders'), situational: `${t('sheet.conditions')} → ${t('sheet.situational')}` })}</p>}
       <div className="mt-4 flex gap-2">
         <button type="button" disabled={!valid} className="rounded bg-accent px-4 py-2 font-medium text-accent-text disabled:opacity-40" onClick={() => onApply(total)}>
           {t('tableRoll.apply')}

@@ -2029,7 +2029,8 @@
     "nothing": "No outcome for this roll.",
     "noOwn": "While transformed, your own actions, attacks and spells are unavailable.",
     "apply": "Apply",
-    "shapeEnds": "The form lasts until you end it (⚡ Wild Shape in the reminders) or take a short or long rest.",
-    "effectsEnd": "Its effects last until you end them (⚡ in the reminders, or Conditions → Situational effects) or take a short or long rest."
+    "shapeEnds": "The form lasts until you end it (⚡ Wild Shape in {{reminders}}) or take a short or long rest.",
+    "effectsEnd": "Its effects last until you end them (⚡ in {{reminders}}, or {{situational}}) or take a short or long rest.",
+    "missingCreature": "The creature “{{id}}” isn't in the loaded content: no form starts (is its pack or book switched on?)."
   }
 }

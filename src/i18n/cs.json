@@ -2029,7 +2029,8 @@
     "nothing": "Pro tento hod není žádný výsledek.",
     "noOwn": "Během proměny nejsou dostupné tvoje vlastní akce, útoky ani kouzla.",
     "apply": "Uplatnit",
-    "shapeEnds": "Proměna trvá, dokud ji neukončíš (⚡ Wild Shape v připomínkách) nebo si nedáš short či long rest.",
-    "effectsEnd": "Efekty trvají, dokud je neukončíš (⚡ v připomínkách, nebo Stavy → Situační efekty) nebo si nedáš short či long rest."
+    "shapeEnds": "Proměna trvá, dokud ji neukončíš (⚡ Wild Shape v pruhu {{reminders}}) nebo si nedáš short či long rest.",
+    "effectsEnd": "Efekty trvají, dokud je neukončíš (⚡ v pruhu {{reminders}}, nebo {{situational}}) nebo si nedáš short či long rest.",
+    "missingCreature": "Tvor „{{id}}“ v načteném obsahu není: proměna neproběhne (je zapnutý jeho balíček nebo kniha?)."
   }
 }

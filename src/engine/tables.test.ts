@@ -1,11 +1,10 @@
 // Random tables on activities: roll, pick the outcome, apply it.
 import { describe, expect, it } from 'vitest'
 import type { ActionResult } from './actions'
-import { performActivity } from './actions'
+import { performActivity, toggleEffect } from './actions'
 import { computeSheet } from './derive'
 import { makeCharacter, srdWith } from './fixtures'
 import { longRest, shortRest } from './rest'
-import { toggleEffect } from './actions'
 import { diceRange, rollDice, rollTable, tableOutcome, tableProblems } from './shape'
 
 const okR = (r: ActionResult) => {
@@ -78,7 +77,9 @@ describe('random tables', () => {
     expect(computeSheet(shortRest(c, content).character, content).ac.value).toBe(before)
     // Ended by hand, like Wild Shape (the ⚡ chip in the reminders).
     const tg = s.toggles.find((t) => t.label === 'Wild Blood: Iron skin')!
-    expect(computeSheet(okR(toggleEffect(c, tg.key, tg.label, s)), content).ac.value).toBe(before)
+    const ended = okR(toggleEffect(c, tg.key, tg.label, s))
+    expect(ended.toggles).not.toContain('state:Wild Blood: Iron skin')
+    expect(computeSheet(ended, content).ac.value).toBe(before)
   })
 
   it('a creature form ends on a short rest too', () => {
