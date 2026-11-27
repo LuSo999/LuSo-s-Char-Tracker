@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { computeSheet } from './derive'
-import { makeCharacter, srd, valdric } from './fixtures'
+import { makeCharacter, packOf, srd, valdric } from './fixtures'
 
 const content2024 = srd('2024')
 const content2014 = srd('2014')
@@ -67,6 +67,20 @@ describe('Valdric (2024 Goliath Fighter 4, SRD stand-ins)', () => {
 })
 
 describe('edition differences', () => {
+  it('Powerful Build: the 2024 Goliath has Advantage on checks to end Grappled (a reminder, not a save) and carries more', () => {
+    const s = computeSheet(valdric(), content2024)
+    expect(s.reminders.filter((r) => r.entity.id === 'powerful-build').map((r) => r.note)).toEqual(['Advantage on ability checks to end the Grappled condition'])
+    expect(s.saveNotes).toEqual([])
+    expect(s.saveNotesText).toEqual({ value: '', computed: '', overridden: false })
+    expect(s.weight.capacity).toBe(16 * 15 * 2)
+  })
+
+  it('2014 rules give no grapple benefit (2014 Powerful Build is carrying, pushing and dragging only)', () => {
+    const grapple = (e: { effects: { target: string; note?: string }[] }) => e.effects.some((f) => /grappl/i.test(`${f.target} ${f.note ?? ''}`))
+    expect(packOf('2014').entities.filter(grapple).map((e) => e.id)).toEqual([])
+    expect(packOf('2024').entities.filter(grapple).map((e) => e.id)).toEqual(['powerful-build'])
+  })
+
   it('Second Wind: 2014 has one use; 2024 scales 2 → 3 → 4', () => {
     const sw = (edition: '2014' | '2024', level: number) =>
       computeSheet(makeCharacter({ edition, classes: [{ classId: 'fighter', level }] }), edition === '2014' ? content2014 : content2024).resources.find(

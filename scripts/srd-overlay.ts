@@ -227,7 +227,13 @@ const overlay2024: Record<string, Patch> = {
   },
   alert: { effects: [{ target: 'initiative', value: 'pb' }] },
   'two-weapon-fighting': { effects: [{ target: 'offhandAbilityMod', value: 1 }] },
-  'powerful-build': { effects: [{ target: 'carrySize', value: 1 }] },
+  // 2024 Goliath. Escaping a grapple is an ability check in 2024 (not a save), so this is a reminder.
+  'powerful-build': {
+    effects: [
+      { target: 'carrySize', value: 1 },
+      { target: 'advantage:check:grappled', note: 'Advantage on ability checks to end the Grappled condition' },
+    ],
+  },
   archery: { effects: [{ target: 'attack', value: 2, when: 'rangedWeapon' }] },
   defense: { effects: [{ target: 'ac', value: 1, when: 'wearingArmor' }] },
   skilled: {

@@ -28,6 +28,33 @@ export function setOverride(char: Character, key: string, value: number | undefi
   return ok({ ...char, overrides }, [{ type: 'override', params: { what: label }, before: before ?? computed, after: v }])
 }
 
+/**
+ * Override a computed text (key "saveNotes": the Saves row under the abilities,
+ * notes separated by ";"). An empty text is a valid override that hides the row's
+ * notes; `undefined` or the computed text removes the override.
+ */
+export function setTextOverride(char: Character, key: string, text: string | undefined, label: string, computed: string): ActionResult {
+  const before = char.overrides[key]
+  const clean = text === undefined ? undefined : splitNotes(text).join('; ')
+  if (clean === undefined || clean === computed) {
+    if (before === undefined) return { ok: false, error: 'noChange' }
+    const overrides = { ...char.overrides }
+    delete overrides[key]
+    return ok({ ...char, overrides }, [{ type: 'overrideReset', params: { what: label }, before: String(before) || '—', after: computed || '—' }])
+  }
+  if (clean === before) return { ok: false, error: 'noChange' }
+  return ok({ ...char, overrides: { ...char.overrides, [key]: clean } }, [
+    { type: 'override', params: { what: label }, before: String(before ?? computed) || '—', after: clean || '—' },
+  ])
+}
+
+/** Notes typed as one text: separated by ";" or new lines, blanks dropped. */
+export const splitNotes = (text: string) =>
+  text
+    .split(/[;\n]/)
+    .map((n) => n.trim())
+    .filter(Boolean)
+
 export function resetAllOverrides(char: Character): ActionResult {
   const count = Object.keys(char.overrides).length
   if (!count) return { ok: false, error: 'noChange' }

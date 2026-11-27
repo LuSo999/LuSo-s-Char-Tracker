@@ -22,6 +22,7 @@ import {
   type Weapon,
 } from '../content/schema'
 import type { AbilityScores, Character, InventoryEntry } from './character'
+import { splitNotes } from './edits'
 import { editionRules } from './editions'
 import { resolveScaled, type FormulaVars } from './formula'
 import { carryingCapacity, offhandEligible, resolveEntry, totalWeight, type ResolvedEntry } from './items'
@@ -156,8 +157,10 @@ export type Sheet = {
   conditionImmunities: string[]
   /** Other speeds in feet (fly, swim, climb, burrow). */
   speeds: Record<string, number>
-  /** Advantages on particular saves (against Poisoned, Charmed…). */
-  saveNotes: { note: string; entity: Entity }[]
+  /** Advantages on particular saves (against Poisoned, Charmed…); after a manual override (no entity). */
+  saveNotes: { note: string; entity?: Entity }[]
+  /** The Saves row as one text ("; "-separated), for edit mode's override (key "saveNotes"). */
+  saveNotesText: { value: string; computed: string; overridden: boolean }
   languages: string[]
   weaponMasteries: string[]
   notes: string[]
@@ -1001,9 +1004,16 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
       }
       return { effect, entity: ae.entity, value: resolve(effect.value), range: resolve(effect.range) }
     })
-  const saveNotes = allEffects
+  const computedSaveNotes = allEffects
     .filter(({ effect, ae }) => effect.note && isSaveNote(effect.target) && effectApplies(effect, ae, baseCtx, toggleSet))
     .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
+  // Edit mode can replace the whole row with the player's own text (empty hides it).
+  const saveNotesOverride = char.overrides.saveNotes
+  const computedSaveText = computedSaveNotes.map((n) => n.note).join('; ')
+  const saveNotesText = typeof saveNotesOverride === 'string'
+    ? { value: saveNotesOverride, computed: computedSaveText, overridden: true }
+    : { value: computedSaveText, computed: computedSaveText, overridden: false }
+  const saveNotes: Sheet['saveNotes'] = typeof saveNotesOverride === 'string' ? splitNotes(saveNotesOverride).map((note) => ({ note })) : computedSaveNotes
 
   // Senses ("sense:darkvision", op max) and damage resistances ("resistance:fire").
   // Senses: the longest range ("max"), then extensions ("add": Umbral Sight +60 ft).
@@ -1175,6 +1185,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     conditionImmunities: [...conditionImmunities],
     speeds,
     saveNotes,
+    saveNotesText,
     languages: [...languageSet],
     weaponMasteries,
     notes,

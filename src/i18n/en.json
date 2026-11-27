@@ -548,6 +548,7 @@
     "overridden": "changed manually",
     "overriddenHint": "Changed manually (computed {{computed}})",
     "clickToOverride": "Click to type your own value",
+    "notesPlaceholder": "Notes separated by ;",
     "reset": "Back to the computed value ({{computed}})",
     "resetOverrides": "Reset all changed values ({{count}})",
     "confirmResetAll": "Return all {{count}} manually changed values to the computed ones?",

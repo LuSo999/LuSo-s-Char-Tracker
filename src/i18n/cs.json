@@ -548,6 +548,7 @@
     "overridden": "změněno ručně",
     "overriddenHint": "Změněno ručně (spočítáno {{computed}})",
     "clickToOverride": "Klikni a napiš vlastní hodnotu",
+    "notesPlaceholder": "Poznámky oddělené ;",
     "reset": "Zpět na spočítanou hodnotu ({{computed}})",
     "resetOverrides": "Vrátit všechny ručně změněné hodnoty ({{count}})",
     "confirmResetAll": "Vrátit všech {{count}} ručně změněných hodnot na spočítané?",
