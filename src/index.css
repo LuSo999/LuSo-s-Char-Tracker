@@ -5,32 +5,42 @@
 
 /* Design tokens. Themes (milestone 13) override these variables. */
 :root {
-  --color-bg: #f4f1ea;
+  /* Alt Look: a cool neutral base with an arcane violet accent. Borders are see-through
+     (alpha borders) so they pick up whatever surface they sit on. */
+  --color-bg: #f5f4f0;
   --color-card: #ffffff;
-  --color-text: #1f1b16;
-  --color-muted: #6b6258;
-  --color-accent: #7a3b12;
+  --color-text: #18171a;
+  --color-muted: #5c5a61;
+  --color-accent: #5b2fc9;
   --color-accent-text: #ffffff;
-  --color-border: #ddd5c7;
+  --color-border: #18171a1f;
   --color-danger: #b42318;
-  --radius-card: 0.75rem;
-  --font-heading: 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
-  --font-body: Roboto, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --radius-card: 0.875rem;
+  --font-heading: Fraunces, Georgia, 'Times New Roman', serif;
+  --font-body: Inter, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  /* Motion: a strong ease-out for things entering, ease-in-out for things moving on screen. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --shadow-color: 24 23 26;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #15130f;
-    --color-card: #221f1a;
-    --color-text: #ece6dc;
-    --color-muted: #a89f92;
-    --color-accent: #d9894f;
-    --color-accent-text: #15130f;
-    --color-border: #3a352d;
+    --color-bg: #0f0f12;
+    --color-card: #19191e;
+    --color-text: #ededf0;
+    --color-muted: #a3a2ab;
+    --color-accent: #a78bfa;
+    --color-accent-text: #0f0f12;
+    --color-border: #ffffff1a;
     --color-danger: #f97066;
+    --shadow-color: 0 0 0;
     color-scheme: dark;
   }
+}
+[data-mode='dark'] {
+  --shadow-color: 0 0 0;
 }
 
 @theme inline {
@@ -44,12 +54,181 @@
   --color-danger: var(--color-danger);
   --radius-card: var(--radius-card);
   --font-heading: var(--font-heading);
+  /* Concentric radius: controls inside a card use a radius that fits its padding. */
+  --radius: 0.5rem;
+  /* Layered shadows: a hairline, a contact shadow and a soft ambient one. */
+  --shadow-sm: 0 0 0 1px rgb(var(--shadow-color) / 0.03), 0 1px 2px rgb(var(--shadow-color) / 0.05), 0 2px 8px -2px rgb(var(--shadow-color) / 0.06);
+  --shadow: 0 0 0 1px rgb(var(--shadow-color) / 0.04), 0 1px 2px rgb(var(--shadow-color) / 0.06), 0 4px 12px -4px rgb(var(--shadow-color) / 0.1);
+  --shadow-md: 0 0 0 1px rgb(var(--shadow-color) / 0.04), 0 2px 4px rgb(var(--shadow-color) / 0.06), 0 8px 20px -6px rgb(var(--shadow-color) / 0.14);
+  --shadow-lg: 0 0 0 1px rgb(var(--shadow-color) / 0.05), 0 4px 8px rgb(var(--shadow-color) / 0.06), 0 16px 32px -8px rgb(var(--shadow-color) / 0.18);
+  --shadow-xl: 0 0 0 1px rgb(var(--shadow-color) / 0.05), 0 8px 16px rgb(var(--shadow-color) / 0.08), 0 24px 48px -12px rgb(var(--shadow-color) / 0.25);
+  --shadow-2xl: 0 0 0 1px rgb(var(--shadow-color) / 0.06), 0 12px 24px rgb(var(--shadow-color) / 0.1), 0 32px 64px -16px rgb(var(--shadow-color) / 0.35);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
 }
 
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
+}
+
+/* ---- Alt Look: base polish. In @layer base so every Tailwind utility still wins. ---- */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Tabular numbers: HP, AC, modifiers and counters keep their width as they change. */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  /* Balanced headlines: no lonely last word. */
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  p, li, dd {
+    text-wrap: pretty;
+  }
+  a {
+    text-underline-offset: 0.2em;
+  }
+  /* Fast, strong ease-out feedback on everything clickable (Doherty threshold: well under 400 ms). */
+  button, a, select, input, textarea, summary, [role='button'] {
+    transition-property: color, background-color, border-color, box-shadow, opacity, scale;
+    transition-duration: 150ms;
+    transition-timing-function: var(--ease-out);
+  }
+  /* Tactile buttons: a small press, no bounce on the way back. */
+  button:not(:disabled):active, summary:active, [role='button']:active {
+    scale: 0.97;
+    transition-duration: 60ms;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea {
+    &:focus-visible {
+      outline: none;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent);
+    }
+  }
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  }
+}
+
+@layer components {
+  /* Filled accent buttons: a top highlight and a contact shadow make them feel pressable. */
+  button.bg-accent:not(:disabled), a.bg-accent {
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(var(--shadow-color) / 0.2), 0 2px 6px -2px color-mix(in srgb, var(--color-accent) 45%, transparent);
+  }
+  button.bg-accent:not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--color-accent) 88%, var(--color-text));
+  }
+}
+
+/* ---- Alt Look: motion. Entrances use a strong ease-out, nothing bounces, exits are instant. ---- */
+
+/* Popovers and dialogs start at 0.95, not 0, and grow from where they were opened (origin-* classes). */
+.anim-pop {
+  animation: anim-pop 200ms var(--ease-out);
+}
+/* Dropdown menus: a little faster. */
+.anim-drop {
+  animation: anim-pop 160ms var(--ease-out);
+}
+/* Stage the focus: the backdrop dims and softly blurs what is behind the dialog. */
+.anim-backdrop {
+  animation: anim-fade 200ms var(--ease-out);
+  backdrop-filter: blur(3px);
+}
+/* Phone dialogs come up from the bottom edge, drawers in from the right. */
+.anim-sheet-up {
+  animation: anim-sheet-up 260ms var(--ease-out);
+}
+.anim-drawer {
+  animation: anim-drawer 260ms var(--ease-out);
+}
+@media (min-width: 640px) {
+  .anim-sheet-up {
+    animation: anim-pop 200ms var(--ease-out);
+  }
+}
+/* Stagger list rows: each row sets --i (its index); the first few cascade in, the rest arrive together. */
+.anim-row {
+  animation: anim-row 280ms var(--ease-out) backwards;
+  animation-delay: var(--stagger-delay, 0ms);
+}
+/* Pulse to confirm: re-mount the element (key={value}) and it pulses once. */
+.anim-pulse {
+  animation: anim-pulse 320ms var(--ease-out);
+}
+/* Crossfade icons with blur: re-mount the icon (key={state}) when it changes. */
+.anim-icon {
+  display: inline-block;
+  animation: anim-icon 200ms var(--ease-out);
+}
+/* Reveal with masks: content wipes in from the top instead of popping. */
+.anim-reveal {
+  animation: anim-reveal 260ms var(--ease-out);
+}
+
+@keyframes anim-fade { from { opacity: 0; } }
+@keyframes anim-pop { from { opacity: 0; transform: scale(0.95); } }
+@keyframes anim-sheet-up { from { opacity: 0; transform: translateY(24px); } }
+@keyframes anim-drawer { from { opacity: 0; transform: translateX(32px); } }
+@keyframes anim-row { from { opacity: 0; transform: translateY(6px); } }
+@keyframes anim-pulse { 40% { transform: scale(1.12); } }
+@keyframes anim-icon { from { opacity: 0; filter: blur(4px); transform: scale(0.6); } }
+@keyframes anim-reveal { from { clip-path: inset(0 0 100% 0); opacity: 0.4; } }
+
+/* Masked scroll edges: lists fade out at an edge only while there is more to scroll that way.
+   Driven by the scroll position itself; browsers without scroll timelines simply show no fade.
+   Not on surfaces (the mask would fade their background) and not with ornate frames (it would clip the corners). */
+@property --fade-top {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --fade-bottom {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@supports (animation-timeline: scroll()) {
+  html:not([data-frames]) .overflow-y-auto:not(.bg-card, .bg-bg, [role='dialog']),
+  .scroll-fade {
+    mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top), #000 calc(100% - var(--fade-bottom)), transparent);
+    animation: scroll-fade linear both;
+    animation-timeline: scroll(self);
+  }
+}
+@keyframes scroll-fade {
+  0% { --fade-top: 0px; --fade-bottom: 28px; }
+  6%, 94% { --fade-top: 28px; --fade-bottom: 28px; }
+  100% { --fade-top: 28px; --fade-bottom: 0px; }
+}
+
+/* Fitts's law: on touch screens, small icon buttons get a hit area of at least 40 px. */
+@media (pointer: coarse) {
+  .hit-target {
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-pop, .anim-drop, .anim-sheet-up, .anim-drawer, .anim-row, .anim-reveal, .anim-icon, .anim-backdrop {
+    animation: anim-fade 120ms linear;
+  }
+  .anim-pulse { animation: none; }
+  button:not(:disabled):active, summary:active, [role='button']:active { scale: none; }
 }
 
 /* Illustrated themes (src/themes): the picture under the whole app, a veil of the

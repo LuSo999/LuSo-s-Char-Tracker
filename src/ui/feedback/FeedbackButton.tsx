@@ -37,9 +37,9 @@ export function FeedbackButton() {
         💬
       </button>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setOpen(false)}>
+        <div className="anim-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setOpen(false)}>
           <BackClose onClose={() => setOpen(false)} />
-          <div role="dialog" aria-label={t('feedback.title')} className="w-full max-w-lg rounded-card border border-border bg-card p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div role="dialog" aria-label={t('feedback.title')} className="anim-pop w-full max-w-lg rounded-card border border-border bg-card p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="font-heading text-xl font-semibold">💬 {t('feedback.title')}</h2>
             <p className="mt-1 text-sm text-muted">{t('feedback.hint')}</p>
             <div className="mt-3 flex gap-1.5" role="radiogroup">

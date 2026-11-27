@@ -2,6 +2,7 @@
   "appName": "LuSo's Char Tracker",
   "signIn": "Přihlásit přes Google",
   "signOut": "Odhlásit",
+  "accountMenu": "Účet a další",
   "signInIntro": "Postavy se ukládají k tvému Google účtu.",
   "signInFailed": "Přihlášení selhalo: {{message}}",
   "loading": "Načítám…",

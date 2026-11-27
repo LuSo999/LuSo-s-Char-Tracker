@@ -2,13 +2,13 @@
   "name": "Light",
   "mode": "light",
   "colors": {
-    "bg": "#f4f1ea",
+    "bg": "#f5f4f0",
     "card": "#ffffff",
-    "text": "#1f1b16",
-    "muted": "#6b6258",
-    "accent": "#7a3b12",
+    "text": "#18171a",
+    "muted": "#5c5a61",
+    "accent": "#5b2fc9",
     "accentText": "#ffffff",
-    "border": "#ddd5c7",
+    "border": "#18171a1f",
     "danger": "#b42318"
   }
 }

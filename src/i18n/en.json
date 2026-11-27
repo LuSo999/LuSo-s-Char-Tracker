@@ -2,6 +2,7 @@
   "appName": "LuSo's Char Tracker",
   "signIn": "Sign in with Google",
   "signOut": "Sign out",
+  "accountMenu": "Account and more",
   "signInIntro": "Your characters are saved to your Google account.",
   "signInFailed": "Sign-in failed: {{message}}",
   "loading": "Loading…",

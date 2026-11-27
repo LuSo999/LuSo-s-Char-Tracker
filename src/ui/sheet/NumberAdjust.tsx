@@ -27,6 +27,8 @@ export function NumberAdjust({
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [amount, setAmount] = useState('')
+  // Pulse to confirm: once the value has changed, each new value re-mounts and pulses once.
+  const [initial] = useState(value)
 
   const applySigned = () => {
     const m = /^\s*([+-])\s*(\d+)\s*$/.exec(amount)
@@ -74,7 +76,9 @@ export function NumberAdjust({
             setEditing(true)
           }}
         >
-          {value}
+          <span key={value} className={`inline-block ${value !== initial ? 'anim-pulse' : ''}`}>
+            {value}
+          </span>
         </button>
       )}
       <div className="flex items-stretch">

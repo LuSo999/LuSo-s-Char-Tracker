@@ -212,7 +212,7 @@ function CreaturePreview({ draft }: { draft: Raw }) {
   const vars = { level, classLevel: level, characterLevel: level, pb, slot, str: 0, dex: 2, con: 1, int: 0, wis: 3, cha: 3, spellAttack: pb + 3, spellDc: 8 + pb + 3 }
   return (
     <Card>
-      <div className="sticky top-2 space-y-2">
+      <div className="sticky top-16 space-y-2">
         <h3 className="flex items-center gap-1 font-heading font-semibold">
           <Label text={t('homebrew.f.preview')} help="creature.preview" />
         </h3>

@@ -2,13 +2,13 @@
   "name": "Dark",
   "mode": "dark",
   "colors": {
-    "bg": "#15130f",
-    "card": "#221f1a",
-    "text": "#ece6dc",
-    "muted": "#a89f92",
-    "accent": "#d9894f",
-    "accentText": "#15130f",
-    "border": "#3a352d",
+    "bg": "#0f0f12",
+    "card": "#19191e",
+    "text": "#ededf0",
+    "muted": "#a3a2ab",
+    "accent": "#a78bfa",
+    "accentText": "#0f0f12",
+    "border": "#ffffff1a",
     "danger": "#f97066"
   }
 }

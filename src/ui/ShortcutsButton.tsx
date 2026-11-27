@@ -30,7 +30,7 @@ export function ShortcutsButton() {
         ⌨️
       </button>
       {open && (
-        <div role="dialog" aria-label={t('shortcuts.title')} className="absolute right-0 top-full z-40 mt-1 w-80 rounded-card border border-border bg-card p-3 text-sm shadow-lg">
+        <div role="dialog" aria-label={t('shortcuts.title')} className="anim-drop absolute right-0 top-full z-40 mt-1 w-80 origin-top-right rounded-card border border-border bg-card p-3 text-sm shadow-lg">
           <p className="mb-2 font-semibold">⌨️ {t('shortcuts.title')}</p>
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5">
             {items.map(([keys, what]) => (

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { staggerStyle } from './motion'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { sampleChampion } from '../data/samples'
@@ -49,8 +50,8 @@ export function CharacterList({ uid }: { uid: string }) {
         {characters === null && !error && <p className="mt-3 text-muted">{t('loading')}</p>}
         {characters?.length === 0 && <p className="mt-3 text-muted">{t('characters.empty')}</p>}
         <ul className="mt-3 divide-y divide-border">
-          {characters?.map((c) => (
-            <li key={c.id} className="flex items-center justify-between gap-3 py-2">
+          {characters?.map((c, i) => (
+            <li key={c.id} style={staggerStyle(i)} className="anim-row flex items-center justify-between gap-3 py-2">
               {c.character ? (
                 <Link to={`/c/${c.id}`} className="min-w-0 flex-1 hover:underline">
                   <span className="font-semibold">{c.name}</span>

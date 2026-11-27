@@ -303,7 +303,7 @@ export function Rows<T>({
               </button>
               {summary && (
                 <button type="button" className="flex w-full items-start gap-2 text-left text-sm" aria-expanded={expanded} onClick={() => toggle(i)}>
-                  <span className="text-muted">{expanded ? '▾' : '▸'}</span>
+                  <span key={String(expanded)} className="anim-icon text-muted">{expanded ? '▾' : '▸'}</span>
                   <span className="flex-1">{summary(row)}</span>
                   <PlaceBadge place={place?.(row)} />
                 </button>

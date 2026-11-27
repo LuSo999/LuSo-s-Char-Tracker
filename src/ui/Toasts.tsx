@@ -8,7 +8,7 @@ export function Toasts() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`pointer-events-auto flex max-w-xl items-center gap-3 rounded-card border px-4 py-2 shadow-lg ${t.tone === 'error' ? 'border-danger bg-card text-danger' : 'border-border bg-card'}`}
+          className={`anim-reveal pointer-events-auto flex max-w-xl items-center gap-3 rounded-card border px-4 py-2 shadow-lg ${t.tone === 'error' ? 'border-danger bg-card text-danger' : 'border-border bg-card'}`}
         >
           <span className="text-sm">{t.text}</span>
           {t.action && (

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { staggerStyle } from '../motion'
 import { useTranslation } from 'react-i18next'
 import i18n from '../../i18n'
 import type { ContentIndex } from '../../content'
@@ -833,8 +834,8 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
         />
       )}
       <ul className="min-h-0 flex-1 divide-y divide-border overflow-y-auto">
-        {visible.map((r) => (
-          <li key={denied?.key === r.key ? `${r.key}-${denied.at}` : r.key} className={`rounded py-1.5 ${r.available ? '' : 'opacity-45'} ${denied?.key === r.key ? 'fx-flash' : ''}`}>
+        {visible.map((r, i) => (
+          <li key={denied?.key === r.key ? `${r.key}-${denied.at}` : r.key} style={staggerStyle(i)} className={`anim-row rounded py-1.5 ${r.available ? '' : 'opacity-45'} ${denied?.key === r.key ? 'fx-flash' : ''}`}>
             <div
               role="button"
               tabIndex={0}

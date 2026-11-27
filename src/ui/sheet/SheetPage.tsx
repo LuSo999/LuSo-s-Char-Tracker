@@ -306,7 +306,7 @@ function MoreMenu({ className, onLevelUp }: { className: string; onLevelUp: () =
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full z-40 mt-1 w-48 rounded-card border border-border bg-card p-1 shadow-lg" onClick={() => setOpen(false)}>
+          <div className="anim-drop absolute right-0 top-full z-40 mt-1 w-48 origin-top-right rounded-[calc(var(--radius)+0.25rem)] border border-border bg-card p-1 shadow-lg" onClick={() => setOpen(false)}>
             <button className={item} onClick={onLevelUp}>
               ⬆️ {t('sheet.buttons.levelUp')}
             </button>
@@ -358,7 +358,7 @@ function EditToggle({ className }: { className: string }) {
   const { on, toggle } = useEditMode()
   return (
     <button className={`${className} ${on ? 'border-accent bg-accent text-accent-text hover:bg-accent' : ''}`} data-tour="edit" onClick={toggle} aria-pressed={on}>
-      {on ? `✅ ${t('edit.done')}` : `✏️ ${t('sheet.buttons.editMode')}`}
+      <span key={String(on)} className="anim-icon">{on ? '✅' : '✏️'}</span> {on ? t('edit.done') : t('sheet.buttons.editMode')}
     </button>
   )
 }

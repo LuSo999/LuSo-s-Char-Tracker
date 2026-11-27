@@ -135,9 +135,9 @@ export function HistoryDrawer({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-black/40" onClick={onClose}>
+    <div className="anim-backdrop fixed inset-0 z-40 flex justify-end bg-black/40" onClick={onClose}>
       <aside
-        className="flex h-full w-full flex-col border-l border-border bg-card shadow-xl sm:max-w-md"
+        className="anim-drawer flex h-full w-full flex-col border-l border-border bg-card shadow-xl sm:max-w-md"
         onClick={(e) => e.stopPropagation()}
         aria-label={t('history.title')}
       >

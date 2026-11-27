@@ -78,10 +78,10 @@ export function PinnedPreview() {
   if (!pinned) return null
   const close = () => usePreview.setState({ pinned: undefined })
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center" onClick={close}>
+    <div className="anim-backdrop fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center" onClick={close}>
       <BackClose onClose={close} />
       <div
-        className="max-h-[85vh] w-full overflow-y-auto rounded-t-card border border-border bg-card p-5 sm:max-w-lg sm:rounded-card"
+        className="anim-sheet-up max-h-[85vh] w-full overflow-y-auto rounded-t-card border border-border bg-card p-5 shadow-xl sm:max-w-lg sm:rounded-card"
         onClick={(e) => e.stopPropagation()}
       >
         {isHelp(pinned) ? <HelpBody target={pinned} pinned /> : <PreviewBody target={pinned} />}

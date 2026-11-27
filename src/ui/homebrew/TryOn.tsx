@@ -36,9 +36,9 @@ export function TryOn({ uid, pack, draft }: { uid: string; pack: Pack; draft: Ra
       <button type="button" className="flex w-full items-center gap-2 text-left" aria-expanded={open} onClick={() => setOpen(!open)}>
         <span className="font-heading text-lg font-semibold">🧪 {t('homebrew.tryOn.title')}</span>
         <span className="text-xs text-muted">{t('homebrew.tryOn.hint')}</span>
-        <span className="ml-auto text-muted">{open ? '▾' : '▸'}</span>
+        <span key={String(open)} className="anim-icon ml-auto text-muted">{open ? '▾' : '▸'}</span>
       </button>
-      {open && (uid === 'dev' ? <TryOnBody candidates={[]} pack={pack} draft={draft} /> : <WithCharacters uid={uid} pack={pack} draft={draft} />)}
+      {open && <div className="anim-reveal">{uid === 'dev' ? <TryOnBody candidates={[]} pack={pack} draft={draft} /> : <WithCharacters uid={uid} pack={pack} draft={draft} />}</div>}
     </Card>
   )
 }
