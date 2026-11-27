@@ -58,6 +58,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <span data-tour="theme" className="inline-flex">
             <ThemeButton />
           </span>
+          {!user && pathname.startsWith('/dev') && (
+            <Link to="/dev/settings" className="hit-target text-sm text-muted hover:text-text" aria-label={t('settings.title')}>
+              <span aria-hidden>⚙️</span>
+              <span className="hidden sm:inline"> {t('settings.title')}</span>
+            </Link>
+          )}
           {user && (
             <>
               <Link to="/settings" data-tour="settings" className="hit-target text-sm text-muted hover:text-text" aria-label={t('settings.title')}>

@@ -10,7 +10,8 @@ import { Character } from '../engine/character'
 import { useMemoryStore } from '../state/history'
 import { useSettings } from '../state/settings'
 import { SheetView } from './sheet/SheetPage'
-import { Route, Routes, useNavigate } from 'react-router'
+import { Link, Route, Routes, useLocation, useNavigate } from 'react-router'
+import { SettingsPage } from './SettingsPage'
 import { enableMemoryHomebrew } from '../state/homebrew'
 import { HomebrewBase } from './homebrew/base'
 import { HomebrewPage } from './homebrew/HomebrewPage'
@@ -67,6 +68,21 @@ export default function DevPreview() {
   const navigate = useNavigate()
   const [created, setCreated] = useState<{ character: Character; levelTo: number }>()
   const createdContent = useMemo(() => created && state && new ContentIndex(created.character.edition, created.character.edition === '2014' ? [...state.packs].reverse() : state.packs), [created, state])
+  // Re-render when the dev route changes (sheet ↔ settings).
+  const { pathname } = useLocation()
+  // #/dev/settings tries the settings (kept in memory) and the effect previews.
+  if (pathname.startsWith('/dev/settings')) {
+    return (
+      <>
+        <div className="mx-auto max-w-3xl px-4 pt-4">
+          <Link to="/dev" className="text-sm text-muted underline">
+            ← Dev sheet
+          </Link>
+        </div>
+        <SettingsPage uid="dev" />
+      </>
+    )
+  }
   // #/dev/homebrew tries the homebrew editor with packs kept in memory.
   if (location.hash.startsWith('#/dev/homebrew')) return <DevHomebrew />
   // #/dev/tour tries the guided tour.

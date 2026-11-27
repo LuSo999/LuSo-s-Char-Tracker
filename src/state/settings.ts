@@ -51,6 +51,12 @@ export function watchSettings(uid: string | undefined) {
 }
 
 export async function saveSettings(uid: string, patch: Partial<Settings>) {
+  // The dev preview (signed out) keeps settings in memory only.
+  if (uid === 'dev') {
+    const s = useSettings.getState()
+    useSettings.setState({ ...patch, linkSite: { ...s.linkSite, ...patch.linkSite } })
+    return
+  }
   if (!db) return
   await setDoc(doc(db, 'users', uid, 'meta', 'settings'), patch, { merge: true })
 }
