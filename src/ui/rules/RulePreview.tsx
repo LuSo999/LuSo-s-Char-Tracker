@@ -37,7 +37,7 @@ function PreviewBody({ target }: { target: PreviewTarget }) {
         {entity.type === 'creature' && !entity.tags.includes('summon') && !entity.tags.includes('companion') ? (
           <StatBlock view={viewCreature(entity, {})} />
         ) : (
-          <RuleText text={entity.text ?? entity.description} />
+          <RuleText text={entity.text ?? entity.description} content={content} skip={entity.id} />
         )}
       </div>
       {/search[:?/]/.test(ruleLink(entity, content, site[entity.edition])) && <p className="mt-2 text-xs text-muted">🔎 {t('rules.noDirectLink')}</p>}
