@@ -1,4 +1,5 @@
 import { Editable } from '../sheet/Editable'
+import { TermText } from '../rules/TermText'
 import { useCallback, useMemo, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
@@ -123,7 +124,7 @@ function SpellLine({ row }: { row: SpellRow }) {
         {dice.heal && <span className="text-text">❤️ {dice.heal}</span>}
       </div>
       <p className="text-sm leading-snug">
-        {spellBrief(s)} {upcastNote(s) && <span className="whitespace-nowrap text-xs font-semibold text-violet-700 dark:text-violet-300">{upcastNote(s)}</span>}
+        <TermText text={spellBrief(s)} content={content} skip={s.id} /> {upcastNote(s) && <span className="whitespace-nowrap text-xs font-semibold text-violet-700 dark:text-violet-300">{upcastNote(s)}</span>}
       </p>
       {casting && <CastPrompt row={row} onDone={() => setCasting(false)} />}
     </li>

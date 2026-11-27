@@ -19,6 +19,7 @@ import { CastPrompt } from '../spells/CastPrompt'
 import { useOnResetFilters } from './shortcuts'
 import { castOptions, fontOfMagic, slotCost } from '../../engine/spellActions'
 import { RuleRef } from '../rules/RuleRef'
+import { TermText } from '../rules/TermText'
 import { useSettings } from '../../state/settings'
 import { centerOf, fx } from '../fx/fx'
 import { toast } from '../toast'
@@ -870,7 +871,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm [&>*]:whitespace-nowrap">{r.details}</div>
                 {r.brief && (
                   <p className="truncate text-xs text-muted" title={r.brief}>
-                    {r.brief}
+                    <TermText text={r.brief} content={content} skip={r.entity?.id} />
                   </p>
                 )}
               </div>

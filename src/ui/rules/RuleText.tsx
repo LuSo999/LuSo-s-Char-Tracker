@@ -1,5 +1,11 @@
-/** Renders rules text: paragraphs, **bold**, `code` and simple markdown tables. */
-export function RuleText({ text }: { text: string }) {
+import type { ContentIndex } from '../../content'
+import { TermText } from './TermText'
+
+/**
+ * Renders rules text: paragraphs, **bold**, `code` and simple markdown tables. With
+ * `content`, conditions and rules terms in it can be Ctrl+hovered (all but `skip`).
+ */
+export function RuleText({ text, content, skip }: { text: string; content?: ContentIndex; skip?: string }) {
   const blocks = text.split(/\n{2,}|\n(?=\*\*)|\n(?=\|)/)
   return (
     <div className="space-y-2 text-sm leading-relaxed">
@@ -18,7 +24,7 @@ export function RuleText({ text }: { text: string }) {
                   {part.slice(1, -1)}
                 </code>
               ) : (
-                <span key={j}>{part}</span>
+                <span key={j}>{content ? <TermText text={part} content={content} skip={skip} /> : part}</span>
               ),
             )}
           </p>
