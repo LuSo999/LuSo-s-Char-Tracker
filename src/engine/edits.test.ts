@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { ActionResult } from './actions'
 import { computeSheet } from './derive'
-import { addReminder, customize, removeReminder, resetAllOverrides, setBaseScore, setOverride } from './edits'
-import { srd, valdric } from './fixtures'
+import { addReminder, customize, removeReminder, resetAllOverrides, setBaseScore, setOverride, setTextOverride } from './edits'
+import { makeCharacter, srd, valdric } from './fixtures'
 
 const content = srd('2024')
 function okR(r: ActionResult) {
@@ -69,5 +69,38 @@ describe('own reminders', () => {
     expect(c.reminders).toEqual([{ uid: expect.any(String), text: 'Owes the Zhentarim 50 GP' }])
     expect(addReminder(c, '   ').ok).toBe(false)
     expect(okR(removeReminder(c, c.reminders[0].uid)).character.reminders).toEqual([])
+  })
+})
+
+describe('the Saves row override', () => {
+  const dwarf = makeCharacter({ edition: '2024', speciesId: 'dwarf' })
+  const computed = 'Advantage on saves to avoid or end Poisoned'
+
+  it('starts from the computed notes', () => {
+    const s = computeSheet(dwarf, content)
+    expect(s.saveNotes.map((n) => n.note)).toEqual([computed])
+    expect(s.saveNotesText).toEqual({ value: computed, computed, overridden: false })
+  })
+
+  it('replaces the row with the player\'s own notes, split on ";" and new lines', () => {
+    const r = okR(setTextOverride(dwarf, 'saveNotes', ' Poisoned: advantage ;\nAdvantage on checks to escape a grapple; ', 'Saves', computed))
+    expect(r.items[0]).toMatchObject({ type: 'override', before: computed, after: 'Poisoned: advantage; Advantage on checks to escape a grapple' })
+    const s = computeSheet(r.character, content)
+    expect(s.saveNotes).toEqual([{ note: 'Poisoned: advantage' }, { note: 'Advantage on checks to escape a grapple' }])
+    expect(s.saveNotesText).toMatchObject({ computed, overridden: true })
+  })
+
+  it('an empty text clears the row; the computed text or reset removes the override', () => {
+    const empty = okR(setTextOverride(dwarf, 'saveNotes', '  ', 'Saves', computed)).character
+    expect(computeSheet(empty, content).saveNotes).toEqual([])
+    expect(computeSheet(empty, content).saveNotesText).toMatchObject({ value: '', overridden: true })
+    expect(okR(setTextOverride(empty, 'saveNotes', computed, 'Saves', computed)).character.overrides).toEqual({})
+    expect(okR(setTextOverride(empty, 'saveNotes', undefined, 'Saves', computed)).character.overrides).toEqual({})
+    expect(setTextOverride(dwarf, 'saveNotes', computed, 'Saves', computed)).toMatchObject({ ok: false, error: 'noChange' })
+  })
+
+  it('a character without save notes can add one', () => {
+    const c = okR(setTextOverride(valdric(), 'saveNotes', 'Advantage vs. grapple escape', 'Saves', '')).character
+    expect(computeSheet(c, content).saveNotes.map((n) => n.note)).toEqual(['Advantage vs. grapple escape'])
   })
 })

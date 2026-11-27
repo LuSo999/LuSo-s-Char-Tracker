@@ -6,7 +6,7 @@ import { Panel } from './common'
 import { useState } from 'react'
 import { setBaseScore } from '../../engine/edits'
 import { useRun, useSheet } from './context'
-import { Editable } from './Editable'
+import { Editable, EditableText } from './Editable'
 import { useEditMode } from './editMode'
 import { breakdown, signed } from './format'
 import { Term } from '../rules/Term'
@@ -87,6 +87,7 @@ export function AbilitiesPanel({ sheet }: { sheet: Sheet; content: ContentIndex 
 function Proficiencies({ sheet }: { sheet: Sheet }) {
   const { t } = useTranslation()
   const { content } = useSheet()
+  const edit = useEditMode((s) => s.on)
   const name = (id: string) => content.get(id)?.name ?? content.get(`${id}-armor`)?.name ?? id.replace(/-/g, ' ')
   const rows: [string, string[]][] = [
     [t('sheet.prof.armor'), sheet.armorProficiencies.map(name)],
@@ -97,8 +98,10 @@ function Proficiencies({ sheet }: { sheet: Sheet }) {
     ...(Object.keys(sheet.speeds).length ? [[t('sheet.prof.speeds'), Object.entries(sheet.speeds).map(([k, v]) => `${k} ${v} ft`)] as [string, string[]]] : []),
     ...(sheet.resistances.length ? [[t('sheet.prof.resistances'), sheet.resistances]] as [string, string[]][] : []),
     ...(sheet.immunities.length || sheet.conditionImmunities.length ? [[t('sheet.prof.immunities'), [...sheet.immunities, ...sheet.conditionImmunities]]] as [string, string[]][] : []),
-    ...(sheet.saveNotes.length ? [[t('sheet.prof.saveNotes'), sheet.saveNotes.map((n) => n.note)]] as [string, string[]][] : []),
   ]
+  // Save advantages (Dwarven Resilience…): the player can rewrite the row in edit mode, so it shows there even when empty.
+  const savesLabel = t('sheet.prof.saveNotes')
+  const showSaves = edit || sheet.saveNotes.length > 0 || sheet.saveNotesText.overridden
   return (
     <>
       <h3 className="mt-2 mb-0.5 text-xs font-semibold uppercase text-muted">{t('sheet.prof.title')}</h3>
@@ -106,9 +109,17 @@ function Proficiencies({ sheet }: { sheet: Sheet }) {
         {rows.map(([label, list]) => (
           <div key={label}>
             <dt className="inline font-semibold">{label}: </dt>
-            <dd className={`inline text-muted ${label === t('sheet.prof.saveNotes') ? '' : 'capitalize'}`}>{list.length ? list.join(label === t('sheet.prof.saveNotes') ? '; ' : ', ') : '—'}</dd>
+            <dd className="inline text-muted capitalize">{list.length ? list.join(', ') : '—'}</dd>
           </div>
         ))}
+        {showSaves && (
+          <div>
+            <dt className="inline font-semibold">{savesLabel}: </dt>
+            <dd className="inline text-muted">
+              <EditableText value={sheet.saveNotesText} overrideKey="saveNotes" label={savesLabel} />
+            </dd>
+          </div>
+        )}
       </dl>
     </>
   )
