@@ -73,6 +73,11 @@ describe('edition differences', () => {
     expect(s.saveNotes).toEqual([])
     expect(s.saveNotesText).toEqual({ value: '', computed: '', overridden: false })
     expect(s.weight.capacity).toBe(16 * 15 * 2)
+    // …and it is listed with the saves, in the Checks row of the abilities panel.
+    expect(s.checkNotes.map((n) => [n.entity.id, n.note])).toEqual([
+      ['champion-remarkable-athlete', 'Advantage on Strength (Athletics) checks'],
+      ['powerful-build', 'Advantage on ability checks to end the Grappled condition'],
+    ])
   })
 
   it('2014 rules give no grapple benefit (2014 Powerful Build is carrying, pushing and dragging only)', () => {

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { ContentIndex } from '../../content'
 import { abilities, skills, type Skill } from '../../content/schema'
+import { RuleRef } from '../rules/RuleRef'
 import type { Sheet } from '../../engine/derive'
 import { Panel } from './common'
 import { useState } from 'react'
@@ -117,6 +118,21 @@ function Proficiencies({ sheet }: { sheet: Sheet }) {
             <dt className="inline font-semibold">{savesLabel}: </dt>
             <dd className="inline text-muted">
               <EditableText value={sheet.saveNotesText} overrideKey="saveNotes" label={savesLabel} />
+            </dd>
+          </div>
+        )}
+        {sheet.checkNotes.length > 0 && (
+          <div>
+            <dt className="inline font-semibold">{t('sheet.prof.checkNotes')}: </dt>
+            <dd className="inline text-muted">
+              {sheet.checkNotes.map((n, i) => (
+                <span key={i}>
+                  {i > 0 && '; '}
+                  <RuleRef entity={n.entity} content={content}>
+                    {n.note}
+                  </RuleRef>
+                </span>
+              ))}
             </dd>
           </div>
         )}

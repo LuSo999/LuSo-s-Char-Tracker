@@ -161,6 +161,8 @@ export type Sheet = {
   saveNotes: { note: string; entity?: Entity }[]
   /** The Saves row as one text ("; "-separated), for edit mode's override (key "saveNotes"). */
   saveNotesText: { value: string; computed: string; overridden: boolean }
+  /** Advantages on ability checks (Powerful Build: ending Grappled; Athletics checks…), also listed with the saves. */
+  checkNotes: { note: string; entity: Entity }[]
   languages: string[]
   weaponMasteries: string[]
   notes: string[]
@@ -1007,6 +1009,9 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
   const computedSaveNotes = allEffects
     .filter(({ effect, ae }) => effect.note && isSaveNote(effect.target) && effectApplies(effect, ae, baseCtx, toggleSet))
     .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
+  const checkNotes = allEffects
+    .filter(({ effect, ae }) => effect.note && /^(advantage|disadvantage):(check|skill):/.test(effect.target) && !ae.hidden && effectApplies(effect, ae, baseCtx, toggleSet))
+    .map(({ effect, ae }) => ({ note: effect.note!, entity: ae.entity }))
   // Edit mode can replace the whole row with the player's own text (empty hides it).
   const saveNotesOverride = char.overrides.saveNotes
   const computedSaveText = computedSaveNotes.map((n) => n.note).join('; ')
@@ -1186,6 +1191,7 @@ export function computeSheet(char: Character, content: ContentIndex): Sheet {
     speeds,
     saveNotes,
     saveNotesText,
+    checkNotes,
     languages: [...languageSet],
     weaponMasteries,
     notes,
