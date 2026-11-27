@@ -487,7 +487,10 @@ html[data-frames] :is(.overflow-y-auto, .xl\:overflow-y-auto):has(> .framed) {
   background: rgb(0 0 0 / calc(0.18 * var(--fx)));
   animation: fx-fade-in-out var(--d) ease-in-out forwards;
 }
-.fx-shake { animation: fx-shake var(--shake-time, 0.3s) ease-in-out; }
+/* The page shakes by nudging #root with left/top, not transform: a transform would make #root the
+   containing block of every fixed element inside it (effects, side panels, dialogs), and on a scrolled
+   page they would jump to the top of the page for as long as the shake lasts. */
+.fx-shake { position: relative; animation: fx-shake var(--shake-time, 0.3s) ease-in-out; }
 
 @keyframes fx-glow { 0% { opacity: 0; } 12% { opacity: 1; } 55% { opacity: 0.85; } 100% { opacity: 0; } }
 @keyframes fx-fade-in-out { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: 0; } }
@@ -521,11 +524,11 @@ html[data-frames] :is(.overflow-y-auto, .xl\:overflow-y-auto):has(> .framed) {
   100% { opacity: 0; transform: translateY(var(--dy)) rotate(var(--a)) translateX(var(--r)) scale(0.25); }
 }
 @keyframes fx-shake {
-  0%, 100% { transform: translate(0, 0); }
-  20% { transform: translate(calc(-1 * var(--shake, 2px)), calc(0.5 * var(--shake, 2px))); }
-  40% { transform: translate(var(--shake, 2px), calc(-0.5 * var(--shake, 2px))); }
-  60% { transform: translate(calc(-0.6 * var(--shake, 2px)), 0); }
-  80% { transform: translate(calc(0.4 * var(--shake, 2px)), 0); }
+  0%, 100% { left: 0; top: 0; }
+  20% { left: calc(-1 * var(--shake, 2px)); top: calc(0.5 * var(--shake, 2px)); }
+  40% { left: var(--shake, 2px); top: calc(-0.5 * var(--shake, 2px)); }
+  60% { left: calc(-0.6 * var(--shake, 2px)); top: 0; }
+  80% { left: calc(0.4 * var(--shake, 2px)); top: 0; }
 }
 @keyframes fx-flash { 0%, 100% { background-color: transparent; } 40% { background-color: rgb(220 40 40 / 0.35); } }
 .fx-flash { animation: fx-flash 0.45s ease-in-out 2; border-color: rgb(220 40 40) !important; color: rgb(220 40 40) !important; }
