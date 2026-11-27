@@ -163,6 +163,20 @@
       "damage": "Damage",
       "heal": "Healing",
       "temp": "Temporary HP"
+    },
+    "previewVariants": {
+      "slashing": "⚔️ Slashing",
+      "piercing": "🏹 Piercing",
+      "bludgeoning": "🔨 Bludgeoning",
+      "fire": "🔥 Fire",
+      "cold": "❄️ Cold",
+      "lightning": "⚡ Lightning",
+      "thunder": "💥 Thunder",
+      "necrotic": "💀 Necrotic",
+      "radiant": "☀️ Radiant",
+      "force": "🔮 Force",
+      "psychic": "🧠 Psychic",
+      "heal": "💚 Healing spell"
     }
   },
   "admin": {

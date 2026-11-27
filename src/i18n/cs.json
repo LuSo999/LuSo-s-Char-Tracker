@@ -163,6 +163,20 @@
       "damage": "Zranění",
       "heal": "Léčení",
       "temp": "Temporary HP"
+    },
+    "previewVariants": {
+      "slashing": "⚔️ Sečný",
+      "piercing": "🏹 Bodný",
+      "bludgeoning": "🔨 Drtivý",
+      "fire": "🔥 Oheň",
+      "cold": "❄️ Mráz",
+      "lightning": "⚡ Blesk",
+      "thunder": "💥 Hrom",
+      "necrotic": "💀 Nekrotické",
+      "radiant": "☀️ Zářivé",
+      "force": "🔮 Síla",
+      "psychic": "🧠 Psychické",
+      "heal": "💚 Léčivé kouzlo"
     }
   },
   "admin": {

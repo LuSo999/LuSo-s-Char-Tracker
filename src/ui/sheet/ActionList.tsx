@@ -632,7 +632,8 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
       }
       // A companion's limited action (Repair 3/Day, Fell Glare 1/Long Rest) spends a use.
       if (r.creature.companion && r.creature.action.uses) await run(spendCompanionAction(character, r.creature.companion, r.creature.action.name, r.creature.action.uses.max))
-      return fx(r.creature.action.attack ? 'physical' : 'power', at)
+      const hit = /\b(slashing|piercing|bludgeoning)\b/.exec(r.creature.action.damage)?.[1]
+      return fx(r.creature.action.attack ? 'physical' : 'power', at, { variant: hit })
     }
     let result = r.attack ? makeAttack(character, r.attack, undefined, { thrown }) : performActivity(character, sheet, r.activity!, roll, { spendOnly, ...slots })
     if (result.ok && shapeId) {
@@ -669,8 +670,9 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     }
     const group = await run(result, { actionId })
     if (group) rememberTurn(group.id, before)
-    const kind = r.attack ? (r.attack.weapon?.magic ? 'magic' : 'physical') : r.activity?.activity.fx
-    if (kind) fx(kind, at)
+    // Weapons hit by damage type (slash, thrust, smash); magic weapons add an arcane glow.
+    if (r.attack) fx('physical', at, { variant: r.attack.damageType, magic: !!r.attack.weapon?.magic })
+    else if (r.activity?.activity.fx) fx(r.activity.activity.fx, at)
   }
 
   async function activate(r: Row, el: Element, thrown = false) {
@@ -737,7 +739,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     if (mode !== 'off') turn.countPerTurn(key)
     const group = await run(result)
     if (group) rememberTurn(group.id, before)
-    fx('physical', at)
+    fx('physical', at, { variant: r.attack!.damageType, magic: !!r.attack!.weapon?.magic })
   }
 
   /**
@@ -772,7 +774,7 @@ export function ActionList({ onOpenSpells }: { onOpenSpells?: () => void }) {
     }
     const group = await run(result, { actionId: nick ? useTurn.getState().attackAction?.id : undefined })
     if (group) rememberTurn(group.id, before)
-    fx('physical', at)
+    fx('physical', at, { variant: r.attack!.damageType, magic: !!r.attack!.weapon?.magic })
   }
 
   const fired = Object.values(character.ammoSpent).reduce((a, b) => a + b, 0)

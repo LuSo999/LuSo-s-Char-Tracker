@@ -79,6 +79,18 @@ export function SettingsPage({ uid }: { uid: string }) {
               </button>
             ))}
           </div>
+          <div className="mt-2 flex flex-wrap gap-2 text-sm">
+            {(['slashing', 'piercing', 'bludgeoning'] as const).map((v) => (
+              <button key={v} className="rounded border border-border px-2 py-0.5 hover:bg-bg" onClick={(e) => fx('physical', { x: e.clientX, y: e.clientY }, { variant: v })}>
+                {t(`settings.previewVariants.${v}`)}
+              </button>
+            ))}
+            {(['fire', 'cold', 'lightning', 'thunder', 'necrotic', 'radiant', 'force', 'psychic', 'heal'] as const).map((v) => (
+              <button key={v} className="rounded border border-border px-2 py-0.5 hover:bg-bg" onClick={(e) => fx('magic', { x: e.clientX, y: e.clientY }, { variant: v, power: 3 })}>
+                {t(`settings.previewVariants.${v}`)}
+              </button>
+            ))}
+          </div>
         </fieldset>
       </Card>
       <Card>

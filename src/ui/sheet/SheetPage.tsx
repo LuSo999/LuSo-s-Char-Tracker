@@ -15,6 +15,7 @@ import { useOfficial } from '../../state/official'
 import { HistoryDrawer } from '../history/HistoryDrawer'
 import { InventoryDrawer } from '../inventory/InventoryDrawer'
 import { EdgeHandle } from './SidePanel'
+import { ClosingContext, useExit } from '../useExit'
 import { SpellcastingDrawer } from '../spells/SpellcastingDrawer'
 import { groupSummary } from '../history/text'
 import { RuleRef } from '../rules/RuleRef'
@@ -529,9 +530,15 @@ function SheetLayout() {
       )}
       <LevelQueue active={!queueStopped && !levelUp && levelTo > sheet.characterLevel} onNext={() => setLevelUp(true)} />
       {choices && <ChoicesDialog onClose={() => setChoices(false)} />}
-      {history && <HistoryDrawer onClose={() => setHistory(false)} />}
-      {inventory && <InventoryDrawer onClose={() => setInventory(false)} />}
-      {spells && <SpellcastingDrawer onClose={() => setSpells(false)} />}
+      <Exiting show={history}>
+        <HistoryDrawer onClose={() => setHistory(false)} />
+      </Exiting>
+      <Exiting show={inventory}>
+        <InventoryDrawer onClose={() => setInventory(false)} />
+      </Exiting>
+      <Exiting show={spells}>
+        <SpellcastingDrawer onClose={() => setSpells(false)} />
+      </Exiting>
 
       {/* Phone: panels open full screen from a bottom bar. */}
       {/* The bar switches straight between panels (it doesn't count as a click outside them). */}
@@ -551,4 +558,10 @@ function SheetLayout() {
       <div className="h-12 sm:hidden" />
     </div>
   )
+}
+
+/** Renders a panel while it is open and for a moment after, so it can slide out. */
+function Exiting({ show, children }: { show: boolean; children: React.ReactNode }) {
+  const { mounted, closing } = useExit(show)
+  return mounted ? <ClosingContext.Provider value={closing}>{children}</ClosingContext.Provider> : null
 }

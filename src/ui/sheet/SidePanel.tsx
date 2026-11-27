@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useBackClose } from '../useBackClose'
+import { useClosing } from '../useExit'
 
 /**
  * A panel sliding in from a side of the sheet. It doesn't block the rest of
@@ -23,6 +24,7 @@ export function SidePanel({
   header?: React.ReactNode
 }) {
   const { t } = useTranslation()
+  const closing = useClosing()
   useBackClose(onClose)
   const ref = useRef<HTMLElement>(null)
   const close = useRef(onClose)
@@ -55,7 +57,7 @@ export function SidePanel({
     <aside
       ref={ref}
       data-side-panel={side}
-      className={`fixed inset-y-0 z-30 flex w-full flex-col bg-card shadow-2xl sm:w-[34rem] ${side === 'left' ? 'left-0 border-r' : 'right-0 border-l'} border-border`}
+      className={`fixed inset-y-0 z-30 flex w-full flex-col bg-card shadow-2xl sm:w-[34rem] ${side === 'left' ? 'left-0 border-r' : 'right-0 border-l'} border-border ${closing ? `pointer-events-none panel-out-${side}` : `panel-in-${side}`}`}
       aria-label={typeof title === 'string' ? title : undefined}
     >
       <header className="border-b border-border p-3">

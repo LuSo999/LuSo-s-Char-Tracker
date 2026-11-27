@@ -22,7 +22,10 @@ export function useCastSpell() {
     const before = snapshotTurn()
     const group = await run(castSpell(character, sheet, row, how))
     if (group) {
-      fx('magic', at)
+      // The spell's look: its damage type, else healing, else its school; bigger for higher slots.
+      const spell = row.spell
+      const level = how.kind === 'slot' ? how.level : how.kind === 'pact' ? (sheet.spellcasting.pact?.level ?? spell.level) : spell.level
+      fx('magic', at, { variant: spell.damage?.type ?? (spell.heal ? 'heal' : spell.school), power: level })
       // Casting time spends the matching turn slot, wherever the spell was cast from (rituals take minutes, no slot).
       const type = as && as !== 'ignore' ? as : row.spell.actionType
       if (mode !== 'off' && as !== 'ignore' && how.kind !== 'ritual' && type !== 'other') {

@@ -1,3 +1,4 @@
+import { useClosing } from '../useExit'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { makeUndoGroup, pastUndoable, undoPast, type HistoryGroup } from '../../engine/history'
@@ -26,6 +27,7 @@ function blocks(list: HistoryGroup[]): (HistoryGroup | { groups: HistoryGroup[] 
  */
 export function HistoryDrawer({ onClose }: { onClose: () => void }) {
   useBackClose(onClose)
+  const closing = useClosing()
   const { t, i18n } = useTranslation()
   const { store, content, character } = useSheet()
   const [showGame, setShowGame] = useState(true)
@@ -135,9 +137,9 @@ export function HistoryDrawer({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="anim-backdrop fixed inset-0 z-40 flex justify-end bg-black/40" onClick={onClose}>
+    <div className={`fixed inset-0 z-40 flex justify-end bg-black/40 ${closing ? 'pointer-events-none backdrop-out' : 'anim-backdrop'}`} onClick={onClose}>
       <aside
-        className="anim-drawer flex h-full w-full flex-col border-l border-border bg-card shadow-xl sm:max-w-md"
+        className={`flex h-full w-full flex-col border-l border-border bg-card shadow-xl sm:max-w-md ${closing ? 'panel-out-right' : 'panel-in-right'}`}
         onClick={(e) => e.stopPropagation()}
         aria-label={t('history.title')}
       >
